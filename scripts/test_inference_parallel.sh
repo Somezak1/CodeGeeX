@@ -4,9 +4,13 @@ MP_SIZE=$1
 PROMPT_FILE=$2
 
 SCRIPT_PATH=$(realpath "$0")
+# SCRIPT_PATH: /data0/csw/CodeGeeX/scripts/test_inference_parallel.sh
 SCRIPT_DIR=$(dirname "$SCRIPT_PATH")
+# SCRIPT_DIR: /data0/csw/CodeGeeX/scripts/
 MAIN_DIR=$(dirname "$SCRIPT_DIR")
+# MAIN_DIR: /data0/csw/CodeGeeX/
 TOKENIZER_PATH="$MAIN_DIR/codegeex/tokenizer/"
+# TOKENIZER_PATH: /data0/csw/CodeGeeX/codegeex/tokenizer/
 
 if [ -z "$MP_SIZE" ]; then
   MP_SIZE=1
@@ -21,8 +25,8 @@ else
 fi
 
 # export CUDA settings
-export CUDA_HOME=/usr/local/cuda-11.1/
-# export CUDA_VISIBLE_DEVICES=0,1
+export CUDA_HOME=/usr/local/cuda-11.7/
+export CUDA_VISIBLE_DEVICES=0,1
 
 if [ -z "$PROMPT_FILE" ]; then
   PROMPT_FILE=$MAIN_DIR/tests/test_prompt.txt
@@ -41,7 +45,21 @@ CMD="torchrun --nproc_per_node $MP_SIZE $MAIN_DIR/tests/test_inference_megatron.
         --greedy \
         --use-cpu-initialization \
         --ln-fp16 \
+        --n-generation 1\
         $MODEL_ARGS"
+
+# MODEL_ARGS="--num-layers 39 \
+#             --hidden-size 5120 \
+#             --num-attention-heads 40 \
+#             --max-position-embeddings 2048 \
+#             --attention-softmax-in-fp32 \
+#             --load /data0/csw/CodeGeeX/scripts/mp2_parallel_weights/ \
+#             --layernorm-epsilon 1e-5 \
+#             --fp16 \
+#             --ws-encoding-start-id 10 \
+#             --ws-encoding-length 10 \
+#             --make-vocab-size-divisible-by 52224 \
+#             --seq-length 2048"
 
 echo "$CMD"
 eval "$CMD"

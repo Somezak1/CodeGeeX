@@ -106,6 +106,10 @@ def pretrain(
             to set already parse arguments.
     """
 
+    # valid_forward_step_func: None
+    # extra_args_provider: None
+    # args_defaults: {"tokenizer_type": "GPT2BPETokenizer"}
+
     # Initalize and get arguments, timers, and Tensorboard writer.
     initialize_megatron(
         extra_args_provider=extra_args_provider, args_defaults=args_defaults
@@ -114,6 +118,9 @@ def pretrain(
     # Adjust the startup time so it reflects the largest value.
     # This will be closer to what scheduler will see (outside of
     # image ... launches.
+    # 在程序一开始运行时就使用time.time()对_TRAIN_START_TIME进行了初始化
+    # 然后从各个子进程的_TRAIN_START_TIME变量中找一个最小值
+    # 进而拿现在时间减去起始时间得到megatron初始化所用时长
     global _TRAIN_START_TIME
     start_time_tensor = torch.cuda.FloatTensor([_TRAIN_START_TIME])
     torch.distributed.all_reduce(start_time_tensor, op=torch.distributed.ReduceOp.MIN)
@@ -124,27 +131,35 @@ def pretrain(
         )
     )
     print_datetime("after megatron is initialized")
+    # 打印出如此样式的信息: "[after megatron is initialized] datetime: 2023-10-29 17:26:19"
 
     args = get_args()
     timers = get_timers()
+    # 在函数initialize_megatron中对_GLOBAL_ARGS、_GLOBAL_TOKENIZER、_GLOBAL_TIMERS等全局变量完成了初始化
+    # 后续只要不重新进行这些参数的初始化, 就能通过get_args(), get_tokenizer(), get_timers()等分别获取这些已完成初始化的变量
 
+    # args.save: "/data0/csw/CodeGeeX/scripts/csw-pretrain-codegeex-13b-test"
     if args.local_rank == 0 and args.save is not None:
         print(f"Creating output dir ...")
         os.makedirs(args.save, exist_ok=True)
 
+    # args.deepspeed: True
     if args.deepspeed:
         args.deepspeed_configuration = json.load(
             open(args.deepspeed_config, "r", encoding="utf-8")
         )
+        # args.deepspeed_config: "/data0/csw/CodeGeeX/scripts/ds_config.json"
 
     # Model, optimizer, and learning rate.
     timers("model-and-optimizer-setup").start()
+    # 在setup_model_and_optimizer函数中完成了模型结构定义和权重加载
     model, optimizer, lr_scheduler = setup_model_and_optimizer(model_provider)
     timers("model-and-optimizer-setup").stop()
     print_datetime("after model, optimizer, and learning rate " "scheduler are built")
 
     # Data stuff.
     timers("train/valid/test-data-iterators-setup").start()
+    # args.virtual_pipeline_model_parallel_size: None
     if args.virtual_pipeline_model_parallel_size is not None:
         all_data_iterators = [
             build_train_valid_test_data_iterators(train_valid_test_dataset_provider)
@@ -167,13 +182,17 @@ def pretrain(
         ) = build_train_valid_test_data_iterators(train_valid_test_dataset_provider)
     timers("train/valid/test-data-iterators-setup").stop()
     print_datetime("after dataloaders are built")
+    # 打印出如此样式的信息: "[after dataloaders are built] datetime: 2023-10-29 17:27:04"
 
     # Print setup timing.
     print_rank_0("done with setup ...")
     timers.log(["model-and-optimizer-setup", "train/valid/test-data-iterators-setup"])
+    # 打印出如此样式的信息: "time (ms) | model-and-optimizer-setup: 44048.85 | train/valid/test-data-iterators-setup: 1007.76"
     print_rank_0("training ...")
 
     iteration = 0
+    # args.do_train: True
+    # args.train_iters: 25
     if args.do_train and args.train_iters > 0:
         iteration = train(
             forward_step_func,
@@ -252,10 +271,12 @@ def get_model(model_provider_func):
     args = get_args()
 
     # Build model.
+    # 1、定义并构建CPU版模型
     if (
         mpu.get_pipeline_model_parallel_world_size() > 1
         and args.virtual_pipeline_model_parallel_size is not None
     ):
+        # 1.1、当分布式框架采用virtual pipeline (是NVDIA后续提出的对Megatron的优化方法，可先忽略不看)
         model = []
         for i in range(args.virtual_pipeline_model_parallel_size):
             mpu.set_virtual_pipeline_model_parallel_rank(i)
@@ -267,8 +288,13 @@ def get_model(model_provider_func):
             )
             model.append(this_model)
     else:
+        # 1.2 其余情况
+        # 判断当前进程是否是PP组的第一个进程（例如第一部分图例中PP组的g0）
         pre_process = mpu.is_pipeline_first_stage()
+        # 判断当前进程是否是PP组的最后一个进程（例如第一部分图例中PP组的g12）
         post_process = mpu.is_pipeline_last_stage()
+        # 如果PP组size为1, 即每个进程既是第一个进程也是最后一个进程, 则pre_process和post_process都是True
+        # 构建CPU版CodeGeeX模型
         model = model_provider_func(pre_process=pre_process, post_process=post_process)
 
     if not isinstance(model, list):
@@ -281,8 +307,13 @@ def get_model(model_provider_func):
     for model_module in model:
         for param in model_module.parameters():
             mpu.set_defaults_if_not_set_tensor_model_parallel_attributes(param)
+            # 为模型中所有未含如下属性的参数设置指定值
+            # "tensor_model_parallel": False,
+            # "partition_dim": -1,
+            # "partition_stride": 1,
 
     # Print number of parameters.
+    # mpu.get_data_parallel_rank(): Return my rank for the data parallel group.
     if mpu.get_data_parallel_rank() == 0:
         print(
             " > number of parameters on (tensor, pipeline) "
@@ -303,22 +334,33 @@ def get_model(model_provider_func):
             ),
             flush=True,
         )
+        # if tensor_model_parallel_size==1, pipeline_model_parallel_size==1:
+        # > number of parameters on (tensor, pipeline) model parallel rank (0, 0): 12873943040
 
+    # 2、将模型从CPU搬运到GPU上
+    # 2.1 如果采用Megatron-DeepSpeed的方式，则直接返回模型，后面的搬运，数据并行等工作将由deepspeed来完成
+    # ref: https://www.deepspeed.ai/tutorials/megatron/
+    # args.deepspeed: True
     if args.deepspeed:
         return model
 
     # GPU allocation.
+    # 将当前进程所维护的模型，从CPU搬运到GPU上（GPU即为在初始化时为当前进程分配的那块GPU）
     print(f" > moving model to GPU ...", flush=True)
     for model_module in model:
         model_module.cuda(torch.cuda.current_device())
     print(f" > moving to GPU done", flush=True)
 
     # Fp16 conversion.
+    # fp16转换（pytorch默认模型参数精度为fp32，依需决定计算过程中是否要转成fp16，节省显存）
+    # args.fp16: True
     if args.fp16 or args.bf16:
         print(f" > converting model to fp16 ...", flush=True)
         model = [Float16Module(model_module, args) for model_module in model]
         print(f" > converting to fp16 done", flush=True)
 
+    # 采用pytorch定义的DistributedDataParallel管理数据并行
+    # args.DDP_impl: 'local'
     if args.DDP_impl == "torch":
         i = torch.cuda.current_device()
         model = [
@@ -332,7 +374,10 @@ def get_model(model_provider_func):
         ]
         return model
 
+    # 采用自定义的DistributedDataParallel管理数据并行
+    # 即在pytorch的DistributedDataParallel的基础上，自己再定义内存管理、梯度精度等计算方式，更有效利用显存
     if args.DDP_impl == "local":
+        # 自定义的数据并行类在megatron/model/distributed.py下
         print(f" > creating DDP model ...", flush=True)
         model = [
             LocalDDP(
@@ -432,12 +477,14 @@ def setup_model_and_optimizer(model_provider_func):
         model = [model]
         print_rank_0("Finishparallel.")
 
+    # args.load: '/data0/csw/CodeGeeX/scripts/csw-pretrain-codegeex-13b-test'
     if args.load is not None:
         timers = get_timers()
         # Extra barrier is added to make sure all ranks report the
         # max time.
         torch.distributed.barrier()
         timers("load-checkpoint").start()
+        # args.low_memory_load: None
         if args.low_memory_load:
             load_start = time.perf_counter()
             with FileLock(os.path.join(pathlib.Path.home(), "checkpoint_lock"), timeout=-1):
@@ -448,6 +495,7 @@ def setup_model_and_optimizer(model_provider_func):
                 load_time = time.perf_counter() - load_start
                 print(f"Rank {args.rank} loaded checkpoint, this rank time: {this_rank_load_time}, total time: {load_time}")
         else:
+            # args.iteration: 0
             args.iteration = load_checkpoint(model, optimizer, lr_scheduler)
         print(f"Rank {args.rank} loaded checkpoint and waiting for other ranks")
         torch.distributed.barrier()
@@ -895,6 +943,7 @@ def train(
     # Write args to tensorboard
     write_args_to_tensorboard()
 
+    # args.wandb_logging: False
     if args.wandb_logging:
         torch.distributed.barrier()
         print_datetime("before the initialization of wandb")
@@ -914,11 +963,14 @@ def train(
 
     # Iterations.
     iteration = args.iteration
+    # args.iteration: 0
+    # args.train_iters: 25
 
     timers("interval-time").start()
     print_datetime("before the start of training step")
     report_memory_flag = True
-    
+
+    # args.train_tokens: None
     while iteration < args.train_iters and (
         args.train_tokens is None or args.consumed_train_tokens < args.train_tokens
     ):
@@ -1225,6 +1277,9 @@ def build_train_valid_test_data_iterators(build_train_valid_test_datasets_provid
     print_rank_0("> building train, validation, and test datasets ...")
 
     # Backward compatibility, assume fixed batch size.
+    # args.iteration: 0
+    # args.consumed_train_samples: 0
+    # args.consumed_valid_samples: 0
     if args.iteration > 0 and args.consumed_train_samples == 0:
         assert (
             args.train_samples is None
@@ -1241,20 +1296,35 @@ def build_train_valid_test_data_iterators(build_train_valid_test_datasets_provid
         )
 
     # Data loader only on rank 0 of each model parallel group.
+    # 只在张量并行组组内rank=0的进程内构建dataloader
+    # 比如对于本次运行/调试脚本 tp=4 pp=1 dp=2 的情况
+    # 张量并行组1: [0, 1, 2, 3]
+    # 张量并行组2: [4, 5, 6, 7]
+    # 那么本函数只在gpu0和gpu4所在的进程内构建dataloader, 该dataloader是torch.utils.data.DataLoader对象
+    # 迭代时每次返回一个包含input_ids、attention_mask、labels键值对的字典, 里面包含了一个micro_batch_size的数据
+    # 其余gpu对应的进程返回dataloader=None
     if mpu.get_tensor_model_parallel_rank() == 0:
 
         # Number of train/valid/test samples.
+        # args.train_samples: None
         if args.train_samples:
             train_samples = args.train_samples
         else:
             train_samples = args.train_iters * args.global_batch_size
+        # args.train_iters: 25
+        # args.eval_interval: 10
+        # args.eval_iters: 10
         eval_iters = (args.train_iters // args.eval_interval + 1) * args.eval_iters
         test_iters = args.eval_iters
+        # eval_iters: 30
+        # test_iters: 10
+        # args.global_batch_size: 4
         train_val_test_num_samples = [
             train_samples,
             eval_iters * args.global_batch_size,
             test_iters * args.global_batch_size,
         ]
+        # train_val_test_num_samples: [100, 120, 40]
         print_rank_0(" > datasets target sizes (minimum size):")
         print_rank_0("    train:      {}".format(train_val_test_num_samples[0]))
         print_rank_0("    validation: {}".format(train_val_test_num_samples[1]))
@@ -1264,11 +1334,22 @@ def build_train_valid_test_data_iterators(build_train_valid_test_datasets_provid
         train_ds, valid_ds, test_ds = build_train_valid_test_datasets_provider(
             train_val_test_num_samples
         )
+        # 返回的train_ds, valid_ds, test_ds都是PromptDataset类
+        # PromptDataset类继承自torch.utils.data.Dataset, 遍历时每次返回一个如下形式的字典
+        # {
+        #     "input_ids": np.array(input_ids, dtype=np.int64),
+        #     "attention_mask": np.array(attention_mask, dtype=np.int64),
+        #     "labels": np.array(labels, dtype=np.int64),
+        # }
 
         # Build dataloders.
+        # args.consumed_train_samples: 0
+        # args.consumed_valid_samples: 0
+        # build_pretraining_data_loader使用sampler和torch.utils.data.DataLoader包装下xxx_ds
         train_dataloader = build_pretraining_data_loader(
             train_ds, args.consumed_train_samples
         )
+        # args.co_evaluation: False
         if args.co_evaluation:
             valid_dataloader = {}
             for key, value in valid_ds.items():
@@ -1299,6 +1380,10 @@ def build_train_valid_test_data_iterators(build_train_valid_test_datasets_provid
         flags = torch.cuda.LongTensor([0, 0, 0])
 
     # Broadcast num tokens.
+    # 比如对于本次运行/调试脚本 tp=4 pp=1 dp=2 的情况
+    # 张量并行组1: [0, 1, 2, 3]
+    # 张量并行组2: [4, 5, 6, 7]
+    # 那么如下函数是将flags张量从GPU0向GPU1、GPU2、GPU3广播, 以及从GPU4向GPU5、GPU6、GPU7广播
     torch.distributed.broadcast(
         flags,
         mpu.get_tensor_model_parallel_src_rank(),
@@ -1309,6 +1394,7 @@ def build_train_valid_test_data_iterators(build_train_valid_test_datasets_provid
     args.do_test = flags[2].item()
 
     # Build iterators.
+    # args.dataloader_type: 'single'
     dl_type = args.dataloader_type
     assert dl_type in ["single", "cyclic"]
 
@@ -1321,6 +1407,7 @@ def build_train_valid_test_data_iterators(build_train_valid_test_datasets_provid
     else:
         train_data_iterator = None
 
+    # args.co_evaluation: False
     if valid_dataloader is not None:
         if args.co_evaluation:
             valid_data_iterator = {}

@@ -68,6 +68,8 @@ def stream_jsonl(filename: str) -> Iterable[Dict]:
     """
     Parses each jsonl line and yields it as a dictionary
     """
+    # ① filename: "pt_data/my_data.jsonl"
+    # ② filename: "sft_data/my_data.jsonl"
     if filename.endswith(".gz"):
         with open(filename, "rb") as gzfp:
             with gzip.open(gzfp, "rt") as fp:
@@ -77,6 +79,7 @@ def stream_jsonl(filename: str) -> Iterable[Dict]:
     else:
         with open(filename, "r") as fp:
             for line in fp:
+                # 只要这行不全是空格就json解析并返回
                 if any(not x.isspace() for x in line):
                     yield json.loads(line)
 

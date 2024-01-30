@@ -172,6 +172,14 @@ class CudaRNGStatesTracker:
     def add(self, name, seed):
         """Track the rng state."""
         # Check seed is not already used.
+
+        # name: str
+        # seed: int
+
+        # 为CPU设置随机数种子: torch.manual_seed(seed)
+        # 为特定GPU设置随机数种子: torch.cuda.manual_seed(seed)
+        # 为所有GPU设置随机数种子: torch.cuda.manual_seed_all(seed)
+
         if seed in self.seeds_:
             raise Exception("seed {} already exists".format(seed))
         self.seeds_.add(seed)
@@ -190,6 +198,11 @@ class CudaRNGStatesTracker:
     def fork(self, name=_MODEL_PARALLEL_RNG_TRACKER_NAME):
         """Fork the cuda rng state, perform operations, and exit with
         the original state."""
+
+        # @contextlib.contextmanager
+        # 上下文管理器是指在一段代码执行之前执行一段代码, 用于一些预处理工作; 执行之后再执行一段代码, 用于一些清理工作
+        # 比如打开文件进行读写，读写完之后需要将文件关闭. 又比如在数据库操作中, 操作之前需要连接数据库, 操作之后需要关闭数据库
+
         # Check if we have added the state
         if name not in self.states_:
             print(name, self.states_)
@@ -257,6 +270,7 @@ def model_parallel_cuda_manual_seed(seed):
     # Set the default state.
     torch.cuda.manual_seed(data_parallel_seed)
     # and model parallel state.
+    # _MODEL_PARALLEL_RNG_TRACKER_NAME: "model-parallel-rng"
     _CUDA_RNG_STATE_TRACKER.add(
         _MODEL_PARALLEL_RNG_TRACKER_NAME, tensor_model_parallel_seed
     )

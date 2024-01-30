@@ -22,6 +22,7 @@ from abc import abstractmethod
 def build_num_microbatches_calculator(args):
 
     # Constant num micro-batches.
+    # args.rampup_batch_size: None
     if args.rampup_batch_size is None:
         num_microbatches_calculator = ConstantNumMicroBatches(
             args.global_batch_size, args.micro_batch_size, args.data_parallel_size

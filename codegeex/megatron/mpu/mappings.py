@@ -26,6 +26,15 @@ from .utils import split_tensor_along_last_dim
 def _reduce(input_):
     """All-reduce the the input tensor across model parallel group."""
 
+    # Before:
+    # node0: A, node1: B, node2: C, node3: D
+
+    # After:
+    # node0: A+B+C+D
+    # node1: A+B+C+D
+    # node2: A+B+C+D
+    # node3: A+B+C+D
+
     # Bypass the function if we are using only 1 GPU.
     if get_tensor_model_parallel_world_size() == 1:
         return input_
@@ -39,6 +48,15 @@ def _reduce(input_):
 def _split(input_):
     """Split the tensor along its last dimension and keep the
     corresponding slice."""
+
+    # Before:
+    # node0: A, node1: A, node2: A, node3: A
+
+    # After:
+    # node0: A[:, 0/4*cols:1/4*cols]
+    # node1: A[:, 1/4*cols:2/4*cols]
+    # node2: A[:, 2/4*cols:3/4*cols]
+    # node3: A[:, 3/4*cols:4/4*cols]
 
     world_size = get_tensor_model_parallel_world_size()
     # Bypass the function if we are using only 1 GPU.
@@ -57,6 +75,15 @@ def _split(input_):
 
 def _gather(input_):
     """Gather tensors and concatinate along the last dimension."""
+
+    # Before:
+    # node0: A, node1: B, node2: C, node3: D
+
+    # After:
+    # node0: torch.cat([A, B, C, D], dim=1)
+    # node1: torch.cat([A, B, C, D], dim=1)
+    # node2: torch.cat([A, B, C, D], dim=1)
+    # node3: torch.cat([A, B, C, D], dim=1)
 
     world_size = get_tensor_model_parallel_world_size()
     # Bypass the function if we are using only 1 GPU.
@@ -81,6 +108,9 @@ def _gather(input_):
 
 class _CopyToModelParallelRegion(torch.autograd.Function):
     """Pass the input to the model parallel region."""
+    # 列切割下的f算子
+    # forward: copy输入
+    # backward: 对梯度做AllReduce
 
     @staticmethod
     def symbolic(graph, input_):
@@ -97,6 +127,9 @@ class _CopyToModelParallelRegion(torch.autograd.Function):
 
 class _ReduceFromModelParallelRegion(torch.autograd.Function):
     """All-reduce the input from the model parallel region."""
+    # 行切割下的g算子
+    # forward: AllReduce输出
+    # backward: 正常计算梯度，GPU间无需做任何通讯
 
     @staticmethod
     def symbolic(graph, input_):
@@ -113,6 +146,9 @@ class _ReduceFromModelParallelRegion(torch.autograd.Function):
 
 class _ScatterToModelParallelRegion(torch.autograd.Function):
     """Split the input and keep only the corresponding chuck to the rank."""
+    # 行切割下的f算子
+    # forward: 沿列split输入
+    # backward: all-gather梯度
 
     @staticmethod
     def symbolic(graph, input_):
@@ -129,6 +165,9 @@ class _ScatterToModelParallelRegion(torch.autograd.Function):
 
 class _GatherFromModelParallelRegion(torch.autograd.Function):
     """Gather the input from model parallel region and concatinate."""
+    # 列切割下的g算子
+    # forward: All-Gather输出
+    # backward: 对梯度，沿着列方向做split
 
     @staticmethod
     def symbolic(graph, input_):

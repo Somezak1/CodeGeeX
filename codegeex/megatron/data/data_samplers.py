@@ -107,6 +107,22 @@ class MegatronPretrainingSampler:
     def __iter__(self):
         batch = []
         # Last batch will be dropped if drop_last is not set False
+        # 每次取dp_size * micro_batch_size个样本序号
+        # 然后依据每个进程在所属dp组中的rank, 只返回rank对应的那micro_batch_size个样本序号
+
+        # 比如对于本次运行/调试脚本 tp=4 pp=1 dp=2 的情况
+        # 数据并行组1: [0, 4]
+        # 数据并行组2: [1, 5]
+        # 数据并行组3: [2, 6]
+        # 数据并行组4: [3, 7]
+        # 张量并行组1: [0, 1, 2, 3]
+        # 张量并行组2: [4, 5, 6, 7]
+
+        # 比如在上面的8个进程中, 只在张量并行组组内第一个GPU中构建dataloader
+        # 即0和4构建dataloader, 其余进程的dataloader为None
+        # 由于0在数据并行组组内的rank为0, 4在数据并行组组内的rank为1
+        # 那么遍历0号进程（GPU）的dataloader时, 每次取4（dp_size * micro_batch_size）个样本序号, 但只返回前2个样本序号
+        # 遍历4号进程（GPU）的dataloader时, 每次也是取同0号进程完全一样的4（dp_size * micro_batch_size）个样本序号, 但只返回后2个样本序号
         for idx in range(self.consumed_samples, self.total_samples):
             batch.append(idx)
             if len(batch) == self.micro_batch_times_data_parallel_size:

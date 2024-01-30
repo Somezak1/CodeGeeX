@@ -62,6 +62,9 @@ def make_builder(out_file, impl, vocab_size=None):
 
 
 def make_dataset(path, impl, skip_warmup=False):
+    # data_impl: 'mmap'
+    # skip_warmup: True
+
     if not IndexedDataset.exists(path):
         print(f"Dataset does not exist: {path}")
         print(
@@ -103,7 +106,7 @@ dtypes = {
     3: np.int16,
     4: np.int32,
     5: np.int64,
-    6: np.float,
+    6: float,
     7: np.double,
     8: np.uint16,
 }
@@ -289,7 +292,7 @@ class IndexedDatasetBuilder(object):
         np.int16: 2,
         np.int32: 4,
         np.int64: 8,
-        np.float: 4,
+        float: 4,
         np.double: 8,
     }
 
@@ -463,6 +466,7 @@ class MMapIndexedDataset(torch.utils.data.Dataset):
             return self._len
 
     def __init__(self, path, skip_warmup=False):
+        # skip_warmup: True
         super().__init__()
 
         self._path = None

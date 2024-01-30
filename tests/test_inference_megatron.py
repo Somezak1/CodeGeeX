@@ -29,6 +29,7 @@ def model_provider(pre_process=True, post_process=True):
     print_rank_0("Building CodeGeeX model ...")
     model = CodeGeeXModel(num_tokentypes=0,
                           parallel_output=False)
+    # 训练时model定义为CodeGeeXModel(num_tokentypes=0, parallel_output=True)
 
     return model
 
@@ -141,9 +142,11 @@ def main():
             'no_load_optim': True,
         }
     )
+    # 训练时用的initialize_megatron(extra_args_provider=None, args_defaults={"tokenizer_type": "GPT2BPETokenizer"})
 
     args = get_args()
     set_random_seed(args.seed)
+    # args.seed: 1234
 
     print_rank_0("Loading tokenizer ...")
     tokenizer = get_tokenizer()
@@ -151,6 +154,8 @@ def main():
     print_rank_0("Loading state dict ...")
 
     model = get_model(model_provider)
+    # 训练时获取模型也是用的get_model函数, 不过传入的是另一套model_provider
+    # args.load: /data0/csw/CodeGeeX/scripts/mp2_parallel_weights/
     if args.load is not None:
         _ = load_checkpoint(model, None, None)
     
@@ -158,6 +163,8 @@ def main():
     
     model = model[0]
     model.eval()
+    # args.fp16: True
+    # args.ln_fp16: True
     if args.fp16 and args.ln_fp16:
         model.half()
     if args.quantize:
@@ -166,17 +173,45 @@ def main():
     with open(args.prompt_file, "r") as f:
         prompt = f.readlines()
         prompt = "".join(prompt)
-    
+
+    # prompt:
+    # "code translation
+    # Java:
+    # public class Solution {
+    #     public static boolean hasCloseElements(int[] nums, int threshold) {
+    #         for (int i = 0; i < nums.length - 1; i++) {
+    #             for (int j = i + 1; j < nums.length; j++) {
+    #                 if (Math.abs(nums[i] - nums[j]) < threshold) {
+    #                     return true;
+    #                 }
+    #             }
+    #         }
+    #         return false;
+    #     }
+    # }
+    # Python:"
+
     times = {}
     out_seq_lengths = [args.out_seq_length]
+    # args.out_seq_length: 1024
     micro_batch_size = args.micro_batch_size
+    # args.micro_batch_size: 1
     for out_seq_length in out_seq_lengths:        
         print_rank_0(f"Generating with out_seq_len {out_seq_length}...")
         
         times[out_seq_length] = []
+        # args.n_generation: 1
         for prompt in [prompt] * args.n_generation:
             t0 = time.perf_counter()
             tokens = tokenizer.tokenize(prompt)
+            # tokens:
+            # [8189, 11059, 198, 29584, 25, 198, 11377, 1398, 28186, 1391, 198, 50268, 11377, 9037, 25131, 468, 26125,
+            # 36, 3639, 7, 600, 21737, 997, 82, 11, 493, 11387, 8, 1391, 198, 50272, 1640, 357, 600, 1312, 796, 657,
+            # 26, 1312, 1279, 997, 82, 13, 13664, 532, 352, 26, 1312, 29577, 1391, 198, 50274, 50266, 1640, 357, 600,
+            # 474, 796, 1312, 1343, 352, 26, 474, 1279, 997, 82, 13, 13664, 26, 474, 29577, 1391, 198, 50274, 50270,
+            # 361, 357, 37372, 13, 8937, 7, 77, 5700, 58, 72, 60, 532, 997, 82, 58, 73, 12962, 1279, 11387, 8, 1391,
+            # 198, 50274, 50274, 7783, 2081, 26, 198, 50274, 50270, 92, 198, 50274, 50266, 92, 198, 50272, 92, 198,
+            # 50272, 7783, 3991, 26, 198, 50268, 92, 198, 92, 198, 37906, 25, 198]
             print_rank_0(tokens)
             print_rank_0("Current prompt:")
             print_rank_0(prompt)
@@ -187,8 +222,11 @@ def main():
                 [copy.deepcopy(tokens) for _ in range(micro_batch_size)],
                 micro_batch_size=micro_batch_size,
                 topk=args.top_k,
+                # args.top_k: 0
                 topp=args.top_p,
+                # args.top_p: 0.95
                 temperature=args.temperature,
+                # args.temperature: 0.8
             )
             is_finished = [False for _ in range(micro_batch_size)]
             for i, generated in enumerate(token_stream):
@@ -198,6 +236,7 @@ def main():
                         continue
                     if generated_tokens[j].cpu().numpy()[-1] == tokenizer.eod or len(
                             generated_tokens[j]) >= out_seq_length:
+                        # tokenizer.eod: 50256
                         is_finished[j] = True
                         generated_tokens_ = generated_tokens[j].cpu().numpy().tolist()
                         generated_code = tokenizer.detokenize(generated_tokens_[n_token_prompt:])

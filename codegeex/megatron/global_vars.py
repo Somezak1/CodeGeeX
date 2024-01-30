@@ -79,12 +79,20 @@ def set_global_variables(
     extra_args_provider=None, args_defaults={}, ignore_unknown_args=False
 ):
     """Set args, tokenizer, tensorboard-writer, adlr-autoresume, and timers."""
+
+    # extra_args_provider: None
+    # args_defaults: {'tokenizer_type': 'GPT2BPETokenizer'}
+    # ignore_unknown_args: False
+
+    # 解析用户传入的参数, 设置默认参数, 同时验证参数设置的有效性
     args = _parse_args(
         extra_args_provider=extra_args_provider,
         defaults=args_defaults,
         ignore_unknown_args=ignore_unknown_args,
     )
     _build_num_microbatches_calculator(args)
+    # args.vocab_file: "/data0/csw/CodeGeeX/codegeex/tokenizer/vocab.json"
+    # args.tokenizer_path: None
     if args.vocab_file or args.tokenizer_path:
         _ = _build_tokenizer(args)
     _set_tensorboard_writer(args)
@@ -96,6 +104,9 @@ def _parse_args(extra_args_provider=None, defaults={}, ignore_unknown_args=False
     """Parse entire arguments."""
     global _GLOBAL_ARGS
     _ensure_var_is_not_initialized(_GLOBAL_ARGS, "args")
+    # extra_args_provider: None
+    # defaults: {'tokenizer_type': 'GPT2BPETokenizer'}
+    # ignore_unknown_args: False
     _GLOBAL_ARGS = parse_args(
         extra_args_provider=extra_args_provider,
         defaults=defaults,

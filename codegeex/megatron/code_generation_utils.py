@@ -41,13 +41,18 @@ def get_batch(context_tokens, micro_batch_size=None):
     if micro_batch_size is None:
         micro_batch_size = args.micro_batch_size
     tokens = context_tokens.view(micro_batch_size, -1).contiguous().cuda()
+    # tokens.shape: [1, 2048]
     # Get the attention mask and postition ids.
     attention_mask, _, position_ids = get_ltor_masks_and_position_ids(
         tokens,
         tokenizer.eod,
+        # tokenizer.eod: 50256
         args.reset_position_ids,
+        # args.reset_position_ids: False
         args.reset_attention_mask,
+        # args.reset_attention_mask: False
         args.eod_mask_loss,
+        # args.eod_mask_loss: False
     )
 
     return tokens, attention_mask, position_ids
@@ -841,21 +846,46 @@ def forward_step(
 def get_token_stream(
         model,
         context_tokens,
+        # context_tokens:
+        # [[8189, 11059, 198, 29584, 25, 198, 11377, 1398, 28186, 1391, 198, 50268, 11377, 9037, 25131, 468, 26125,
+        # 36, 3639, 7, 600, 21737, 997, 82, 11, 493, 11387, 8, 1391, 198, 50272, 1640, 357, 600, 1312, 796, 657,
+        # 26, 1312, 1279, 997, 82, 13, 13664, 532, 352, 26, 1312, 29577, 1391, 198, 50274, 50266, 1640, 357, 600,
+        # 474, 796, 1312, 1343, 352, 26, 474, 1279, 997, 82, 13, 13664, 26, 474, 29577, 1391, 198, 50274, 50270,
+        # 361, 357, 37372, 13, 8937, 7, 77, 5700, 58, 72, 60, 532, 997, 82, 58, 73, 12962, 1279, 11387, 8, 1391,
+        # 198, 50274, 50274, 7783, 2081, 26, 198, 50274, 50270, 92, 198, 50274, 50266, 92, 198, 50272, 92, 198,
+        # 50272, 7783, 3991, 26, 198, 50268, 92, 198, 92, 198, 37906, 25, 198]]
         return_scores: bool = False,
         prompt_length: int = None,
         micro_batch_size: int = None,
+        # micro_batch_size: 1
         bad_ids: List = None,
         temperature: float = None,
+        # temperature: 0.8
         topp: float = None,
+        # topp: 0.95
         topk: int = None,
+        # topk: 0
 ):
     args = get_args()
     tokenizer = get_tokenizer()
 
     context_tokens, context_lengths = pad_batch(context_tokens, tokenizer.eod, args)
+    # tokenizer.eod: 50256
+    # context_tokens:
+    # [[8189, 11059, 198, 29584, 25, 198, 11377, 1398, 28186, 1391, 198, 50268, 11377, 9037, 25131, 468, 26125,
+    # 36, 3639, 7, 600, 21737, 997, 82, 11, 493, 11387, 8, 1391, 198, 50272, 1640, 357, 600, 1312, 796, 657,
+    # 26, 1312, 1279, 997, 82, 13, 13664, 532, 352, 26, 1312, 29577, 1391, 198, 50274, 50266, 1640, 357, 600,
+    # 474, 796, 1312, 1343, 352, 26, 474, 1279, 997, 82, 13, 13664, 26, 474, 29577, 1391, 198, 50274, 50270,
+    # 361, 357, 37372, 13, 8937, 7, 77, 5700, 58, 72, 60, 532, 997, 82, 58, 73, 12962, 1279, 11387, 8, 1391,
+    # 198, 50274, 50274, 7783, 2081, 26, 198, 50274, 50270, 92, 198, 50274, 50266, 92, 198, 50272, 92, 198,
+    # 50272, 7783, 3991, 26, 198, 50268, 92, 198, 92, 198, 37906, 25, 198, 50256, 50256, 50256, 50256, 50256, ...]]
+    # padding到2048长度
+    # context_lengths: [127], 表示context_tokens中各元素未padding前原先的长度
 
     context_tokens_tensor = torch.cuda.LongTensor(context_tokens)
+    # context_tokens_tensor.shape: [1, 2048]
     context_length_tensor = torch.cuda.LongTensor(context_lengths)
+    # context_length_tensor.shape: [1]
 
     torch.distributed.broadcast(
         context_length_tensor,
@@ -870,19 +900,58 @@ def get_token_stream(
 
     context_length = context_length_tensor.min().item()
     tokens, attention_mask, position_ids = get_batch(context_tokens_tensor, micro_batch_size)
+    # tokens.shape: [1, 2048]
+    # tensor([
+    # 8189, 11059, 198, 29584, 25, 198, 11377, 1398, 28186, 1391, 198, 50268, 11377, 9037, 25131, 468, 26125,
+    # 36, 3639, 7, 600, 21737, 997, 82, 11, 493, 11387, 8, 1391, 198, 50272, 1640, 357, 600, 1312, 796, 657,
+    # 26, 1312, 1279, 997, 82, 13, 13664, 532, 352, 26, 1312, 29577, 1391, 198, 50274, 50266, 1640, 357, 600,
+    # 474, 796, 1312, 1343, 352, 26, 474, 1279, 997, 82, 13, 13664, 26, 474, 29577, 1391, 198, 50274, 50270,
+    # 361, 357, 37372, 13, 8937, 7, 77, 5700, 58, 72, 60, 532, 997, 82, 58, 73, 12962, 1279, 11387, 8, 1391,
+    # 198, 50274, 50274, 7783, 2081, 26, 198, 50274, 50270, 92, 198, 50274, 50266, 92, 198, 50272, 92, 198,
+    # 50272, 7783, 3991, 26, 198, 50268, 92, 198, 92, 198, 37906, 25, 198, 50256, 50256, 50256, 50256, 50256, ...
+    # ], device='cuda:0')
+
+    # attention_mask.shape: [1, 1, 2048, 2048]
+    # attention_mask[0, 0, :10, :10]:
+    # tensor([
+    #     [False,  True,  True,  True,  True,  True,  True,  True,  True,  True],
+    #     [False, False,  True,  True,  True,  True,  True,  True,  True,  True],
+    #     [False, False, False,  True,  True,  True,  True,  True,  True,  True],
+    #     [False, False, False, False,  True,  True,  True,  True,  True,  True],
+    #     [False, False, False, False, False,  True,  True,  True,  True,  True],
+    #     [False, False, False, False, False, False,  True,  True,  True,  True],
+    #     [False, False, False, False, False, False, False,  True,  True,  True],
+    #     [False, False, False, False, False, False, False, False,  True,  True],
+    #     [False, False, False, False, False, False, False, False, False,  True],
+    #     [False, False, False, False, False, False, False, False, False, False]
+    # ], device='cuda:0')
+    # 经过验证, attention_mask[0, 0]就是一个[2048, 2048]尺寸的上三角矩阵
+
+    # position_ids.shape: [1, 2048]
+    # position_ids: tensor([[   0,    1,    2,  ..., 2045, 2046, 2047]], device='cuda:0')
 
     batch_token_iterator = sample_sequence_batch(
         model,
         context_tokens_tensor,
+        # context_tokens_tensor.shape: [1, 2048]
         context_length_tensor,
+        # context_length_tensor.shape: [1]
         attention_mask,
+        # attention_mask.shape: [1, 1, 2048, 2048]
         position_ids,
+        # position_ids.shape: [1, 2048]
         return_scores=return_scores,
+        # return_scores: False
         prompt_length=prompt_length,
+        # prompt_length: None
         bad_ids=bad_ids,
+        # bad_ids: None
         temperature=temperature,
+        # temperature: 0.8
         topp=topp,
+        # topp: 0.95
         topk=topk,
+        # topk: 0
     )
 
     if args.beam_search:
@@ -905,17 +974,29 @@ def switch(val1, val2, boolean):
 def sample_sequence_batch(
         model,
         context_tokens,
+        # context_tokens_tensor.shape: [1, 2048]
         context_lengths,
+        # context_length_tensor.shape: [1]
         attention_mask,
+        # attention_mask.shape: [1, 1, 2048, 2048]
         position_ids,
+        # position_ids.shape: [1, 2048]
         maxlen=None,
+        # maxlen: None
         type_ids=None,
+        # type_ids: None
         return_scores: bool = False,
+        # return_scores: False
         prompt_length: int = None,
+        # prompt_length: None
         bad_ids: List = None,
+        # bad_ids: None
         temperature: float = None,
+        # temperature: 0.8
         topp: float = None,
+        # topp: 0.95
         topk: int = None,
+        # topk: 0
 ):
     args = get_args()
     tokenizer = get_tokenizer()
@@ -943,13 +1024,18 @@ def sample_sequence_batch(
         tokens = context_tokens
         if maxlen is None:
             maxlen = args.seq_length - 1
+            # args.seq_length: 2048
+            # args.out_seq_length: 1024
             if maxlen > (org_context_length + args.out_seq_length):
                 maxlen = org_context_length + args.out_seq_length
+                # max_len: 1151
 
         lengths = torch.ones([batch_size]).long().cuda() * maxlen
+        # lengths: tensor([1151], device='cuda:1')
         if return_scores:
             scores = torch.zeros([batch_size]).float().cuda()
 
+        # args.beam_search: False
         if args.beam_search:
             beams = beam_search(model, context_tokens=tokens.cpu().numpy().tolist()[0][:context_length],
                                 num_beams=args.num_beams)
@@ -975,6 +1061,7 @@ def sample_sequence_batch(
                 yield beams
         else:
             while context_length <= (maxlen):
+                # args.recompute: False
                 if args.recompute:
                     logits = model(tokens,
                                 position_ids,
@@ -990,6 +1077,7 @@ def sample_sequence_batch(
                     if counter == 0:
                         tokens2use = tokens[:, :context_length]
                         positions2use = position_ids[:, :context_length]
+                        # type_ids: None
                         if type_ids is not None:
                             types2use = type_ids[:, :context_length]
                     else:
@@ -1000,9 +1088,13 @@ def sample_sequence_batch(
                         if type_ids is not None:
                             types2use = type_ids[:, context_length - 1].view(
                                 batch_size, -1)
+                    # logits.shape: [1, 1/127, 52224]
                     logits, layer_past = model(tokens2use,
+                                            # tokens2use.shape: [1, 127]
                                             positions2use,
+                                            # position_ids.shape: [1, 127]
                                             attention_mask,
+                                            # attention_mask.shape: [1, 1, 2048, 2048]
                                             layer_past=layer_past,
                                             get_key_value=True,
                                             tokentype_ids=types2use,
@@ -1010,8 +1102,31 @@ def sample_sequence_batch(
                                             prompt_length=prompt_length,
                                             context_length=context_length,
                                             )
+
+                    # logits.shape: torch.Size([1, 127, 52224])
+                    # layer_past    len: 40  layer_past[0][0].shape: torch.Size([127, 1, 20, 128])
+                    # logits.shape: torch.Size([1, 127, 52224])
+                    # layer_past    len: 40  layer_past[0][0].shape: torch.Size([127, 1, 20, 128])
+                    #
+                    # logits.shape: torch.Size([1, 1, 52224])
+                    # layer_past    len: 40  layer_past[0][0].shape: torch.Size([128, 1, 20, 128])
+                    # logits.shape: torch.Size([1, 1, 52224])
+                    # layer_past    len: 40  layer_past[0][0].shape: torch.Size([128, 1, 20, 128])
+                    #
+                    # logits.shape: torch.Size([1, 1, 52224])
+                    # layer_past    len: 40  layer_past[0][0].shape: torch.Size([129, 1, 20, 128])
+                    # logits.shape: torch.Size([1, 1, 52224])
+                    # layer_past    len: 40  layer_past[0][0].shape: torch.Size([129, 1, 20, 128])
+
+                    # logits.shape: torch.Size([1, 1, 52224])
+                    # layer_past    len: 40  layer_past[0][0].shape: torch.Size([130, 1, 20, 128])
+                    # logits.shape: torch.Size([1, 1, 52224])
+                    # layer_past    len: 40  layer_past[0][0].shape: torch.Size([130, 1, 20, 128])
+
                     logits = logits[:, -1].view(batch_size, -1).contiguous()
 
+                # mpu.is_pipeline_last_stage(): True
+                # mpu.is_pipeline_first_stage(): True
                 if mpu.is_pipeline_last_stage():
                     if bad_ids is not None:
                         for bad_id in bad_ids:

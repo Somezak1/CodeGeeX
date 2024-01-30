@@ -37,15 +37,20 @@ def _build_key_size_numel_dictionaries(keys, data):
     """Build the size on rank 0 and broadcast."""
     max_dim = _MAX_DATA_DIM
     sizes = [0 for _ in range(max_dim) for _ in keys]
+    # sizes: [0, 0, 0, 0, 0]
+    # keys: ["input_ids"]
 
     # Pack the sizes on rank zero.
     if get_tensor_model_parallel_rank() == 0:
         offset = 0
         for key in keys:
+            # data[key].dim(): 2
             assert data[key].dim() < max_dim, "you should increase MAX_DATA_DIM"
             size = data[key].size()
+            # size: [micro_batch_size, actual_seq_length], 此处为[2, 128]
             for i, s in enumerate(size):
                 sizes[i + offset] = s
+            # sizes: [2, 128, 0, 0, 0]
             offset += max_dim
 
     # Move to GPU and broadcast.
@@ -58,6 +63,7 @@ def _build_key_size_numel_dictionaries(keys, data):
 
     # Move back to cpu and unpack.
     sizes_cpu = sizes_cuda.cpu()
+    # sizes_cpu: [2, 128, 0, 0, 0]
     key_size = {}
     key_numel = {}
     total_numel = 0
@@ -76,6 +82,9 @@ def _build_key_size_numel_dictionaries(keys, data):
         total_numel += numel
         offset += max_dim
 
+    # key_size: {'input_ids': [2, 128]}
+    # key_numel: {'input_ids': 256}
+    # total_numel: 256
     return key_size, key_numel, total_numel
 
 
@@ -91,6 +100,8 @@ def broadcast_data(keys, data, datatype):
     """
     # Build (key, size) and (key, number of elements) dictionaries along
     # with the total number of elements on all ranks.
+
+    # keys: ["input_ids"]
     key_size, key_numel, total_numel = _build_key_size_numel_dictionaries(keys, data)
 
     # Pack on rank zero.

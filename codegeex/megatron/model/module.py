@@ -38,6 +38,7 @@ class MegatronModule(torch.nn.Module):
 
     def __init__(self, share_word_embeddings=True):
         super(MegatronModule, self).__init__()
+        # input和output是否要共享一套WE
         self.share_word_embeddings = share_word_embeddings
 
     def state_dict_for_save_checkpoint(
@@ -45,6 +46,8 @@ class MegatronModule(torch.nn.Module):
     ):
         """Use this function to override the state dict for
         saving checkpoints."""
+        # 模型训练中，及时将参数保存到指定位置（设置checkpoint），
+        # 这样在训练出问题时，可以从checkpoint点重新load参数，继续训练
         return self.state_dict(destination, prefix, keep_vars)
 
     def word_embeddings_weight(self):
@@ -52,17 +55,21 @@ class MegatronModule(torch.nn.Module):
             return self.language_model.embedding.word_embeddings.weight
         if mpu.is_pipeline_last_stage(ignore_virtual=True):
             if not self.share_word_embeddings:
+                # 强制要求共享一套embedding
                 raise Exception(
                     "word_embeddings_weight() called for last "
                     "stage, but share_word_embeddings is false"
                 )
+            # 参见initialize_word_embeddings中WE的定义
             return self.word_embeddings.weight
+        # 如果当前进程是PP组的中间进程，则其上未维护WE，因此当然获取不到
         raise Exception(
             "word_embeddings_weight() should be " "called for first and last stage only"
         )
 
     def initialize_word_embeddings(self, init_method_normal):
         args = get_args()
+        # 强制share embeddingg
         if not self.share_word_embeddings:
             raise Exception(
                 "initialize_word_embeddings() was called but "
@@ -72,6 +79,7 @@ class MegatronModule(torch.nn.Module):
         # This function just initializes the word embeddings in the final stage
         # when we are using pipeline parallelism. If we aren't using pipeline
         # parallelism there is nothing to do.
+        # PP组并行度为1时，第一层和最后一层都在一块GPU上，天然共享WE，无需做强制
         if args.pipeline_model_parallel_size == 1:
             return
 
@@ -87,23 +95,41 @@ class MegatronModule(torch.nn.Module):
         # 3. In the training loop, before an all-reduce between the grads of
         #    the two word_embeddings layers to ensure that every applied weight
         #    update is the same on both stages.
+        # ---------------------------------------------------
+        # 如果流水线并行的度不为1时，依次做三件事:
+        # 【初始化时】:
+        # 1、在PP组最后一个进程上初始化一个WE，令其取值全为0
+        # 2、在PP组第一个进程与最后一个进程间做一次AllReduce，保证两者的WE完全一致
+        # 【训练时】:
+        # 3、每次想在PP组第一个/最后一个进程上使用WE时，要做一次通信，保证两者用的WE完全一致
         if mpu.is_pipeline_last_stage():
+            # 若当前进程是PP组最后一个进程
             assert not mpu.is_pipeline_first_stage()
             self._word_embeddings_for_head_key = "word_embeddings_for_head"
+            # 初始化一个WE（已按vocab_size维度切割，可参见Megatron原理篇对WE的讲解）
+            # VocabParallelEmbedding将在下文详细讲解
             # set word_embeddings weights to 0 here, then copy first
             # stage's weights using all_reduce below.
             self.word_embeddings = mpu.VocabParallelEmbedding(
                 args.padded_vocab_size,
+                # vocab_size
                 args.hidden_size,
+                # embed_dim
                 init_method=init_method_normal(args.init_method_std),
+                # 初始化方法（在model/utils.py下）
             )
+            # 用0填充WE（等待下面做AllReduce后取得第一个进程上的WE）
             self.word_embeddings.weight.data.fill_(0)
             self.word_embeddings.weight.shared = True
 
         # Ensure that first and last stages have the same initial parameter
         # values.
         if torch.distributed.is_initialized():
+            # 若当前进程是PP组第一个或最后一个进程
             if mpu.is_pipeline_first_stage() or mpu.is_pipeline_last_stage():
+                # 在两进程间做AllReduce，保证它们使用的WE完全一致
+                # mpu.get_embedding_group: 在源码解读1中讲过，是除DP/TP/PP之外设置的又一进程组，
+                # 主要就是用来做关于WE的通讯
                 torch.distributed.all_reduce(
                     self.word_embeddings_weight().data, group=mpu.get_embedding_group()
                 )

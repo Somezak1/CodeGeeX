@@ -81,6 +81,18 @@ def copy_tensor_model_parallel_attributes(destination_tensor, source_tensor):
 
 
 def _initialize_affine_weight_gpu(weight, init_method, partition_dim, stride=1):
+    """
+    GPU版权重初始化。特别关注设置随机种子部分
+    1 assert weight 不含以下属性
+        "tensor_model_parallel"
+        "partition_dim"
+        "partition_stride"
+    2 之后为 weight 添加以下属性/值
+	    "tensor_model_parallel": True,
+	    "partition_dim": partition_dim,
+	    "partition_stride": stride,
+	3 初始化 weight
+    """
     """Initialize affine weight for model parallel on GPU."""
 
     set_tensor_model_parallel_attributes(
@@ -91,6 +103,7 @@ def _initialize_affine_weight_gpu(weight, init_method, partition_dim, stride=1):
         global get_cuda_rng_tracker
         get_cuda_rng_tracker = ds_checkpointing.get_cuda_rng_tracker
 
+    # 令TP组内的进程拥有不同的随机种子
     with get_cuda_rng_tracker().fork():
         init_method(weight)
 
@@ -105,6 +118,19 @@ def _initialize_affine_weight_cpu(
     stride=1,
     return_master_weight=False,
 ):
+    """
+    CPU版权重初始化
+    1 assert weight 不含以下属性
+        "tensor_model_parallel"
+        "partition_dim"
+        "partition_stride"
+    2 之后为 weight 添加以下属性/值
+	    "tensor_model_parallel": True,
+	    "partition_dim": partition_dim,
+	    "partition_stride": stride,
+	3 初始化一个 (output_size, input_size) 形状的 torch.fp16 数组 master_weight
+	4 将 master_weight 沿维度 partition_dim 切分, 并将进程对应那份矩阵的值赋给 weight
+    """
     """Initialize affine weight for model parallel.
 
     Build the master weight on all processes and scatter
@@ -152,7 +178,9 @@ class VocabParallelEmbedding(torch.nn.Module):
     def __init__(self, num_embeddings, embedding_dim, init_method=init.xavier_normal_):
         super(VocabParallelEmbedding, self).__init__()
         # Keep the input dimensions.
+        # vocab_size
         self.num_embeddings = num_embeddings
+        # hidden_state
         self.embedding_dim = embedding_dim
         # Set the detauls for compatibility.
         self.padding_idx = None
@@ -161,8 +189,11 @@ class VocabParallelEmbedding(torch.nn.Module):
         self.scale_grad_by_freq = False
         self.sparse = False
         self._weight = None
+        # 当前进程所在TP组进程总数
         self.tensor_model_parallel_size = get_tensor_model_parallel_world_size()
         # Divide the weight matrix along the vocaburaly dimension.
+        # 根据当前进程在TP组中的序号, 确定其所需维护的WE部分, 沿着vocab维度对WE进行切割
+        # 例如, 进程id=0, 维护词表序号[0,5)范围内的数据；进程id=1, 维护[5,10)
         (
             self.vocab_start_index,
             self.vocab_end_index,
@@ -171,21 +202,28 @@ class VocabParallelEmbedding(torch.nn.Module):
             get_tensor_model_parallel_rank(),
             self.tensor_model_parallel_size,
         )
+        # 计算当前进程维护的词表大小
         self.num_embeddings_per_partition = (
             self.vocab_end_index - self.vocab_start_index
         )
 
         # Allocate weights and initialize.
+        # 对WE做初始化
+        # 读取预训练参数配置
         args = get_args()
+        # args.use_cpu_initialization: None
         if args.use_cpu_initialization:
+            # CPU上做初始化
+            # 在CPU上先生成一个完整的WE
             self.weight = Parameter(
                 torch.empty(
                     self.num_embeddings_per_partition,
                     self.embedding_dim,
                     dtype=args.params_dtype,
-                    # dtype=torch.float32,
+                    # args.params_dtype: torch.float16,
                 )
             )
+            # 对CPU上的WE做切割（随机种子在初始化分布式中已设定好, 不用变）
             _initialize_affine_weight_cpu(
                 self.weight,
                 self.num_embeddings,
@@ -193,23 +231,34 @@ class VocabParallelEmbedding(torch.nn.Module):
                 self.num_embeddings_per_partition,
                 0,
                 init_method,
+                # 初始化权重的方法, 例如xavier之类
             )
         else:
+            # 在GPU上做初始化
+            # 生成一个切割好的WE
             self.weight = Parameter(
                 torch.empty(
                     self.num_embeddings_per_partition,
                     self.embedding_dim,
                     device=torch.cuda.current_device(),
                     dtype=args.params_dtype,
-                    # dtype=torch.float32,
+                    # args.params_dtype: torch.float16
                 )
             )
+            # 在GPU上做初始化, 注意TP组内不同进程采用不同的随机种子, TP组间对应进程采用相同的随机种子
             _initialize_affine_weight_gpu(
                 self.weight, init_method, partition_dim=0, stride=1
             )
 
     def forward(self, input_):
+        """定义输入X过WE的计算方法, 输出结果已经过AllReduce"""
         if self.tensor_model_parallel_size > 1:
+            # 如果在当前进程维护的WE上, 找不到对应的单词, 那么对应位置就赋0
+            # 例如当前的数据的tokenid是: [2, 7, 1, 5, 4]
+            # 若当前维护的词表是[0, 1, 2, 3](start_index=0, end_index = 4),
+            # 则mask之后的数据为[2, 0, 1, 0, 0]
+            # 若当前维护的词表是[4, 5, 6, 7](start_index=4, end_index=8),
+            # 则mask之后的数据为[0, 7, 0, 5, 4]
             # Build the mask.
             input_mask = (input_ < self.vocab_start_index) | (
                 input_ >= self.vocab_end_index
@@ -220,9 +269,13 @@ class VocabParallelEmbedding(torch.nn.Module):
         else:
             masked_input = input_
             # Get the embeddings.
+
+        # 输入X, 过当前进程维护的部分WE的结果
         output_parallel = F.embedding(
             masked_input,
+            # masked_input: tensor containing indices into the embedding matrix
             self.weight,
+            # self.weight: 切割好的word embedding的权重
             self.padding_idx,
             self.max_norm,
             self.norm_type,
@@ -230,9 +283,11 @@ class VocabParallelEmbedding(torch.nn.Module):
             self.sparse,
         )
         # Mask the output embedding.
+        # 当前词表不维护的部分, 都设为0
         if self.tensor_model_parallel_size > 1:
             output_parallel[input_mask, :] = 0.0
         # Reduce across all the model parallel GPUs.
+        # 将TP组各GPU上的结果做AllReduce
         output = reduce_from_tensor_model_parallel_region(output_parallel)
         return output
 
@@ -264,9 +319,13 @@ class ColumnParallelLinear(torch.nn.Module):
     def __init__(
         self,
         input_size,
+        # input_size: W的第一个维度
         output_size,
+        # output_size: W的第二个维度
         bias=True,
+        # bias: 是否需要引入bias
         gather_output=True,
+        # gather_output: 决定是否要将Y1和Y2做all-gather
         init_method=init.xavier_normal_,
         stride=1,
         keep_master_weight_for_test=False,
@@ -275,6 +334,20 @@ class ColumnParallelLinear(torch.nn.Module):
         skip_init=False,
         device=None,
     ):
+        # ParallelSelfAttention中的ColumnParallelLinear初始化时参数为
+        # input_size: h
+        # output_size: h
+        # gather_output: False
+        # init_method: init_method_normal(0.02)
+        # 其余参数为缺省值
+
+        # ParallelMLP中的ColumnParallelLinear初始化时参数为
+        # input_size: h
+        # output_size: 4h
+        # gather_output: False
+        # init_method: init_method_normal(0.02)
+        # 其余参数为缺省值
+
         super(ColumnParallelLinear, self).__init__()
 
         # Keep input parameters
@@ -282,7 +355,9 @@ class ColumnParallelLinear(torch.nn.Module):
         self.output_size = output_size
         self.gather_output = gather_output
         # Divide the weight matrix along the last dimension.
+        # 当前进程所在TP组的总进程数
         world_size = get_tensor_model_parallel_world_size()
+        # 每块GPU上维护的hidden_size的大小, 等于原hidden_zize / TP组总进程数
         self.output_size_per_partition = divide(output_size, world_size)
         self.skip_bias_add = skip_bias_add
         self.params_dtype = params_dtype
@@ -294,7 +369,9 @@ class ColumnParallelLinear(torch.nn.Module):
         # Initialize weight.
         args = get_args()
         if not skip_init:
+            # args.use_cpu_initialization: None
             if args.use_cpu_initialization:
+                # CPU上初始化
                 self.weight = Parameter(
                     torch.empty(
                         self.output_size_per_partition,
@@ -312,28 +389,36 @@ class ColumnParallelLinear(torch.nn.Module):
                     stride=stride,
                     return_master_weight=keep_master_weight_for_test,
                 )
+                # 初始化后权重就在内存上
             else:
+                # GPU上初始化
                 self.weight = Parameter(
                     torch.empty(
                         self.output_size_per_partition,
                         self.input_size,
                         device=self.device if self.device is not None else torch.cuda.current_device(),
                         dtype=self.params_dtype if self.params_dtype is not None else args.params_dtype,
+                        # args.params_dtype: torch.float16
                     )
                 )
                 _initialize_affine_weight_gpu(
                     self.weight, init_method, partition_dim=0, stride=stride
                 )
+                # 初始化后权重就在对应gpu上
         else:
             self.register_parameter("weight", None)
 
+        # 对bias做处理, 道理同weight
+        # skip_init: False
         if bias and not skip_init:
             if args.use_cpu_initialization:
+                # CPU上初始化
                 self.bias = Parameter(
                     torch.empty(self.output_size_per_partition, 
                                 dtype=self.params_dtype if self.params_dtype is not None else args.params_dtype)
                 )
             else:
+                # GPU上初始化
                 self.bias = Parameter(
                     torch.empty(
                         self.output_size_per_partition,
@@ -341,6 +426,7 @@ class ColumnParallelLinear(torch.nn.Module):
                         dtype=self.params_dtype if self.params_dtype is not None else args.params_dtype,
                     )
                 )
+            # bias.shape: [self.output_size_per_partition]
             set_tensor_model_parallel_attributes(self.bias, True, 0, stride)
             # Always initialize bias to zero.
             with torch.no_grad():
@@ -349,17 +435,27 @@ class ColumnParallelLinear(torch.nn.Module):
             self.register_parameter("bias", None)
 
     def forward(self, input_):
+        # 定义列切割中的f算子
+        # 调用copy_to_tensor_model_parallel_region则新建一个_CopyToModelParallelRegion实例（见下）
         # Set up backprop all-reduce.
         input_parallel = copy_to_tensor_model_parallel_region(input_)
         # Matrix multiply.
 
+        # 定义bias
+        # self.skip_bias_add: False
         bias = self.bias if not self.skip_bias_add else None
+        # X * 切割好的权重
         output_parallel = F.linear(input_parallel, self.weight, bias)
+        # 决定是否要对每个进程上的输出结果做All-Reduce
         if self.gather_output:
             # All-gather across the partitions.
+            # 定义列切割中的g算子
+            # 调用gather_from_tensor_model_parallel_region则新建一个_GatherFromModelParallelRegion实例（见下）
             output = gather_from_tensor_model_parallel_region(output_parallel)
+            # 把各GPU上的输出按照列gather起来后, 作为最终输出
         else:
             output = output_parallel
+            # 否则最终输出还是自己那块GPU算的结果
         output_bias = self.bias if self.skip_bias_add else None
         return output, output_bias
 
@@ -408,6 +504,21 @@ class RowParallelLinear(torch.nn.Module):
         skip_init=False,
         device=None,
     ):
+        # ParallelSelfAttention中的RowParallelLinear初始化时参数
+        # input_size: h
+        # output_size: h
+        # input_is_parallel: True
+        # init_method: scaled_init_method_normal(0.02, 39)
+        # skip_bias_add: True
+        # 其余参数为缺省值
+
+        # ParallelMLP中的RowParallelLinear初始化时参数
+        # input_size: 4h
+        # output_size: h
+        # input_is_parallel: True
+        # init_method: scaled_init_method_normal(0.02, 39)
+        # 其余参数为缺省值
+
         super(RowParallelLinear, self).__init__()
 
         # Keep input parameters
@@ -426,7 +537,9 @@ class RowParallelLinear(torch.nn.Module):
         # we allocate the transpose.
         # Initialize weight.
         args = get_args()
+        # skip_init: False
         if not skip_init:
+            # args.use_cpu_initialization: None
             if args.use_cpu_initialization:
                 self.weight = Parameter(
                     torch.empty(
@@ -435,6 +548,7 @@ class RowParallelLinear(torch.nn.Module):
                         dtype=self.params_dtype if self.params_dtype is not None else args.params_dtype,
                     )
                 )
+                # args.params_dtype: torch.float16
                 self.master_weight = _initialize_affine_weight_cpu(
                     self.weight,
                     self.output_size,
@@ -459,7 +573,8 @@ class RowParallelLinear(torch.nn.Module):
                 )
         else:
             self.register_parameter("weight", None)
-            
+
+        # skip_init: False
         if bias and not skip_init:
             if args.use_cpu_initialization:
                 self.bias = Parameter(
@@ -474,6 +589,7 @@ class RowParallelLinear(torch.nn.Module):
                         dtype=self.params_dtype if self.params_dtype is not None else args.params_dtype,
                     )
                 )
+            # self.bias.shape: [self.output_size]
             # Always initialize bias to zero.
             with torch.no_grad():
                 self.bias.zero_()
@@ -490,6 +606,14 @@ class RowParallelLinear(torch.nn.Module):
         output_parallel = F.linear(input_parallel, self.weight)
         # All-reduce across all the partitions.
         output_ = reduce_from_tensor_model_parallel_region(output_parallel)
+        # ParallelSelfAttention中的RowParallelLinear定义时的self.skip_bias_add=True
+        # 在之后的代码中会进行dropout(output+output_bias)的操作, 但由于output_bias始终为0且不更新参数
+        # 因此dropout(output+output_bias)等价于dropout(output)
+
+        # ParallelMLP中的RowParallelLinear定义时的self.skip_bias_add=False
+        # 但同样因为output_bias始终为0且不更新参数
+
+        # 因此ParallelSelfAttention中的RowParallelLinear和ParallelMLP中的RowParallelLinear没啥区别
         if not self.skip_bias_add:
             output = output_ + self.bias if self.bias is not None else output_
             output_bias = None

@@ -17,6 +17,13 @@ class PromptDatasetProcessor(object):
         eod_token: int = None, 
         preprocess: Callable = None,
     ):
+        # tokenize: tokenizer.encode_code
+        # pad_token: tokenizer.eos_token_id
+        # max_seq_len: 128 + 1
+        # discard_overlong: False
+        # sliding_stride: 200
+        # eod_token: tokenizer.eos_token_id
+
         super(PromptDatasetProcessor, self).__init__()
         self._keep_order = keep_order
         self._max_seq_len = max_seq_len
@@ -50,7 +57,23 @@ class PromptDatasetProcessor(object):
         Process a sample.
         """
         prompt_tokens = self._tokenize(sample.prompt)
+        # ①
+        # sample.prompt: ''
+        # sample.prompt after encode_whitespaces: ''
+        # prompt_tokens: []
+        # ②
+        # sample.prompt: 'Please translate below code into python:\nint main() {\n    int a = 0;\n    for (int i = 0; i < a; i++) {\n        std::cout << i << std::endl;\n    }\n    return 0;\n}\npython:\n'
+        # sample.prompt after encode_whitespaces: 'Please translate below code into python:\nint main() {\n<|extratoken_12|>int a = 0;\n<|extratoken_12|>for (int i = 0; i < a; i++) {\n<|extratoken_16|>std::cout << i << std::endl;\n<|extratoken_12|>}\n<|extratoken_12|>return 0;\n}\npython:\n'
+        # prompt_tokens: [5492, 15772, 2174, 2438, 656, 21015, 25, 198, 600, 1388, 3419, 1391, 198, 50268, 600, 257, 796, 657, 26, 198, 50268, 1640, 357, 600, 1312, 796, 657, 26, 1312, 1279, 257, 26, 1312, 29577, 1391, 198, 50272, 19282, 3712, 66, 448, 9959, 1312, 9959, 14367, 3712, 437, 75, 26, 198, 50268, 92, 198, 50268, 7783, 657, 26, 198, 92, 198, 29412, 25, 198]
         code_tokens = self._tokenize(sample.code)
+        # ①
+        # sample.code: '# language: Python\ndef main():\n    a = 0\n    for i in range(a):\n        print(i)\n    return'
+        # sample.code after encode_whitespaces: '# language: Python\ndef main():\n<|extratoken_12|>a = 0\n<|extratoken_12|>for i in range(a):\n<|extratoken_16|>print(i)\n<|extratoken_12|>return'
+        # code_tokens: [2, 3303, 25, 11361, 198, 4299, 1388, 33529, 198, 50268, 64, 796, 657, 198, 50268, 1640, 1312, 287, 2837, 7, 64, 2599, 198, 50272, 4798, 7, 72, 8, 198, 50268, 7783]
+        # ②
+        # sample.code: 'def main():\n    a = 0\n    for i in range(a):\n        print(i)\n    return'
+        # sample.code after encode_whitespaces: 'def main():\n<|extratoken_12|>a = 0\n<|extratoken_12|>for i in range(a):\n<|extratoken_16|>print(i)\n<|extratoken_12|>return'
+        # code_tokens: [4299, 1388, 33529, 198, 50268, 64, 796, 657, 198, 50268, 1640, 1312, 287, 2837, 7, 64, 2599, 198, 50272, 4798, 7, 72, 8, 198, 50268, 7783]
 
         if self._eod_token is not None:
             code_tokens.append(self._eod_token)
@@ -67,6 +90,7 @@ class PromptDatasetProcessor(object):
         """
         Instead of processing lazily, we turn the iterable into a list.
         """
+        # sample: [{"input_ids": ..., "attention_mask": ..., "labels": ...}]
         if sample is None:
             return None
         

@@ -5,16 +5,20 @@ SAVE_CKPT_PATH=$2  # Path to save the output MP checkpoints.
 MP_SIZE=$3 # Model parallel size
 
 SCRIPT_PATH=$(realpath "$0")
+# SCRIPT_PATH: /data0/csw/CodeGeeX/scripts/gather_output.sh
 SCRIPT_DIR=$(dirname "$SCRIPT_PATH")
+# SCRIPT_DIR: /data0/csw/CodeGeeX/scripts/
 MAIN_DIR=$(dirname "$SCRIPT_DIR")
+# MAIN_DIR: /data0/csw/CodeGeeX/
 TOKENIZER_PATH="$MAIN_DIR/codegeex/tokenizer/"
+# TOKENIZER_PATH: /data0/csw/CodeGeeX/codegeex/tokenizer/
 
 if [ -z "$MP_SIZE" ]; then
   MP_SIZE=1
 fi
 
 # export CUDA settings
-export CUDA_HOME=/usr/local/cuda-11.1/
+export CUDA_HOME=/usr/local/cuda-11.7/
 export CUDA_VISIBLE_DEVICES=0,1
 
 

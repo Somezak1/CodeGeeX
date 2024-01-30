@@ -24,6 +24,11 @@ import deepspeed
 
 def parse_args(extra_args_provider=None, defaults={}, ignore_unknown_args=False):
     """Parse all arguments."""
+
+    # extra_args_provider: None
+    # defaults: {'tokenizer_type': 'GPT2BPETokenizer'}
+    # ignore_unknown_args: False
+
     parser = argparse.ArgumentParser(
         description="Megatron-LM Arguments", allow_abbrev=False
     )

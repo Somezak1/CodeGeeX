@@ -28,18 +28,25 @@ class CodeGeeXModel(MegatronModule):
     """Code Generation Model for Multilingual Program Synthesis."""
 
     def __init__(self, num_tokentypes=0, parallel_output=False):
+        # num_tokentypes: 0
+        # parallel_output: True
+
         super(CodeGeeXModel, self).__init__()
         args = get_args()
 
         self.parallel_output = parallel_output
+        # self.parallel_output: True
         self.fp16_lm_cross_entropy = args.fp16_lm_cross_entropy
+        # args.fp16_lm_cross_entropy: False
 
         self.language_model, self._language_model_key = get_language_model(
             num_tokentypes=num_tokentypes,
             add_pooler=False,
             init_method=init_method_normal(args.init_method_std),
+            # args.init_method_std: 0.02
             scaled_init_method=scaled_init_method_normal(args.init_method_std,
                                                          args.num_layers))
+            # args.num_layers: 39
 
     def set_input_tensor(self, input_tensor):
         """See megatron.model.transformer.set_input_tensor()"""
@@ -59,6 +66,29 @@ class CodeGeeXModel(MegatronModule):
             context_length=None,
     ):
 
+        # ===============================分布式推断时进入该函数的参数===============================
+        # 以第一次推断时输入tokens的长度 126 为例
+        #                          首次推断                     下次推断
+        # input_ids.shape:         [1, 126]                    [1, 1]
+        # position_ids:            [1, 126]                    [1, 1]
+        # attention_mask:          [1, 1, 2048, 2048]          [1, 1, 2048, 2048]
+        # layer_past:              None                        首次推断返回的layer_past
+        # get_key_value:           True                        True
+        # prompt_length:           None                        None
+        # context_length:          126                         127
+        # 其余参数为缺省值
+        #
+        # output[0].shape:         [1, 126, vocab_size/p]        [1, 1, vocab_size/p]
+        # =====================================================================================
+
+        # ===============================分布式训练时进入该函数的参数===============================
+        # input_ids.shape: [b, s], dtype: torch.int64
+        # position_ids.shape: [b, s], dtype: torch.int64
+        # attention_mask.shape: [1, 1, s, s], dtype: torch.bool
+        # labels.shape: [b, s], dtype: torch.int64
+        # 训练时其余参数为缺省值
+        # =====================================================================================
+
         # Language model.
         lm_output = self.language_model(input_ids,
                                         position_ids,
@@ -68,6 +98,7 @@ class CodeGeeXModel(MegatronModule):
                                         get_key_value=get_key_value,
                                         prompt_length=prompt_length,
                                         context_length=context_length)
+        # lm_output.shape: [b, s, h], dtype: torch.float16
 
         if get_key_value:
             lm_output, presents = lm_output
@@ -75,12 +106,14 @@ class CodeGeeXModel(MegatronModule):
         lm_output = torch.add(lm_output, 0)
         # Output.
         parallel_output = self.parallel_output
+        # parallel_output: True
         if forward_method_parallel_output is not None:
             parallel_output = forward_method_parallel_output
         output = parallel_lm_logits(
             lm_output,
             self.language_model.embedding.word_embeddings.weight,
             parallel_output)
+        # output.shape: [b, s, vocab_size/p], dtype: torch.float16
 
         if get_key_value:
             output = [output, presents]
@@ -88,11 +121,15 @@ class CodeGeeXModel(MegatronModule):
         if labels is None:
             return output
         else:
+            # self.fp16_lm_cross_entropy: False
             if self.fp16_lm_cross_entropy:
                 assert output.dtype == torch.half
                 loss = mpu.vocab_parallel_cross_entropy(output, labels)
+                # output.dtype: torch.float16
             else:
                 loss = mpu.vocab_parallel_cross_entropy(output.float(), labels)
+                # output.float().dtype: torch.float32
+                # loss.shape: [b, s], dtype: torch.float32
 
             return loss
 

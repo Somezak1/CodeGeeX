@@ -70,6 +70,12 @@ def build_hgf_tokenizer(args):
 
 def build_tokenizer(args):
     """Initialize tokenizer."""
+
+    # args.vocab_file: "/data0/csw/CodeGeeX/codegeex/tokenizer/vocab.json"
+    # args.merge_file: "/data0/csw/CodeGeeX/codegeex/tokenizer/merges.txt"
+    # args.tokenizer_path: None
+    # args.tokenizer_type: "GPT2BPETokenizer"
+
     if "tokenizer_path" in args and args.tokenizer_path is not None:
         # build huggingface tokenizer
         tokenizer = build_hgf_tokenizer(args)

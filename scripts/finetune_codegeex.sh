@@ -8,38 +8,35 @@ export NCCL_DEBUG=info
 export NCCL_IB_DISABLE=0
 export NCCL_IB_GID_INDEX=3
 
-HOSTFILE="<path to hostfile (with node ip addresses per line)>"
+HOSTFILE=${SCRIPT_DIR}/csw_hostfile
 MASTER_IP=$(cat $HOSTFILE | head -n 1)
 cat $HOSTFILE | awk '{print $1 " slots=8"}' > $SCRIPT_DIR/hostfile
 echo "MASTER_IP=$MASTER_IP"
 
 # ====== Parameters ======
-DATA_PATH="<path with prefix where you put the data (e.g., XXX/data.13b.mmap/data)>"
-CKPT_PATH="<path where you put the checkpoint (e.g., XXX/codegeex_13b.pt)>"
-DS_CONFIG=ds_config.json
+DATA_PATH=${MAIN_DIR}/sft_data/my_data
+CKPT_PATH=${SCRIPT_DIR}/mp4_parallel_weights/
+DS_CONFIG=${SCRIPT_DIR}/ds_config.json
 # - 13b
-TP=1
+TP=4
 PP=1
 NLAYERS=39
 HIDDEN=5120
 NATTN_HEAD=40
 EMBED_VOCAB=52224
-GLOBAL_BATCH=560
-MICRO_BATCH=10
-NTRAIN_ITERS=100000
+GLOBAL_BATCH=4
+MICRO_BATCH=2
+NTRAIN_ITERS=25
 EVAL_INT=10
 SAVE_INT=10
 TRIAL_TAG="13b-test"
 # - trial
-TRIAL_NAME="pretrain-codegeex"
+TRIAL_NAME="finetune-codegeex"
 # - zero stage
 ZERO_STAGE=2
 # - logging & output
-NOW=$(date +"%Y%m%d_%H%M%S")
-OUTPUT_DIR="<path-to-output>-$TRIAL_NAME-$TRIAL_TAG"
-TB_DIR=$OUTPUT_DIR/tb$NOW
+OUTPUT_DIR="${SCRIPT_DIR}/csw-$TRIAL_NAME-$TRIAL_TAG"
 mkdir -p $OUTPUT_DIR
-mkdir -p $TB_DIR
 
 # Deepspeed config
 cat <<EOT > $DS_CONFIG
@@ -74,10 +71,11 @@ ds_args=" --zero-stage=$ZERO_STAGE ${ds_args}"
 ds_args=" --deepspeed-activation-checkpointing ${ds_args}"
 
 echo "Launching deepspeed"
-deepspeed \
+CUDA_VISIBLE_DEVICES=4,5,6,7 deepspeed \
     --hostfile hostfile \
     --master_addr $MASTER_IP \
-    $MAIN_DIR/codegeex/megatron/tools/pretrain_codegeex.py \
+    --master_port 29501 \
+    $MAIN_DIR/codegeex/megatron/tools/finetune_codegeex.py \
     --tensor-model-parallel-size $TP \
     --pipeline-model-parallel-size $PP \
     --no-pipeline-parallel \
@@ -85,7 +83,7 @@ deepspeed \
     --hidden-size $HIDDEN \
     --make-vocab-size-divisible-by $EMBED_VOCAB \
     --num-attention-heads $NATTN_HEAD \
-    --seq-length 512 \
+    --seq-length 128 \
     --loss-scale 12 \
     --max-position-embeddings 2048 \
     --micro-batch-size $MICRO_BATCH \
@@ -100,6 +98,7 @@ deepspeed \
     --eval-iters 10 \
     --eval-interval $EVAL_INT \
     --data-path $DATA_PATH \
+    --data-impl mmap \
     --vocab-file $MAIN_DIR/codegeex/tokenizer/vocab.json \
     --merge-file $MAIN_DIR/codegeex/tokenizer/merges.txt \
     --save-interval $SAVE_INT \
@@ -116,5 +115,4 @@ deepspeed \
     --attention-softmax-in-fp32 \
     --checkpoint-activations \
     --override-lr-scheduler \
-    --tensorboard-dir $TB_DIR \
     $ds_args |& tee ${OUTPUT_DIR}/$NOW.log

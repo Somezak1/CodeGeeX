@@ -45,10 +45,18 @@ def get_shrink_embedding_gradient_alpha(iteration):
 
 def parallel_lm_logits(input_, word_embeddings_weight, parallel_output, bias=None):
     """LM logits using word embedding weights."""
+
+    # input_.shape: [b, s, h], dtype: torch.float16
+    # word_embeddings_weight.shape: [vocab_size/p, h], dtype: torch.float16
+    # parallel_output: True
+    # bias: None
+
     # Parallel logits.
     input_parallel = mpu.copy_to_tensor_model_parallel_region(input_)
+    # input_parallel.shape: [b, s, h], dtype: torch.float16
     # Matrix multiply.
     args = get_args()
+    # args.shrink_logit_embedding_gradient: False
     if args.shrink_logit_embedding_gradient:
         if hasattr(args, 'iteration'):
             alpha = get_shrink_embedding_gradient_alpha(args.iteration + 1)
@@ -59,11 +67,14 @@ def parallel_lm_logits(input_, word_embeddings_weight, parallel_output, bias=Non
                 word_embeddings_weight * alpha +
                 word_embeddings_weight.detach() * (1 - alpha)
         )
+    # word_embeddings_weight.shape: [vocab_size/p, h]
     if bias is None:
         logits_parallel = F.linear(input_parallel, word_embeddings_weight.half())
     else:
         logits_parallel = F.linear(input_parallel, word_embeddings_weight.half(), bias)
+    # logits_parallel.shape: [b, s, vocab_size/p], dtype: torch.float16
     # Gather if needed.
+    # parallel_output: True
     if parallel_output:
         return logits_parallel
 
@@ -77,6 +88,12 @@ def get_language_model(
         scaled_init_method=None,
 ):
     """Build language model and return along with the key to save."""
+
+    # num_tokentypes: 0
+    # add_pooler: False
+    # init_method: init_method_normal(0.02)
+    # scaled_init_method: scaled_init_method_normal(0.02, 39)
+
     args = get_args()
 
     if init_method is None:
@@ -120,6 +137,14 @@ class Embedding(MegatronModule):
         init_method,
         num_tokentypes=0,
     ):
+
+        # hidden_size: 5120, 每个token的向量维度
+        # vocab_size: 52224, 词表大小
+        # max_sequence_length: 2048, 最大上下文长度
+        # embedding_dropout_prob: 0.1,  dropout probability for embeddings
+        # init_method: init_method_normal(0.02), 初始化权重的方法
+        # num_tokentypes: 0, 类似于Bert中的segment type
+
         super(Embedding, self).__init__()
         
         args = get_args()
@@ -130,6 +155,8 @@ class Embedding(MegatronModule):
         self.max_sequence_length = max_sequence_length
         
         # Word embeddings (parallel).
+        # self.word_embeddings.weight.shape: [vocab_size//p, h], dtype: torch.float16
+        # p表示TP组模型并行度
         self.word_embeddings = mpu.VocabParallelEmbedding(
             vocab_size, self.hidden_size, init_method=self.init_method)
         self._word_embeddings_key = 'word_embeddings'
@@ -137,6 +164,7 @@ class Embedding(MegatronModule):
         self.vocab_size = vocab_size
 
         # Position embedding (serial).
+        # self.position_embeddings.weight.shape: [max_sequence_length, h]
         self.position_embeddings = torch.nn.Embedding(
             max_sequence_length, self.hidden_size)
         self.position_embeddings = self.position_embeddings.half()
@@ -144,11 +172,13 @@ class Embedding(MegatronModule):
             
         # Initialize the position embeddings.
         self.init_method(self.position_embeddings.weight)
+        # self.position_embeddings.weight.dtype: torch.float16
 
         # Token type embedding.
         # Add this as an optional field that can be added through
         # method call so we can load a pretrain model without
         # token types and add them as needed.
+        # tokentype_embeddings类似于Bert中的segment embedding
         self._tokentype_embeddings_key = 'tokentype_embeddings'
         if self.num_tokentypes > 0:
             self.tokentype_embeddings = torch.nn.Embedding(self.num_tokentypes,
@@ -159,6 +189,8 @@ class Embedding(MegatronModule):
             self.tokentype_embeddings = None
 
         # Embeddings dropout
+        # 使用的是常驻随机数种子
+        # embedding_dropout_prob: 0.1
         self.embedding_dropout = torch.nn.Dropout(embedding_dropout_prob)
 
     def add_tokentype_embeddings(self, num_tokentypes):
@@ -166,6 +198,7 @@ class Embedding(MegatronModule):
         token-type embeddings in case the pretrained model does not have it.
         This allows us to load the model normally and then add this embedding.
         """
+        # 如果在pretrain阶段未定义TE，而在fine-tune阶段TE，则可通过此函数添加
         if self.tokentype_embeddings is not None:
             raise Exception('tokentype embeddings is already initialized')
         if torch.distributed.get_rank() == 0:
@@ -178,10 +211,32 @@ class Embedding(MegatronModule):
         self.init_method(self.tokentype_embeddings.weight)
 
     def forward(self, input_ids, position_ids, tokentype_ids=None):
+        # ===============================分布式推断时进入该函数的参数================================
+        # 以第一次推断时输入tokens的长度 126 为例
+        #                          首次推断                     下次推断
+        # input_ids.shape:         [1, 126]                    [1, 1]
+        # position_ids:            [1, 126]                    [1, 1]
+        # 其余参数为缺省值
+        #
+        # embeddings.shape:        [1, 126, h]                 [1, 1, h]
+        # ======================================================================================
+
+        # ===============================分布式训练时进入该函数的参数================================
+        # input_ids.shape: [b, s], dtype: torch.int64
+        # position_ids.shape: [b, s], dtype: torch.int64
+        # 训练时其余参数为缺省值
+        # ======================================================================================
+
+        """定义输入过embedding层的计算方法"""
         # Embeddings.
+        # words_embeddings.shape: [b, s, h], dtype: torch.float16
+        # 再次注意: self.word_embeddings做forward时, 最终的输出结果是AllReduce的
         words_embeddings = self.word_embeddings(input_ids)
+        # position_embeddings.shape: [b, s, h], dtype: torch.float16
         position_embeddings = self.position_embeddings(position_ids)
+        # embeddings.shape: [b, s, h], dtype: torch.float16
         embeddings = words_embeddings + position_embeddings
+        # 依需要决定是否增加TE
         if tokentype_ids is not None:
             assert self.tokentype_embeddings is not None
             embeddings = embeddings + self.tokentype_embeddings(tokentype_ids)
@@ -189,6 +244,7 @@ class Embedding(MegatronModule):
             assert self.tokentype_embeddings is None
 
         # Dropout.
+        # 使用的是常驻随机数种子
         embeddings = self.embedding_dropout(embeddings)
 
         return embeddings
@@ -197,7 +253,6 @@ class Embedding(MegatronModule):
         self, destination=None, prefix='', keep_vars=False,
     ):
         """For easy load."""
-
         state_dict_ = {}
         state_dict_[self._word_embeddings_key] \
             = self.word_embeddings.state_dict(destination, prefix, keep_vars)
@@ -213,6 +268,7 @@ class Embedding(MegatronModule):
 
     def load_state_dict(self, state_dict, strict=True):
         """Customized load."""
+        # 用于模型的重载。例如训到一半挂掉了，我们就重新初始化一个新模型，重载上个checkpoint保存下的权重。
 
         # Word embedding.
         if self._word_embeddings_key in state_dict:
@@ -327,6 +383,13 @@ class QueryEmbedding(MegatronModule):
                  num_tokentypes=0):
         super(QueryEmbedding, self).__init__()
 
+        # hidden_size: 5120, 每个token的向量维度
+        # vocab_size: 52224, 词表大小
+        # max_sequence_length: 2048, 最大上下文长度
+        # embedding_dropout_prob: 0.1,  dropout probability for embeddings
+        # init_method: init_method_normal(0.02), 初始化权重的方法
+        # num_tokentypes: 0, 类似于Bert中的segment type
+
         self.hidden_size = hidden_size
         self.init_method = init_method
         self.num_tokentypes = num_tokentypes
@@ -340,6 +403,7 @@ class QueryEmbedding(MegatronModule):
             
         # Initialize the top query position embeddings.
         self.init_method(self.top_query_embeddings.weight)
+        # self.top_query_embeddings.weight.shape: [max_sequence_length//p, h], dtype: torch.float16
 
         # Token type embedding.
         # Add this as an optional field that can be added through
@@ -355,6 +419,8 @@ class QueryEmbedding(MegatronModule):
             self.tokentype_embeddings = None
 
         # Embeddings dropout
+        # 使用的是常驻随机数种子
+        # embedding_dropout_prob: 0.1
         self.embedding_dropout = torch.nn.Dropout(embedding_dropout_prob)
 
     def add_tokentype_embeddings(self, num_tokentypes):
@@ -374,9 +440,24 @@ class QueryEmbedding(MegatronModule):
         self.init_method(self.tokentype_embeddings.weight)
 
     def forward(self, position_ids, tokentype_ids=None):
+        # ===============================分布式推断时进入该函数的参数================================
+        # 以第一次推断时输入tokens的长度 126 为例
+        #                          首次推断                     下次推断
+        # position_ids:            [1, 126]                    [1, 1]
+        # 其余参数为缺省值
+        #
+        # embeddings.shape:        [1, 126, h]                 [1, 1, h]
+        # ======================================================================================
+
+        # ===============================分布式训练时进入该函数的参数================================
+        # position_ids.shape: [b, s], dtype: torch.int64
+        # 训练时其余参数为缺省值
+        # ======================================================================================
+
         # Embeddings.
 
         embeddings = self.top_query_embeddings(position_ids)
+        # embeddings.shape: [b, s, h], dtype: torch.float16
         if tokentype_ids is not None:
             assert self.tokentype_embeddings is not None
             embeddings = embeddings + self.tokentype_embeddings(tokentype_ids)
@@ -384,6 +465,7 @@ class QueryEmbedding(MegatronModule):
             assert self.tokentype_embeddings is None
 
         # Dropout.
+        # 使用的是常驻随机数种子
         embeddings = self.embedding_dropout(embeddings)
 
         return embeddings
@@ -502,13 +584,21 @@ class TransformerLanguageModel(MegatronModule):
                  output_layer_init_method,
                  num_tokentypes=0,
                  add_pooler=False):
+
+        # init_method: init_method_normal(0.02)
+        # output_layer_init_method: scaled_init_method_normal(0.02, 39)
+        # num_tokentypes: 0
+        # add_pooler: False
+
         super(TransformerLanguageModel, self).__init__()
         args = get_args()
 
         self.hidden_size = args.hidden_size
         self.num_tokentypes = num_tokentypes
+        # num_tokentypes: 0
         self.init_method = init_method
         self.add_pooler = add_pooler
+        # add_pooler: False
 
         # Embeddings
         self.embedding = Embedding(self.hidden_size,
@@ -550,13 +640,36 @@ class TransformerLanguageModel(MegatronModule):
             prompt_length=None,
             context_length=None,
     ):
+        # ===============================分布式推断时进入该函数的参数================================
+        # 以第一次推断时输入tokens的长度 126 为例
+        #                          首次推断                     下次推断
+        # input_ids.shape:         [1, 126]                    [1, 1]
+        # position_ids:            [1, 126]                    [1, 1]
+        # attention_mask:          [1, 1, 2048, 2048]          [1, 1, 2048, 2048]
+        # layer_past:              None                        首次推断返回的layer_past
+        # get_key_value:           True                        True
+        # prompt_length:           None                        None
+        # context_length:          126                         127
+        # 其余参数为缺省值
+        #
+        # transformer_output[0].shape:[1, 126, h]                 [1, 1, h]
+        # ======================================================================================
+
+        # ===============================分布式训练时进入该函数的参数================================
+        # input_ids.shape: [b, s], dtype: torch.int64
+        # position_ids.shape: [b, s], dtype: torch.int64
+        # attention_mask.shape: [1, 1, s, s], dtype: torch.bool
+        # 训练时其余参数为缺省值
+        # ======================================================================================
 
         # Embeddings.
         embedding_output = self.embedding(input_ids, position_ids,
                                           tokentype_ids=tokentype_ids)
+        # embedding_output.shape: [b, s, h], dtype: torch.float16
         query_position_ids = position_ids
         queryEmbedding_out = self.topQueryEmbedding(query_position_ids,
                                                     tokentype_ids=tokentype_ids)
+        # queryEmbedding_out.shape: [b, s, h], dtype: torch.float16
 
         # Transformer.
         transformer_output = self.transformer(embedding_output,
@@ -566,6 +679,7 @@ class TransformerLanguageModel(MegatronModule):
                                               get_key_value=get_key_value,
                                               prompt_length=prompt_length,
                                               context_length=context_length, )
+        # transformer_output.shape: [b, s, h], dtype: torch.float16
 
         return transformer_output
 

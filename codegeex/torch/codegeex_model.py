@@ -192,7 +192,7 @@ class SelfAttention(torch.nn.Module):
                        query_layer.size(0),
                        value_layer.size(3))
 
-        # change view [sq, b * np, hn] 
+        # change view [sq, b * np, hn]
         value_layer = value_layer.view(value_layer.size(0), output_size[0] * output_size[1], -1)
 
         # change view [b * np, sq, sk]

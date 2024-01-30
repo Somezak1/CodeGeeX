@@ -67,6 +67,10 @@ class ParallelMLP(MegatronModule):
         output_layer_init_method,
         scale: int = 4,
     ):
+        # init_method: init_method_normal(0.02)
+        # output_layer_init_method: scaled_init_method_normal(0.02, 39)
+        # scale: 4
+
         super(ParallelMLP, self).__init__()
         args = get_args()
 
@@ -78,6 +82,7 @@ class ParallelMLP(MegatronModule):
             init_method=init_method,
             # skip_bias_add=True,
         )
+        # self.dense_h_to_4h.weight.shape: [h, 4h/p], dtype: torch.float16
 
         self.activation_func = fast_gelu
 
@@ -89,13 +94,16 @@ class ParallelMLP(MegatronModule):
             init_method=output_layer_init_method,
             # skip_bias_add=True,
         )
+        # self.dense_4h_to_h.weight.shape: [4h/p, h], dtype: torch.float16
 
     def forward(self, hidden_states):
-        # [s, b, 4hp]
+        # hidden_states.shape: [s, b, h], dtype: torch.float16
         intermediate_parallel, _ = self.dense_h_to_4h(hidden_states)
+        # intermediate_parallel.shape: [s, b, 4h/p]
         intermediate_parallel = self.activation_func(intermediate_parallel)
-        # [s, b, h]
         output, output_bias = self.dense_4h_to_h(intermediate_parallel)
+        # output.shape: [s, b, h], dtype: torch.float16
+        # output_bias: None
 
         return output, output_bias
 
@@ -109,25 +117,38 @@ class ParallelSelfAttention(MegatronModule):
 
     def __init__(self, init_method,
                  output_layer_init_method, layer_number):
+        # init_method: init_method_normal(0.02)
+        # output_layer_init_method: scaled_init_method_normal(0.02, 39)
+
         super(ParallelSelfAttention, self).__init__()
         args = get_args()
         self.fp16 = args.fp16
+        # args.fp16: True
         self.attention_softmax_in_fp32 = args.attention_softmax_in_fp32
+        # args.attention_softmax_in_fp32: True
         self.layer_number = max(1, layer_number)
+        # layer_number: int from 1-39
 
         # Per attention head and per partition values.
         world_size = mpu.get_model_parallel_world_size()
         self.hidden_size_per_partition = mpu.divide(
             args.hidden_size // 2 if args.compress else args.hidden_size,
             world_size)
+        # args.hidden_size: 5120
+        # args.compress: False
         self.hidden_size_per_attention_head = mpu.divide(
             args.hidden_size // 2 if args.compress else args.hidden_size, args.num_attention_heads)
+        # args.num_attention_heads: 40
+        # self.hidden_size_per_attention_head: hn
         self.num_attention_heads_per_partition = mpu.divide(
             args.num_attention_heads, world_size)
+        # self.num_attention_heads_per_partition: hp
+        # hasattr(args, 'attention_upweight'): False
         if hasattr(args, 'attention_upweight'):
             self.attention_upweight = args.attention_upweight
         else:
             self.attention_upweight = None
+        # self.attention_upweight: None
         # Strided linear layer.
         self.query = mpu.ColumnParallelLinear(
             args.hidden_size,
@@ -152,6 +173,7 @@ class ParallelSelfAttention(MegatronModule):
         # different outputs on different number of parallel partitions but
         # on average it should not be partition dependent.
         self.attention_dropout = torch.nn.Dropout(args.attention_dropout)
+        # args.attention_dropout: 0.1
 
         # Output.
         self.dense = mpu.RowParallelLinear(
@@ -170,43 +192,89 @@ class ParallelSelfAttention(MegatronModule):
             prompt_length=None,
             context_length=None,
     ):
-        # hidden_states: [sq, b, h]
+        # 训练时sq==sk==s, 都是传入样本的序列长度
+        # 推理时sq, sk, s三者都不一致, s此时为max_sequence_length
+
+        # ===============================分布式推断时进入该函数的参数===============================
+        # 以第一次推断时输入tokens的长度 126 为例
+        #                            首次推断                     下次推断
+        # hidden_states.shape:       [126, 1, h]                 [1, 1, h]
+        # attention_mask:            [1, 1, 2048, 2048]          [1, 1, 2048, 2048]
+        # layer_past:                None                        首次推断返回的layer_past, layer_past[i].shape=[126, 1, np, hn]
+        # get_key_value:             True                        True
+        # prompt_length:             None                        None
+        # context_length:            126                         127
+        #
+        # 此时sq:                     126                         1
+        # 此时sk:                     126                         127
+        #
+        # output[0].shape:           [126, 1, h]                 [1, 1, h]
+        # output[1][i].shape:        [126, 1, np, hn]            [127, 1, np, hn]
+        # =====================================================================================
+
+        # ===============================分布式训练时进入该函数的参数===============================
+        # hidden_states.shape: [s, b, h], dtype: torch.float16
+        # attention_mask.shape: [1, 1, s, s], dtype: torch.bool
+        # 训练时其余参数为缺省值
+        # 此时sq = s = sk
+        # =====================================================================================
 
         # =====================
         # Query, Key, and Value
         # =====================
 
+        # np 即 self.num_attention_heads_per_partition
+        # hp 即 h/p
+
         query_layer, _ = self.query(hidden_states)
+        # query_layer.shape: [sq, b, hp]
         key_layer, _ = self.key(hidden_states)
+        # key_layer.shape: [sq, b, hp]
         value_layer, _ = self.value(hidden_states)
+        # value_layer.shape: [sq, b, hp]
 
         new_query_layer_shape = query_layer.size()[:-1] + \
                                 (self.num_attention_heads_per_partition,
                                  self.hidden_size_per_attention_head)
+        # new_query_layer_shape: [sq, b, np, hn]
         query_layer = query_layer.view(*new_query_layer_shape)
+        # query_layer.shape: [sq, b, hp] -> [sq, b, np, hn]
 
         new_query_layer_shape = key_layer.size()[:-1] + \
                                 (self.num_attention_heads_per_partition,
                                  self.hidden_size_per_attention_head)
+        # new_query_layer_shape: [sq, b, np, hn]
         key_layer = key_layer.view(*new_query_layer_shape)
+        # key_layer.shape: [sq, b, hp] -> [sq, b, np, hn]
 
         new_query_layer_shape = value_layer.size()[:-1] + \
                                 (self.num_attention_heads_per_partition,
                                  self.hidden_size_per_attention_head)
+        # new_query_layer_shape: [sq, b, np, hn]
         value_layer = value_layer.view(*new_query_layer_shape)
+        # value_layer.shape: [sq, b, hp] -> [sq, b, np, hn]
 
         # ==================================
         # Adjust key and value for inference
         # ==================================
 
+        # layer_past: None
         if layer_past is not None:
+            # 只会在推断的编码阶段（即除首次推断以后的推断）进入该条件分支
+            # 此时s_pre=126, sq=1, sk=s_pre+sq=127
             past_key, past_value = layer_past
+            # past_key.shape: [s_pre, b, np, hn]
+            # past_value.shape: [s_pre, b, np, hn]
             key_layer = torch.cat((past_key.type_as(key_layer),
                                    key_layer), dim=0)
             value_layer = torch.cat((past_value.type_as(value_layer),
                                      value_layer), dim=0)
+
+        # get_key_value: False
         if get_key_value:
             present = (key_layer, value_layer)
+            # key_layer.shape: [sk, b, np, hn]
+            # value_layer.shape: [sk, b, np, hn]
 
         # ===================================
         # Raw attention scores. [b, np, sq, sk]
@@ -218,17 +286,23 @@ class ParallelSelfAttention(MegatronModule):
                        query_layer.size(0),
                        key_layer.size(0))
 
-        # [sq, b, np, hn] -> [sq, b * np, hn]
         query_layer = query_layer.contiguous().view(output_size[2], output_size[0] * output_size[1], -1)
+        # query_layer.shape: [sq, b * np, hn]
         key_layer = key_layer.contiguous().view(output_size[3], output_size[0] * output_size[1], -1)
+        # key_layer.shape: [sk, b * np, hn]
 
         # Raw attention scores. [b * np, sq, sk]
         matmul_result = torch.matmul(query_layer.transpose(0, 1),
+                                     # query_layer.transpose(0, 1).shape: [b * np, sq, hn]
                                      key_layer.transpose(0, 1).transpose(1, 2)) / self.norm_factor
+                                     # key_layer.transpose(0, 1).transpose(1, 2)).shape: [b * np, hn, sk]
+        # matmul_result.shape: [b * np, sq, sk]
 
         # change view to [b, np, sq, sk]
         attention_scores = matmul_result.view(*output_size)
+        # attention_scores.shape: [b * np, sq, sk] -> [b, np, sq, sk]
 
+        # self.attention_upweight: None
         if self.attention_upweight is not None and layer_past is None:
             log_attention_weights = torch.zeros(attention_scores.size(3), attention_scores.size(3),
                                                 device=torch.cuda.current_device(),
@@ -244,38 +318,74 @@ class ParallelSelfAttention(MegatronModule):
         # ==================================================
 
         if get_key_value:
+            # 只有推断时会进入这个分支
             with torch.no_grad():
                 if layer_past is not None:
                     attention_mask = attention_mask[
                                      ...,
                                      attention_scores.size(3) - 1,
                                      :attention_scores.size(3)].unsqueeze(2)
+                    # attention_mask[..., sk-1, :sk].unsqueeze(2).shape: [1, 1, 1, sk]
+                    # 此时attention_mask里全是False
                 else:
                     attention_mask = attention_mask[
                                      ...,
                                      :attention_scores.size(3),
                                      :attention_scores.size(3)]
+                    # attention_mask[..., :sk, :sk].shape: [1, 1, sk, sk]
 
         # ===========================
         # Attention probs and dropout
         # ===========================
 
+        # 只有推断且不使用KV Cache时会使用到这个分支
         if context_length is not None:
             attention_mask = torch.clone(attention_mask)
             attention_mask[:, :, context_length:, :] = True
+            # 以context_length=7为例
+            # attention_mask[0, 0, :10, :10]:
+            # tensor([
+            #     [False,  True,  True,  True,  True,  True,  True,  True,  True,  True],
+            #     [False, False,  True,  True,  True,  True,  True,  True,  True,  True],
+            #     [False, False, False,  True,  True,  True,  True,  True,  True,  True],
+            #     [False, False, False, False,  True,  True,  True,  True,  True,  True],
+            #     [False, False, False, False, False,  True,  True,  True,  True,  True],
+            #     [False, False, False, False, False, False,  True,  True,  True,  True],
+            #     [False, False, False, False, False, False, False,  True,  True,  True],
+            #     [True,  True,  True,  True,  True,   True,  True,  True,  True,  True],
+            #     [True,  True,  True,  True,  True,   True,  True,  True,  True,  True],
+            #     [True,  True,  True,  True,  True,   True,  True,  True,  True,  True]
+            # ], device='cuda:0')
+            # 即mask掉后面padding的这些token
 
         # attention scores and attention mask [b, np, sq, sk]
         # attention_scores = attention_mask_func(attention_scores, attention_mask)
+        # attention_mask.shape: [1, 1, s, s], 训练时sq == sk == s, 都是传入样本的序列长度
         attention_scores = attention_scores - attention_mask * 10000.0
+
+        # self.attention_softmax_in_fp32: True
+        # attention_probs.shape: [b, np, sq, sk]
         if self.attention_softmax_in_fp32:
             attention_probs = self.softmax(attention_scores.float()).half()
         else:
             attention_probs = self.softmax(attention_scores.half())
+        # 以如下attention_scores为例
+        # tensor([[     0., -10000., -10000., -10000.],
+        #         [     0.,      0., -10000., -10000.],
+        #         [     0.,      0.,      0., -10000.],
+        #         [     0.,      0.,      0.,      0.]])
+        # 则attention_probs为
+        # tensor([[1.0000, 0.0000, 0.0000, 0.0000],
+        #         [0.5000, 0.5000, 0.0000, 0.0000],
+        #         [0.3333, 0.3333, 0.3333, 0.0000],
+        #         [0.2500, 0.2500, 0.2500, 0.2500]], dtype=torch.float16)
 
         # This is actually dropping out entire tokens to attend to, which might
         # seem a bit unusual, but is taken from the original Transformer paper.
+        # 使用的是临时随机数种子, 使用完再返回至常驻随机数种子的状态
         with mpu.get_cuda_rng_tracker().fork():
             attention_probs = self.attention_dropout(attention_probs)
+            # attention_probs.shape: [b, np, sq, sk]
 
         # =========================
         # Context layer. [sq, b, hp]
@@ -284,7 +394,7 @@ class ParallelSelfAttention(MegatronModule):
         # value_layer -> context layer.
         # [sq, b, np, hn] --> [b, np, sq, hn]
 
-        # context layer shape: [b, np, sq, hn]
+        # output_size: [b, np, sq, hn]
         output_size = (value_layer.size(1),
                        value_layer.size(2),
                        query_layer.size(0),
@@ -292,32 +402,42 @@ class ParallelSelfAttention(MegatronModule):
 
         # change view [sq, b * np, hn] 
         value_layer = value_layer.view(value_layer.size(0), output_size[0] * output_size[1], -1)
+        # value_layer.shape: [sq, b, np, hn] -> [sq, b * np, hn]
 
         # change view [b * np, sq, sk]
         attention_probs = attention_probs.view(output_size[0] * output_size[1],
                                                output_size[2], -1)
+        # attention_probs.shape: [b, np, sq, sk] -> [b * np, sq, sk]
 
         context_layer = torch.bmm(attention_probs, value_layer.unsqueeze(0).transpose(1, 2).squeeze(0))
+        # value_layer.unsqueeze(0).transpose(1, 2).squeeze(0).shape: [b * np, sk, hn]
+        # context_layer.shape: [b * np, sq, hn]
 
         # change view [b, np, sq, hn]
         context_layer = context_layer.view(*output_size)
+        # context_layer.shape: [b * np, sq, hn] -> [b, np, sq, hn]
 
-        # # [b, np, sq, hn] --> [sq, b, np, hn]
+        # [b, np, sq, hn] --> [sq, b, np, hn]
         context_layer = context_layer.permute(2, 0, 1, 3).contiguous()
 
-        # # [sq, b, np, hn] --> [sq, b, hp]
+        # [sq, b, np, hn] --> [sq, b, hp]
         new_context_layer_shape = context_layer.size()[:-2] + \
                                   (self.hidden_size_per_partition,)
         context_layer = context_layer.view(*new_context_layer_shape)
+
+        output, bias = self.dense(context_layer)
+        # output.shape: [sq, b, h]
+        # bias: 0
 
         # =================
         # Output. [sq, b, h]
         # =================
 
-        output, bias = self.dense(context_layer)
-
         if get_key_value:
             output = [output, present]
+            # present = (key_layer, value_layer)
+            # key_layer.shape: [sq, b, np, hn]
+            # value_layer.shape: [sq, b, np, hn]
 
         return output, bias
 
@@ -579,6 +699,8 @@ class ParallelTransformerLayer(MegatronModule):
 
     def __init__(self, init_method,
                  output_layer_init_method, layer_number):
+        # init_method: init_method_normal(0.02)
+        # output_layer_init_method: scaled_init_method_normal(0.02, 39)
         args = get_args()
 
         super(ParallelTransformerLayer, self).__init__()
@@ -586,32 +708,38 @@ class ParallelTransformerLayer(MegatronModule):
 
         self.apply_residual_connection_post_layernorm \
             = args.apply_residual_connection_post_layernorm
+        # args.apply_residual_connection_post_layernorm: False
 
         # Layernorm on the input data.
         self.input_layernorm = LayerNorm(
             args.hidden_size,
             eps=args.layernorm_epsilon)
+        # args.layernorm_epsilon: 1e-05
 
         # Self attention.
         self.attention = ParallelSelfAttention(init_method,
                                                output_layer_init_method,
                                                layer_number)
         self.hidden_dropout = args.hidden_dropout
+        # args.hidden_dropout: 0.1
         self.bias_dropout_fusion = args.bias_dropout_fusion
+        # args.bias_dropout_fusion: True
 
         # Layernorm on the input data.
         self.post_attention_layernorm = LayerNorm(
             args.hidden_size,
             eps=args.layernorm_epsilon)
+        # hasattr(args, 'attention_upweight'): False
         if hasattr(args, 'attention_upweight'):
             self.attention_upweight = args.attention_upweight
         else:
             self.attention_upweight = None
+        # hasattr(args, 'ln_fp16'): True
+        # args.ln_fp16: True
         if hasattr(args, 'ln_fp16'):
             self.ln_fp16 = args.ln_fp16
         else:
             self.ln_fp16 = False
-            # MLP
         self.mlp = ParallelMLP(init_method,
                                output_layer_init_method,
                                scale=2 if args.compress else 4)
@@ -625,7 +753,27 @@ class ParallelTransformerLayer(MegatronModule):
             prompt_length=None,
             context_length=None,
     ):
-        # hidden_states: [b, s, h]
+        # ===============================分布式推断时进入该函数的参数===============================
+        # 以第一次推断时输入tokens的长度 126 为例
+        #                            首次推断                     下次推断
+        # hidden_states.shape:       [126, 1, h]                 [1, 1, h]
+        # attention_mask:            [1, 1, 2048, 2048]          [1, 1, 2048, 2048]
+        # layer_past:                None                        首次推断返回的layer_past
+        # get_key_value:             True                        True
+        # prompt_length:             None                        None
+        # context_length:            126                         127
+        #
+        # output[0].shape:           [126, 1, h]                 [1, 1, h]
+        # =====================================================================================
+
+        # ===============================分布式训练时进入该函数的参数===============================
+        # hidden_states.shape: [s, b, h], dtype: torch.float16
+        # attention_mask.shape: [1, 1, s, s], dtype: torch.bool
+        # 训练时其余参数为缺省值
+        # =====================================================================================
+
+
+        # self.ln_fp16: True
         if self.ln_fp16:
             layernorm_output = self.input_layernorm(hidden_states)
         else:
@@ -639,11 +787,17 @@ class ParallelTransformerLayer(MegatronModule):
                            get_key_value=get_key_value,
                            prompt_length=prompt_length,
                            context_length=context_length)
+        # attention_bias: 0
 
         if get_key_value:
             attention_output, presents = attention_output
+            # attention_output.shape: [s, b, h]
+            # presents = (key_layer, value_layer)
+            # key_layer.shape: [s, b, np, hn]
+            # value_layer.shape: [s, b, np, hn]
 
         # Residual connection.
+        # self.apply_residual_connection_post_layernorm: False
         if self.apply_residual_connection_post_layernorm:
             residual = layernorm_output
         else:
@@ -653,6 +807,8 @@ class ParallelTransformerLayer(MegatronModule):
         # trigerring the fusion kernel. For now, we use two 
         # different nn.functional routines to account for varying
         # dropout semantics during training and inference phases.
+
+        # self.bias_dropout_fusion: True
         if self.bias_dropout_fusion:
             if self.training:
                 bias_dropout_add_func = bias_dropout_add_fused_train
@@ -662,6 +818,8 @@ class ParallelTransformerLayer(MegatronModule):
             bias_dropout_add_func = get_bias_dropout_add(self.training)
 
         # re-enable torch grad to enable fused optimization.
+        # 因为attention_bias为0
+        # 所以这步等价于 Dropout(attention_output)+residual
         with torch.enable_grad():
             layernorm_input = bias_dropout_add_func(
                 attention_output,
@@ -670,15 +828,19 @@ class ParallelTransformerLayer(MegatronModule):
                 self.hidden_dropout)
 
         # Layer norm post the self attention.
+        # self.ln_fp16: True
         if self.ln_fp16:
             layernorm_output = self.post_attention_layernorm(layernorm_input)
         else:
             layernorm_output = self.post_attention_layernorm(layernorm_input.float()).half()
 
         mlp_output, _ = self.mlp(layernorm_output)
+        # mlp_output.shape: [s, b, h], dtype: torch.float16
+        # _: None
 
         # MLP.
         # Second residual connection.
+        # self.apply_residual_connection_post_layernorm: False
         if self.apply_residual_connection_post_layernorm:
             residual = layernorm_output
         else:
@@ -688,6 +850,9 @@ class ParallelTransformerLayer(MegatronModule):
 
         if get_key_value:
             output = [output, presents]
+            # presents = (key_layer, value_layer)
+            # key_layer.shape: [s, b, np, hn]
+            # value_layer.shape: [s, b, np, hn]
 
         return output
 
@@ -738,6 +903,10 @@ class ParallelTopQueryLayer(MegatronModule):
 
     def __init__(self, init_method,
                  output_layer_init_method, layer_number):
+        # init_method: init_method_normal(0.02)
+        # output_layer_init_method: scaled_init_method_normal(0.02, 39)
+        # layer_number: 39
+
         args = get_args()
 
         super(ParallelTopQueryLayer, self).__init__()
@@ -745,11 +914,14 @@ class ParallelTopQueryLayer(MegatronModule):
 
         self.apply_residual_connection_post_layernorm \
             = args.apply_residual_connection_post_layernorm
+        # args.apply_residual_connection_post_layernorm: False
 
         # Layernorm on the input data.
         self.input_layernorm = LayerNorm(
             args.hidden_size,
             eps=args.layernorm_epsilon)
+        # args.layernorm_epsilon: 1e-5
+        # self.input_layernorm.weight.shape: [h], dtype: torch.float32
 
         # Self attention.
         self.attention = ParallelTopQuerySelfAttention(init_method,
@@ -758,14 +930,18 @@ class ParallelTopQueryLayer(MegatronModule):
 
         self.hidden_dropout = args.hidden_dropout
         self.bias_dropout_fusion = args.bias_dropout_fusion
+        # args.hidden_dropout: 0.1
+        # args.bias_dropout_fusion: True
 
         # Layernorm on the input data.
         self.post_attention_layernorm = LayerNorm(
             args.hidden_size,
             eps=args.layernorm_epsilon)
+        # self.post_attention_layernorm.weight.shape: [h], dtype: torch.float32
 
         if hasattr(args, 'ln_fp16'):
             self.ln_fp16 = args.ln_fp16
+            # self.ln_fp16: True
         else:
             self.ln_fp16 = False
 
@@ -783,6 +959,12 @@ class ParallelTopQueryLayer(MegatronModule):
             prompt_length=None,
             context_length=None,
     ):
+
+        # hidden_states.shape: [s, b, h], dtype: torch.float16
+        # query_hidden_state.shape: [s, b, h], dtype: torch.float16
+        # attention_mask.shape: [1, 1, s, s], dtype: torch.bool
+        # 训练时其余参数为缺省值
+
         # hidden_states: [b, s, h]
         assert query_hidden_state != None
 
@@ -839,6 +1021,7 @@ class ParallelTopQueryLayer(MegatronModule):
 
         # MLP.
         mlp_output, _ = self.mlp(layernorm_output)
+        # mlp_output.shape: [s, b, h], dtype: torch.float16
 
         # Second residual connection.
         if self.apply_residual_connection_post_layernorm:
@@ -896,15 +1079,21 @@ class ParallelTransformer(MegatronModule):
     """Transformer class."""
 
     def __init__(self, init_method, output_layer_init_method):
+        # init_method: init_method_normal(0.02)
+        # output_layer_init_method: scaled_init_method_normal(0.02, 39)
+
         super(ParallelTransformer, self).__init__()
         args = get_args()
 
         # Store activation checkpoiting flag.
         self.checkpoint_activations = args.checkpoint_activations
+        # args.checkpoint_activations: True
         self.checkpoint_num_layers = args.checkpoint_num_layers
+        # args.checkpoint_num_layers: 1
 
         # Number of layers:
         self.num_layers = args.num_layers
+        # args.num_layers: 39
         self.num_unique_layers = None
 
         #################
@@ -931,14 +1120,19 @@ class ParallelTransformer(MegatronModule):
             output_layer_init_method, self.num_unique_layers)
 
         # Final layer norm before output.
+        # hasattr(args, 'ln_fp16'): True
         if hasattr(args, 'ln_fp16'):
             self.ln_fp16 = args.ln_fp16
+            # args.ln_fp16: True
         else:
             self.ln_fp16 = False
 
         self.final_layernorm = LayerNorm(
             args.hidden_size,
             eps=args.layernorm_epsilon)
+        # args.layernorm_epsilon: 1e-05
+        # self.final_layernorm.weight.shape: [h], dtype: torch.float32
+        # CodeGeeX中的LayerNorm比较奇怪, 初始化时LayerNorm的权重是torch.float32, 前馈时的权重就变为torch.float16了
 
     def _get_layer_index(self, layer_number):
         if self.param_sharing_style == 'grouped':
@@ -948,12 +1142,37 @@ class ParallelTransformer(MegatronModule):
         assert False, 'should not be here'
 
     def _get_layer(self, layer_number):
+        # layer_number: 0     return: self.layers[0]
+        # layer_number: 1     return: self.layers[1]
+        # layer_number: 2     return: self.layers[2]
+        # ...
+        # layer_number: 38    return: self.layers[38]
+        # layer_number: 39    return: self.layers[0]
+        # layer_number: 40    return: self.layers[1]
         return self.layers[self._get_layer_index(layer_number)]
 
     def _checkpointed_forward(self, hidden_states, attention_mask):
         """Forward method with activation checkpointing."""
 
+        # ===============================分布式推断时进入该函数的参数================================
+        # 以第一次推断时输入tokens的长度 126 为例
+        #                            首次推断                     下次推断
+        # hidden_states.shape:       [126, 1, h]                 [1, 1, h]
+        # attention_mask:            [1, 1, 2048, 2048]          [1, 1, 2048, 2048]
+        #
+        # hidden_states.shape:       [126, 1, h]                 [1, 1, h]
+        # ======================================================================================
+
+        # ===============================分布式训练时进入该函数的参数================================
+        # hidden_states.shape: [s, b, h], dtype: torch.float16
+        # attention_mask.shape: [1, 1, s, s], dtype: torch.bool
+        # ======================================================================================
+
         def custom(start, end):
+            # custom(0, 1)
+            # custom(1, 2)
+            # ...
+            # custom(38, 39)
             def custom_forward(*inputs):
                 x_ = inputs[0]
                 for index in range(start, end):
@@ -966,9 +1185,15 @@ class ParallelTransformer(MegatronModule):
         # Make sure memory is freed.
         mpu.reset_checkpointed_activations_memory_buffer()
         l = 0
+        # self.checkpoint_num_layers: 1
+        # 完整的过一遍39层ParallelTransformerLayer, 并将最后一层输出的hidden_states返回
         while l < self.num_layers:
             hidden_states = mpu.checkpoint(
                 custom(l, l + self.checkpoint_num_layers),
+                # custom(0, 1)
+                # custom(1, 2)
+                # ...
+                # custom(38, 39)
                 hidden_states, attention_mask)
             l += self.checkpoint_num_layers
 
@@ -994,6 +1219,26 @@ class ParallelTransformer(MegatronModule):
             prompt_length=None,
             context_length=None,
     ):
+        # ===============================分布式推断时进入该函数的参数================================
+        # 以第一次推断时输入tokens的长度 126 为例
+        #                            首次推断                     下次推断
+        # hidden_states.shape:       [1, 126, h]                 [1, 1, h]
+        # query_hidden_state.shape:  [1, 126, h]                 [1, 1, h]
+        # attention_mask:            [1, 1, 2048, 2048]          [1, 1, 2048, 2048]
+        # layer_past:                None                        首次推断返回的layer_past
+        # get_key_value:             True                        True
+        # prompt_length:             None                        None
+        # context_length:            126                         127
+        #
+        # output[0].shape:           [1, 126, h]                 [1, 1, h]
+        # ======================================================================================
+
+        # ===============================分布式训练时进入该函数的参数================================
+        # hidden_states.shape: [b, s, h], dtype: torch.float16
+        # query_hidden_state.shape: [b, s, h], dtype: torch.float16
+        # attention_mask.shape: [1, 1, s, s], dtype: torch.bool
+        # 训练时其余参数为缺省值
+        # ======================================================================================
 
         # Checks
         if layer_past is not None:
@@ -1007,8 +1252,11 @@ class ParallelTransformer(MegatronModule):
 
         # data format change to avoid explicit tranposes : [b s h] --> [s b h]
         hidden_states = hidden_states.transpose(0, 1).contiguous()
+        # hidden_states.shape: [s, b, h]
         query_hidden_state = query_hidden_state.transpose(0, 1).contiguous()
+        # query_hidden_state.shape: [s, b, h]
 
+        # self.checkpoint_activations: True
         if self.checkpoint_activations:
             hidden_states = self._checkpointed_forward(hidden_states,
                                                        attention_mask)
@@ -1030,31 +1278,44 @@ class ParallelTransformer(MegatronModule):
                     hidden_states, present = hidden_states
                     presents.append(present)
 
+        # self.ln_fp16: True
         if self.ln_fp16:
             hidden_states_ = self.final_layernorm(hidden_states)
+            # 此时self.final_layernorm.weight.dtype: torch.float16
+            # hidden_states.shape: [s, b, h], dtype: torch.float16
+            # hidden_states_.shape: [s, b, h], dtype: torch.float16
         else:
             hidden_states_ = self.final_layernorm(hidden_states.float()).half()
+        # .float() -->  torch.float32
+        # .half()  -->  torch.float16
 
         #################################
         # top query layer
         #################################
         past = None
+        # layer_past: None
         if layer_past is not None:
             past = layer_past[self.num_layers]
         hidden_states = self.topQueryLayer(hidden_states_,
+                                           # hidden_states_.shape: [s, b, h]
                                            query_hidden_state,
+                                           # query_hidden_state.shape: [s, b, h]
                                            attention_mask,
+                                           # attention_mask.shape: [1, 1, s, s]
                                            layer_past=past,
+                                           # past: None
                                            get_key_value=get_key_value,
                                            prompt_length=prompt_length,
                                            context_length=context_length)
 
+        # get_key_value: False
         if get_key_value:
             hidden_states, present = hidden_states
             presents.append(present)
 
         # reverting data format change [s b h] --> [b s h]
         output = hidden_states.transpose(0, 1).contiguous()
+        # output.shape: [b, s, h], dtype: torch.float16
 
         if get_key_value:
             output = [output, presents]

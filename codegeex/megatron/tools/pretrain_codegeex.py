@@ -27,10 +27,15 @@ def model_provider(pre_process=True, post_process=True):
     with deepspeed.zero.Init(
         data_parallel_group=mpu.get_data_parallel_group(),
         remote_device=None if args.remote_device == "none" else args.remote_device,
+        # args.remote_device: "none"
         config_dict_or_path=args.deepspeed_config,
+        # args.deepspeed_config: "/data0/csw/CodeGeeX/scripts/ds_config.json"
         enabled=args.zero_stage == 3,
+        # args.zero_stage: 2
         mpu=mpu,
     ):
+        # args.deepspeed: True
+        # args.no_pipeline_parallel: True
         if args.deepspeed and not args.no_pipeline_parallel:
             model = CodeGeeXModelPipe(num_tokentypes=0, parallel_output=True)
             # This is a hack to give us a reference to get_batch_pipe from within training.py
@@ -96,6 +101,79 @@ def get_batch(data_iterator):
     datatype = torch.int64
 
     # Broadcast data.
+    # data_iterator是torch.utils.data.DataLoader对象, 遍历时每次返回一个如下字典
+    # {
+    #     "input_ids": 形状为[b, s+1]的一个张量,
+    #     "attention_mask": 形状为[b, s+1]的一个张量,
+    #     "labels": 形状为[b, s+1]的一个张量,
+    # }
+
+    # 随便拿一个batch的data看看
+    # {'input_ids': tensor([[    2,  3303,    25, 11361,   198,  4299,  1388, 33529,   198, 50268,
+    #             64,   796,  2534,   198, 50268,  1640,  1312,   287,  2837,     7,
+    #             64,  2599,   198, 50272,  4798,     7,    72,     8,   198, 50268,
+    #           7783, 50256, 50256, 50256, 50256, 50256, 50256, 50256, 50256, 50256,
+    #          50256, 50256, 50256, 50256, 50256, 50256, 50256, 50256, 50256, 50256,
+    #          50256, 50256, 50256, 50256, 50256, 50256, 50256, 50256, 50256, 50256,
+    #          50256, 50256, 50256, 50256, 50256, 50256, 50256, 50256, 50256, 50256,
+    #          50256, 50256, 50256, 50256, 50256, 50256, 50256, 50256, 50256, 50256,
+    #          50256, 50256, 50256, 50256, 50256, 50256, 50256, 50256, 50256, 50256,
+    #          50256, 50256, 50256, 50256, 50256, 50256, 50256, 50256, 50256, 50256,
+    #          50256, 50256, 50256, 50256, 50256, 50256, 50256, 50256, 50256, 50256,
+    #          50256, 50256, 50256, 50256, 50256, 50256, 50256, 50256, 50256, 50256,
+    #          50256, 50256, 50256, 50256, 50256, 50256, 50256, 50256, 50256],
+    #         [    2,  3303,    25, 11361,   198,  4299,  1388, 33529,   198, 50268,
+    #             64,   796, 27191,   198, 50268,  1640,  1312,   287,  2837,     7,
+    #             64,  2599,   198, 50272,  4798,     7,    72,     8,   198, 50268,
+    #           7783, 50256, 50256, 50256, 50256, 50256, 50256, 50256, 50256, 50256,
+    #          50256, 50256, 50256, 50256, 50256, 50256, 50256, 50256, 50256, 50256,
+    #          50256, 50256, 50256, 50256, 50256, 50256, 50256, 50256, 50256, 50256,
+    #          50256, 50256, 50256, 50256, 50256, 50256, 50256, 50256, 50256, 50256,
+    #          50256, 50256, 50256, 50256, 50256, 50256, 50256, 50256, 50256, 50256,
+    #          50256, 50256, 50256, 50256, 50256, 50256, 50256, 50256, 50256, 50256,
+    #          50256, 50256, 50256, 50256, 50256, 50256, 50256, 50256, 50256, 50256,
+    #          50256, 50256, 50256, 50256, 50256, 50256, 50256, 50256, 50256, 50256,
+    #          50256, 50256, 50256, 50256, 50256, 50256, 50256, 50256, 50256, 50256,
+    #          50256, 50256, 50256, 50256, 50256, 50256, 50256, 50256, 50256]]),
+    # 'attention_mask': tensor([[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    #          1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    #          0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    #          0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    #          0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    #          0, 0, 0, 0, 0, 0, 0, 0, 0],
+    #         [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    #          1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    #          0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    #          0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    #          0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    #          0, 0, 0, 0, 0, 0, 0, 0, 0]]),
+    # 'labels': tensor([[    2,  3303,    25, 11361,   198,  4299,  1388, 33529,   198, 50268,
+    #             64,   796,  2534,   198, 50268,  1640,  1312,   287,  2837,     7,
+    #             64,  2599,   198, 50272,  4798,     7,    72,     8,   198, 50268,
+    #           7783, 50256,  -100,  -100,  -100,  -100,  -100,  -100,  -100,  -100,
+    #           -100,  -100,  -100,  -100,  -100,  -100,  -100,  -100,  -100,  -100,
+    #           -100,  -100,  -100,  -100,  -100,  -100,  -100,  -100,  -100,  -100,
+    #           -100,  -100,  -100,  -100,  -100,  -100,  -100,  -100,  -100,  -100,
+    #           -100,  -100,  -100,  -100,  -100,  -100,  -100,  -100,  -100,  -100,
+    #           -100,  -100,  -100,  -100,  -100,  -100,  -100,  -100,  -100,  -100,
+    #           -100,  -100,  -100,  -100,  -100,  -100,  -100,  -100,  -100,  -100,
+    #           -100,  -100,  -100,  -100,  -100,  -100,  -100,  -100,  -100,  -100,
+    #           -100,  -100,  -100,  -100,  -100,  -100,  -100,  -100,  -100,  -100,
+    #           -100,  -100,  -100,  -100,  -100,  -100,  -100,  -100,  -100],
+    #         [    2,  3303,    25, 11361,   198,  4299,  1388, 33529,   198, 50268,
+    #             64,   796, 27191,   198, 50268,  1640,  1312,   287,  2837,     7,
+    #             64,  2599,   198, 50272,  4798,     7,    72,     8,   198, 50268,
+    #           7783, 50256,  -100,  -100,  -100,  -100,  -100,  -100,  -100,  -100,
+    #           -100,  -100,  -100,  -100,  -100,  -100,  -100,  -100,  -100,  -100,
+    #           -100,  -100,  -100,  -100,  -100,  -100,  -100,  -100,  -100,  -100,
+    #           -100,  -100,  -100,  -100,  -100,  -100,  -100,  -100,  -100,  -100,
+    #           -100,  -100,  -100,  -100,  -100,  -100,  -100,  -100,  -100,  -100,
+    #           -100,  -100,  -100,  -100,  -100,  -100,  -100,  -100,  -100,  -100,
+    #           -100,  -100,  -100,  -100,  -100,  -100,  -100,  -100,  -100,  -100,
+    #           -100,  -100,  -100,  -100,  -100,  -100,  -100,  -100,  -100,  -100,
+    #           -100,  -100,  -100,  -100,  -100,  -100,  -100,  -100,  -100,  -100,
+    #           -100,  -100,  -100,  -100,  -100,  -100,  -100,  -100,  -100]])}
+
     if data_iterator is not None:
         data = next(data_iterator)
     else:
@@ -107,15 +185,44 @@ def get_batch(data_iterator):
     tokens_ = data_b["input_ids"].long()
     labels = tokens_[:, 1:].contiguous()
     tokens = tokens_[:, :-1].contiguous()
+    # tokens.shape: [b, s]
+    # labels.shape: [b, s]
 
     # Get the masks and postition ids.
     attention_mask, loss_mask, position_ids = get_ltor_masks_and_position_ids(
         tokens,
         tokenizer.eod,
+        # tokenizer.eod: 50256
         args.reset_position_ids,
+        # args.reset_position_ids: False
         args.reset_attention_mask,
+        # args.reset_attention_mask: False
         args.eod_mask_loss,
+        # args.eod_mask_loss: False
     )
+
+    # 在此运行脚本下, s=128
+    # attention_mask.shape: [1, 1, s, s]
+    # attention_mask[0, 0, :10, :10]:
+    # tensor([
+    #     [False,  True,  True,  True,  True,  True,  True,  True,  True,  True],
+    #     [False, False,  True,  True,  True,  True,  True,  True,  True,  True],
+    #     [False, False, False,  True,  True,  True,  True,  True,  True,  True],
+    #     [False, False, False, False,  True,  True,  True,  True,  True,  True],
+    #     [False, False, False, False, False,  True,  True,  True,  True,  True],
+    #     [False, False, False, False, False, False,  True,  True,  True,  True],
+    #     [False, False, False, False, False, False, False,  True,  True,  True],
+    #     [False, False, False, False, False, False, False, False,  True,  True],
+    #     [False, False, False, False, False, False, False, False, False,  True],
+    #     [False, False, False, False, False, False, False, False, False, False]
+    # ], device='cuda:0')
+    # 经过验证, attention_mask[0, 0]就是一个[s, s]尺寸的上三角矩阵
+
+    # loss_mask.shape: [b, s]
+    # 全1矩阵
+
+    # position_ids.shape: [b, s]
+    # position_ids[i]: tensor([   0,    1,    2,  ..., s-1], device='cuda:0')
 
     return tokens, labels, loss_mask, attention_mask, position_ids
 
@@ -169,8 +276,14 @@ def forward_step(data_iterator, model):
     timers("batch-generator").start()
     tokens, labels, loss_mask, attention_mask, position_ids = get_batch(data_iterator)
     timers("batch-generator").stop()
+    # tokens.shape: [b, s], dtype: torch.int64
+    # labels.shape: [b, s], dtype: torch.int64
+    # loss_mask.shape: [b, s], dtype: torch.float32
+    # attention_mask.shape: [1, 1, s, s], dtype: torch.bool
+    # position_ids.shape: [b, s], dtype: torch.int64
 
     output_tensor = model(tokens, position_ids, attention_mask, labels=labels)
+    # output_tensor.shape: [b, s]
 
     return output_tensor, partial(loss_func, loss_mask)
 
@@ -182,13 +295,27 @@ def train_valid_test_datasets_provider(train_val_test_num_samples):
     print_rank_0("> building train, validation, and test datasets " "for GPT ...")
     train_ds, valid_ds, test_ds = build_train_valid_test_datasets(
         data_prefix=args.data_path,
+        # args.data_path: ['/data0/csw/CodeGeeX/pt_data/my_data']
         data_impl=args.data_impl,
+        # args.data_impl: 'mmap'
         splits_string=args.split,
+        # args.split: [98, 2, 0]
         train_valid_test_num_samples=train_val_test_num_samples,
+        # train_val_test_num_samples: [100, 120, 40]
         seq_length=args.seq_length,
+        # args.seq_length: 512
         seed=args.seed,
+        # args.seed: 1234
         skip_warmup=(not args.mmap_warmup),
+        # args.mmap_warmup: False
     )
+    # 返回的train_ds, valid_ds, test_ds都是PromptDataset类
+    # PromptDataset类继承自torch.utils.data.Dataset, 遍历时每次返回一个如下形式的字典
+    # {
+    #     "input_ids": np.array(input_ids, dtype=np.int64),
+    #     "attention_mask": np.array(attention_mask, dtype=np.int64),
+    #     "labels": np.array(labels, dtype=np.int64),
+    # }
     print_rank_0("> finished creating GPT datasets ...")
 
     return train_ds, valid_ds, test_ds
@@ -206,3 +333,206 @@ if __name__ == "__main__":
         forward_step,
         args_defaults={"tokenizer_type": "GPT2BPETokenizer"},
     )
+    # 本项目的所有注释都依据scripts/pretrain_codegeex.sh的运行结果
+    # 依据上述脚本运行时所有显式指定与未显式指定的参数值如下:
+    # ------------------------ arguments ------------------------
+    #   accumulate_allreduce_grads_in_fp32 .............. False
+    #   adam_beta1 ...................................... 0.9
+    #   adam_beta2 ...................................... 0.95
+    #   adam_eps ........................................ 1e-08
+    #   adlr_autoresume ................................. False
+    #   adlr_autoresume_interval ........................ 1000
+    #   apply_query_key_layer_scaling ................... False
+    #   apply_residual_connection_post_layernorm ........ False
+    #   attention_dropout ............................... 0.1
+    #   attention_softmax_in_fp32 ....................... True
+    #   beam_search ..................................... False
+    #   beam_search_nucleus ............................. False
+    #   beam_warmup ..................................... False
+    #   beam_warmup_length .............................. 0
+    #   bert_binary_head ................................ True
+    #   bert_load ....................................... None
+    #   bf16 ............................................ False
+    #   bias_dropout_fusion ............................. True
+    #   bias_gelu_fusion ................................ True
+    #   biencoder_projection_dim ........................ 0
+    #   biencoder_shared_query_context_model ............ False
+    #   block_data_path ................................. None
+    #   checkpoint_activations .......................... True
+    #   checkpoint_in_cpu ............................... False
+    #   checkpoint_num_layers ........................... 1
+    #   clip_grad ....................................... 1.0
+    #   co_evaluation ................................... False
+    #   compress ........................................ False
+    #   consumed_train_samples .......................... 0
+    #   consumed_train_tokens ........................... 0
+    #   consumed_valid_samples .......................... 0
+    #   contigious_checkpointing ........................ False
+    #   cpu_optimizer ................................... False
+    #   cpu_torch_adam .................................. False
+    #   data_impl ....................................... mmap
+    #   data_parallel_size .............................. 2
+    #   data_path ....................................... ['/data0/csw/CodeGeeX/pt_data/my_data']
+    #   dataloader_type ................................. single
+    #   DDP_impl ........................................ local
+    #   decoder_seq_length .............................. None
+    #   deepscale ....................................... False
+    #   deepscale_config ................................ None
+    #   deepspeed ....................................... True
+    #   deepspeed_activation_checkpointing .............. True
+    #   deepspeed_config ................................ /data0/csw/CodeGeeX/scripts/ds_config.json
+    #   deepspeed_mpi ................................... False
+    #   dist_timeout .................................... 30
+    #   distribute_checkpointed_activations ............. False
+    #   distributed_backend ............................. nccl
+    #   ds_pipeline_enabled ............................. False
+    #   embedding_path .................................. None
+    #   encoder_seq_length .............................. 512
+    #   eod_mask_loss ................................... False
+    #   eval_interval ................................... 10
+    #   eval_iters ...................................... 10
+    #   evaluation ...................................... False
+    #   evidence_data_path .............................. None
+    #   exit_duration_in_mins ........................... None
+    #   exit_interval ................................... None
+    #   ffn_hidden_size ................................. 20480
+    #   finetune ........................................ False
+    #   force_default ................................... False
+    #   force_device .................................... None
+    #   fp16 ............................................ True
+    #   fp16_lm_cross_entropy ........................... False
+    #   fp32_residual_connection ........................ False
+    #   global_batch_size ............................... 4
+    #   gold ............................................ False
+    #   gold_beta ....................................... 0.05
+    #   hidden_dropout .................................. 0.1
+    #   hidden_size ..................................... 5120
+    #   hysteresis ...................................... 2
+    #   ict_head_size ................................... None
+    #   ict_load ........................................ None
+    #   img_dim ......................................... 224
+    #   index_cache_dir ................................. None
+    #   indexer_batch_size .............................. 128
+    #   indexer_log_interval ............................ 1000
+    #   init_method_std ................................. 0.02
+    #   init_method_xavier_uniform ...................... False
+    #   initial_loss_scale .............................. 4294967296
+    #   kv_channels ..................................... 128
+    #   layernorm_epsilon ............................... 1e-05
+    #   lazy_mpu_init ................................... None
+    #   ln_fp16 ......................................... True
+    #   load ............................................ /data0/csw/CodeGeeX/scripts/csw-pretrain-codegeex-13b-test
+    #   load_state ...................................... /data0/csw/CodeGeeX/scripts/mp4_parallel_weights/
+    #   local_rank ...................................... 0
+    #   log_batch_size_to_tensorboard ................... False
+    #   log_interval .................................... 1
+    #   log_learning_rate_to_tensorboard ................ True
+    #   log_loss_scale_to_tensorboard ................... True
+    #   log_num_zeros_in_grad ........................... False
+    #   log_params_norm ................................. False
+    #   log_timers_to_tensorboard ....................... False
+    #   log_validation_ppl_to_tensorboard ............... False
+    #   loss_scale ...................................... 12.0
+    #   loss_scale_window ............................... 1000
+    #   low_memory_load ................................. None
+    #   lr .............................................. 0.0002
+    #   lr_decay_iters .................................. 100000
+    #   lr_decay_samples ................................ None
+    #   lr_decay_style .................................. cosine
+    #   lr_decay_tokens ................................. None
+    #   lr_warmup_fraction .............................. None
+    #   lr_warmup_iters ................................. 1500
+    #   lr_warmup_samples ............................... 0
+    #   make_vocab_size_divisible_by .................... 52224
+    #   mask_prob ....................................... 0.15
+    #   masked_softmax_fusion ........................... True
+    #   max_position_embeddings ......................... 2048
+    #   memory_centric_tiled_linear ..................... False
+    #   merge_file ...................................... /data0/csw/CodeGeeX/codegeex/tokenizer/merges.txt
+    #   micro_batch_size ................................ 2
+    #   min_loss_scale .................................. 1.0
+    #   min_lr .......................................... 1e-07
+    #   mmap_warmup ..................................... False
+    #   ms_model ........................................ False
+    #   no_learned_position_embeddings .................. False
+    #   no_load_optim ................................... None
+    #   no_load_rng ..................................... None
+    #   no_pipeline_parallel ............................ True
+    #   no_save_optim ................................... None
+    #   no_save_rng ..................................... None
+    #   num_attention_heads ............................. 40
+    #   num_beams ....................................... 4
+    #   num_channels .................................... 3
+    #   num_classes ..................................... 1000
+    #   num_layers ...................................... 39
+    #   num_layers_per_virtual_pipeline_stage ........... None
+    #   num_workers ..................................... 2
+    #   onnx_safe ....................................... None
+    #   openai_gelu ..................................... False
+    #   optimizer ....................................... adam
+    #   override_lr_scheduler ........................... True
+    #   params_dtype .................................... torch.float16
+    #   partition_activations ........................... False
+    #   patch_dim ....................................... 16
+    #   pipeline_model_parallel_size .................... 1
+    #   play_tau ........................................ 2.0
+    #   profile_backward ................................ False
+    #   query_in_block_prob ............................. 0.1
+    #   rampup_batch_size ............................... None
+    #   rank ............................................ 0
+    #   remote_device ................................... none
+    #   reset_attention_mask ............................ False
+    #   reset_position_ids .............................. False
+    #   retriever_report_topk_accuracies ................ []
+    #   retriever_score_scaling ......................... False
+    #   retriever_seq_length ............................ 256
+    #   reward_growth ................................... constant
+    #   sample_rate ..................................... 1.0
+    #   save ............................................ /data0/csw/CodeGeeX/scripts/csw-pretrain-codegeex-13b-test
+    #   save_interval ................................... 10
+    #   scale_embeddings ................................ False
+    #   scaled_upper_triang_masked_softmax_fusion ....... False
+    #   scatter_gather_tensors_in_pipeline .............. True
+    #   scattered_embeddings ............................ False
+    #   seed ............................................ 1234
+    #   seq_length ...................................... 512
+    #   sgd_momentum .................................... 0.9
+    #   short_seq_prob .................................. 0.1
+    #   shrink_embedding_gradient_alpha ................. 1.0
+    #   shrink_embedding_gradient_steps ................. None
+    #   shrink_logit_embedding_gradient ................. False
+    #   split ........................................... 98,2,0
+    #   split_transformers .............................. False
+    #   synchronize_each_layer .......................... False
+    #   tempering ....................................... None
+    #   tensor_model_parallel_size ...................... 4
+    #   tensorboard_dir ................................. None
+    #   tensorboard_log_interval ........................ 1
+    #   tensorboard_queue_size .......................... 1000
+    #   test_data_path .................................. None
+    #   tile_factor ..................................... 1
+    #   titles_data_path ................................ None
+    #   tokenizer_path .................................. None
+    #   tokenizer_type .................................. GPT2BPETokenizer
+    #   train_iters ..................................... 25
+    #   train_samples ................................... None
+    #   train_tokens .................................... None
+    #   use_checkpoint_lr_scheduler ..................... False
+    #   use_contiguous_buffers_in_ddp ................... False
+    #   use_cpu_initialization .......................... None
+    #   use_one_sent_docs ............................... False
+    #   use_pin_memory .................................. False
+    #   valid_data_path ................................. None
+    #   virtual_pipeline_model_parallel_size ............ None
+    #   vocab_extra_ids ................................. 0
+    #   vocab_file ...................................... /data0/csw/CodeGeeX/codegeex/tokenizer/vocab.json
+    #   wandb_log_interval .............................. 1
+    #   wandb_logging ................................... False
+    #   weight_decay .................................... 0.1
+    #   world_size ...................................... 8
+    #   zero_allgather_bucket_size ...................... 0.0
+    #   zero_contigious_gradients ....................... False
+    #   zero_reduce_bucket_size ......................... 0.0
+    #   zero_reduce_scatter ............................. False
+    #   zero_stage ...................................... 2
+    # -------------------- end of arguments ---------------------
