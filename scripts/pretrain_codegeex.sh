@@ -27,8 +27,8 @@ EMBED_VOCAB=52224
 GLOBAL_BATCH=4
 MICRO_BATCH=2
 NTRAIN_ITERS=25
-EVAL_INT=100
-SAVE_INT=10
+EVAL_INT=10
+SAVE_INT=100
 TRIAL_TAG="13b-test"
 # - trial
 TRIAL_NAME="pretrain-codegeex"
@@ -108,7 +108,7 @@ deepspeed \
     --save $OUTPUT_DIR \
     --load $OUTPUT_DIR \
     --load-state $CKPT_PATH \
-    --split 98,2,0 \
+    --split 100,0,0 \
     --clip-grad 1.0 \
     --weight-decay 0.1 \
     --adam-beta1 0.9 \
