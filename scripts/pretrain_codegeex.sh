@@ -1,19 +1,15 @@
 SCRIPT_PATH=$(realpath "$0")
-# /data0/csw/CodeGeeX/scripts/pretrain_codegeex.sh
 SCRIPT_DIR=$(dirname "$SCRIPT_PATH")
-# /data0/csw/CodeGeeX/scripts
 MAIN_DIR=$(dirname "$SCRIPT_DIR")
-# /data0/csw/CodeGeeX
 
 # ====== Environment ======
 # - NCCL & IB
-#export NCCL_DEBUG=info
+# export NCCL_DEBUG=info
 export NCCL_IB_DISABLE=0
 export NCCL_IB_GID_INDEX=3
 
-HOSTFILE=${SCRIPT_DIR}/csw_hostfile
+HOSTFILE=${SCRIPT_DIR}/my_hostfile
 MASTER_IP=$(cat $HOSTFILE | head -n 1)
-# 主节点ip
 cat $HOSTFILE | awk '{print $1 " slots=8"}' > $SCRIPT_DIR/hostfile
 echo "MASTER_IP=$MASTER_IP"
 
@@ -31,20 +27,21 @@ EMBED_VOCAB=52224
 GLOBAL_BATCH=4
 MICRO_BATCH=2
 NTRAIN_ITERS=25
-EVAL_INT=10
-SAVE_INT=100
+EVAL_INT=100
+SAVE_INT=10
 TRIAL_TAG="13b-test"
 # - trial
 TRIAL_NAME="pretrain-codegeex"
 # - zero stage
 ZERO_STAGE=2
 # - logging & output
-OUTPUT_DIR="${SCRIPT_DIR}/csw-$TRIAL_NAME-$TRIAL_TAG"
-# 创建训练结果目录
+NOW=$(date +"%Y%m%d_%H%M%S")
+OUTPUT_DIR="${SCRIPT_DIR}/$TRIAL_NAME-$TRIAL_TAG"
+TB_DIR=$OUTPUT_DIR/tb$NOW
 mkdir -p $OUTPUT_DIR
+mkdir -p $TB_DIR
 
 # Deepspeed config
-# 将配置内容写入ds_config.json中
 cat <<EOT > $DS_CONFIG
 {
   "train_batch_size" : $GLOBAL_BATCH,
@@ -121,5 +118,6 @@ deepspeed \
     --attention-softmax-in-fp32 \
     --checkpoint-activations \
     --override-lr-scheduler \
+    --tensorboard-dir $TB_DIR \
     $ds_args |& tee ${OUTPUT_DIR}/$NOW.log
 
