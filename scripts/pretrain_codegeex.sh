@@ -14,12 +14,12 @@ cat $HOSTFILE | awk '{print $1 " slots=8"}' > $SCRIPT_DIR/hostfile
 echo "MASTER_IP=$MASTER_IP"
 
 # ====== Parameters ======
-DATA_PATH=${MAIN_DIR}/pt_data/my_data
-CKPT_PATH=${SCRIPT_DIR}/mp4_parallel_weights/
-DS_CONFIG=${SCRIPT_DIR}/ds_config.json
-# - 13b
 TP=4
 PP=1
+DATA_PATH=${MAIN_DIR}/pt_data/my_data
+CKPT_PATH=${SCRIPT_DIR}/mp${TP}_parallel_weights/
+DS_CONFIG=${SCRIPT_DIR}/ds_config.json
+# - 13b
 NLAYERS=39
 HIDDEN=5120
 NATTN_HEAD=40
@@ -106,7 +106,6 @@ deepspeed \
     --merge-file $MAIN_DIR/codegeex/tokenizer/merges.txt \
     --save-interval $SAVE_INT \
     --save $OUTPUT_DIR \
-    --load $OUTPUT_DIR \
     --load-state $CKPT_PATH \
     --split 100,0,0 \
     --clip-grad 1.0 \

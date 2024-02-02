@@ -299,7 +299,7 @@ def train_valid_test_datasets_provider(train_val_test_num_samples):
         data_impl=args.data_impl,
         # args.data_impl: 'mmap'
         splits_string=args.split,
-        # args.split: [98, 2, 0]
+        # args.split: [100, 0, 0]
         train_valid_test_num_samples=train_val_test_num_samples,
         # train_val_test_num_samples: [100, 120, 40]
         seq_length=args.seq_length,
@@ -421,7 +421,7 @@ if __name__ == "__main__":
     #   layernorm_epsilon ............................... 1e-05
     #   lazy_mpu_init ................................... None
     #   ln_fp16 ......................................... True
-    #   load ............................................ /data0/csw/CodeGeeX/scripts/csw-pretrain-codegeex-13b-test
+    #   load ............................................ None
     #   load_state ...................................... /data0/csw/CodeGeeX/scripts/mp4_parallel_weights/
     #   local_rank ...................................... 0
     #   log_batch_size_to_tensorboard ................... False
@@ -488,8 +488,8 @@ if __name__ == "__main__":
     #   retriever_seq_length ............................ 256
     #   reward_growth ................................... constant
     #   sample_rate ..................................... 1.0
-    #   save ............................................ /data0/csw/CodeGeeX/scripts/csw-pretrain-codegeex-13b-test
-    #   save_interval ................................... 10
+    #   save ............................................ /data0/csw/CodeGeeX/scripts/pretrain-codegeex-13b-test
+    #   save_interval ................................... 100
     #   scale_embeddings ................................ False
     #   scaled_upper_triang_masked_softmax_fusion ....... False
     #   scatter_gather_tensors_in_pipeline .............. True
@@ -501,12 +501,12 @@ if __name__ == "__main__":
     #   shrink_embedding_gradient_alpha ................. 1.0
     #   shrink_embedding_gradient_steps ................. None
     #   shrink_logit_embedding_gradient ................. False
-    #   split ........................................... 98,2,0
+    #   split ........................................... 100,0,0
     #   split_transformers .............................. False
     #   synchronize_each_layer .......................... False
     #   tempering ....................................... None
     #   tensor_model_parallel_size ...................... 4
-    #   tensorboard_dir ................................. None
+    #   tensorboard_dir ................................. /data0/csw/CodeGeeX/scripts/pretrain-codegeex-13b-test/tb20240202_103349
     #   tensorboard_log_interval ........................ 1
     #   tensorboard_queue_size .......................... 1000
     #   test_data_path .................................. None

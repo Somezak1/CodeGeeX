@@ -138,7 +138,7 @@ def pretrain(
     # 在函数initialize_megatron中对_GLOBAL_ARGS、_GLOBAL_TOKENIZER、_GLOBAL_TIMERS等全局变量完成了初始化
     # 后续只要不重新进行这些参数的初始化, 就能通过get_args(), get_tokenizer(), get_timers()等分别获取这些已完成初始化的变量
 
-    # args.save: "/data0/csw/CodeGeeX/scripts/csw-pretrain-codegeex-13b-test"
+    # args.save: "/data0/csw/CodeGeeX/scripts/pretrain-codegeex-13b-test"
     if args.local_rank == 0 and args.save is not None:
         print(f"Creating output dir ...")
         os.makedirs(args.save, exist_ok=True)
@@ -477,7 +477,7 @@ def setup_model_and_optimizer(model_provider_func):
         model = [model]
         print_rank_0("Finishparallel.")
 
-    # args.load: '/data0/csw/CodeGeeX/scripts/csw-pretrain-codegeex-13b-test'
+    # args.load: None
     if args.load is not None:
         timers = get_timers()
         # Extra barrier is added to make sure all ranks report the
@@ -495,7 +495,6 @@ def setup_model_and_optimizer(model_provider_func):
                 load_time = time.perf_counter() - load_start
                 print(f"Rank {args.rank} loaded checkpoint, this rank time: {this_rank_load_time}, total time: {load_time}")
         else:
-            # args.iteration: 0
             args.iteration = load_checkpoint(model, optimizer, lr_scheduler)
         print(f"Rank {args.rank} loaded checkpoint and waiting for other ranks")
         torch.distributed.barrier()

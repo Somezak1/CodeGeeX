@@ -41,7 +41,7 @@ def build_train_valid_test_datasets(
 
     # data_prefix: ['/data0/csw/CodeGeeX/pt_data/my_data']
     # data_impl: 'mmap'
-    # splits_string: [98, 2, 0]
+    # splits_string: [100, 0, 0]
     # train_val_test_num_samples: [100, 120, 40]
     # seq_length: 512
     # seed: 1234
@@ -115,7 +115,7 @@ def _build_train_valid_test_datasets(
 
     # data_prefix: '/data0/csw/CodeGeeX/pt_data/my_data'
     # data_impl: 'mmap'
-    # splits_string: [98, 2, 0]
+    # splits_string: [100, 0, 0]
     # train_val_test_num_samples: [100, 120, 40]
     # seq_length: 512
     # seed: 1234
@@ -133,8 +133,8 @@ def _build_train_valid_test_datasets(
     total_num_of_documents = input_ids_indexed_dataset.sizes.shape[0]
     # total_num_of_documents: 500
     splits = get_train_valid_test_split_(splits_string, total_num_of_documents)
-    # splits: [0, 490, 500, 500]
-    # splits用于将原先500个样本的数据集, 按顺序分为490/10/0大小的train/valid/test数据集
+    # splits: [0, 500, 500, 500]
+    # splits用于将原先500个样本的数据集, 按顺序分为500/0/0大小的train/valid/test数据集
 
     # Print stats about the splits.
     print_rank_0(" > dataset split:")
@@ -158,8 +158,8 @@ def _build_train_valid_test_datasets(
             documents = np.arange(
                 start=splits[index], stop=splits[index + 1], step=1, dtype=np.int32
             )
-            # train documents: np.arange(0, 490)
-            # valid documents: np.arange(490, 500)
+            # train documents: np.arange(0, 500)
+            # valid documents: np.arange(500, 500)
             # test  documents: np.arange(500, 500)
             dataset = PromptDataset(
                 name,
@@ -178,7 +178,7 @@ def _build_train_valid_test_datasets(
     # 从给定的数据集中, 按splits_string的比例, 分出train/valid/test数据集
     # 而train_valid_test_num_samples的作用, 是对于给定的train/valid/test数据集
     # 从中采样出一定数量的训练/验证/测试样本
-    # 比如此例中train数据集的大小为490, 要从中采样出train_valid_test_num_samples[0]=100个样本
+    # 比如此例中train数据集的大小为500, 要从中采样出train_valid_test_num_samples[0]=100个样本
     # 因此绝大多数样本不会被抽到, 少数样本被抽到1次, 也会有极少数样本被抽到2次
     train_dataset = build_dataset(0, "train")
     valid_dataset = build_dataset(1, "valid")
