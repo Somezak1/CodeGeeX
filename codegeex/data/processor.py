@@ -2,7 +2,7 @@ from typing import *
 from time import perf_counter
 
 from codegeex.data.data_utils import sliding_window
-from codegeex.data.types import PromptSample, LabelSample
+from codegeex.data.types2 import PromptSample, LabelSample
 
 
 class PromptDatasetProcessor(object):

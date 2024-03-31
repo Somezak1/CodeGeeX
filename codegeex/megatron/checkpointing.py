@@ -112,9 +112,21 @@ def save_checkpoint(iteration, model, optimizer, lr_scheduler):
     args = get_args()
 
     # Only rank zero of the data parallel writes to the disk.
+    # 该节点使用TP=4 PP=1 DP=2的训练配置, 最后只得到了四个权重文件, 即只将第一个模型保存
+    # 但该函数实际在操作时每个进程都保存了权重, 按理说应该会有八个权重文件, 而因为两两重名, 所以最后只得到了四个
+    # 数据并行组: [0, 4]
+    # 数据并行组: [1, 5]
+    # 数据并行组: [2, 6]
+    # 数据并行组: [3, 7]
+    # 模型并行组: [0, 1, 2, 3]
+    # 模型并行组: [4, 5, 6, 7]
+    # 因为数据并行组组内的权重一样, 比如0和4的权重一致, 1与5的权重一致
+
+    # args.deepspeed: True
     if not args.deepspeed:
         model = utils.unwrap_model(model)
 
+    # args.save: '/data0/csw/CodeGeeX/scripts/pretrain-codegeex-13b-test'
     print_rank_0(
         "saving checkpoint at iteration {:7d} to {}".format(iteration, args.save)
     )
@@ -126,11 +138,17 @@ def save_checkpoint(iteration, model, optimizer, lr_scheduler):
     ):
 
         # Arguments, iteration, and model.
+        # 保存的每个权重文件读取后都是一个字典, 包括以下key
+        # dict_keys(['module', 'buffer_names', 'optimizer', 'param_shapes', 'lr_scheduler',
+        #            'sparse_tensor_module_names', 'skipped_steps', 'global_steps', 'global_samples', 'dp_world_size',
+        #            'mp_world_size', 'ds_config', 'ds_version', 'args', 'checkpoint_version', 'iteration', 'tokens',
+        #            'random_rng_state', 'np_rng_state', 'torch_rng_state', 'cuda_rng_state', 'rng_tracker_states'])
         state_dict = {}
         state_dict["args"] = args
         state_dict["checkpoint_version"] = 3.0
         state_dict["iteration"] = iteration
         state_dict["tokens"] = args.consumed_train_tokens
+        # args.consumed_train_tokens: 消耗的token数
 
         # DeepSpeed saves the model/optimizer/scheduler
         if not args.deepspeed:
@@ -151,6 +169,7 @@ def save_checkpoint(iteration, model, optimizer, lr_scheduler):
                     state_dict["lr_scheduler"] = lr_scheduler.state_dict()
 
         # RNG states.
+        # args.no_save_rng: None
         if not args.no_save_rng:
             state_dict["random_rng_state"] = random.getstate()
             state_dict["np_rng_state"] = np.random.get_state()
@@ -167,17 +186,28 @@ def save_checkpoint(iteration, model, optimizer, lr_scheduler):
     if args.deepspeed:
         # megatron model uses state_dict_for_save_checkpointing instead of the standard state_dict
         # state_dict is used by deepspeed for module saving so it needs to point to the right function
+
+        # args.no_pipeline_parallel: True
         if args.no_pipeline_parallel:
             original_state_dict = model[0].module.state_dict
             model[0].module.state_dict = model[0].module.state_dict_for_save_checkpoint
 
         # Saving is a collective communication
         checkpoint_name = get_checkpoint_name(args.save, iteration)
+        # 每个GPU得到的checkpoint_name随GPU编号而不同
+        # GPU0的checkpoint_name: '/data0/csw/CodeGeeX/scripts/pretrain-codegeex-13b-test/global_step25/mp_rank_00_model_states.pt'
+        # GPU1的checkpoint_name: '/data0/csw/CodeGeeX/scripts/pretrain-codegeex-13b-test/global_step25/mp_rank_01_model_states.pt'
+        # GPU2的checkpoint_name: '/data0/csw/CodeGeeX/scripts/pretrain-codegeex-13b-test/global_step25/mp_rank_02_model_states.pt'
+        # GPU3的checkpoint_name: '/data0/csw/CodeGeeX/scripts/pretrain-codegeex-13b-test/global_step25/mp_rank_03_model_states.pt'
+
         # Trim off the filename and mp_rank_* directory.
         for _ in range(2):
             checkpoint_name = os.path.dirname(checkpoint_name)
+
+        # 每个GPU保存权重
         model[0].save_checkpoint(checkpoint_name, client_state=state_dict)
 
+        # args.no_pipeline_parallel: True
         if args.no_pipeline_parallel:
             model[0].module.state_dict = original_state_dict
 
@@ -193,7 +223,9 @@ def save_checkpoint(iteration, model, optimizer, lr_scheduler):
 
     # And update the latest iteration
     if not torch.distributed.is_initialized() or torch.distributed.get_rank() == 0:
+        # args.save: '/data0/csw/CodeGeeX/scripts/pretrain-codegeex-13b-test'
         tracker_filename = get_checkpoint_tracker_filename(args.save)
+        # tracker_filename: '/data0/csw/CodeGeeX/scripts/pretrain-codegeex-13b-test/latest_checkpointed_iteration.txt'
         with open(tracker_filename, "w") as f:
             f.write(str(iteration))
 

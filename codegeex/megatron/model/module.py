@@ -46,8 +46,8 @@ class MegatronModule(torch.nn.Module):
     ):
         """Use this function to override the state dict for
         saving checkpoints."""
-        # 模型训练中，及时将参数保存到指定位置（设置checkpoint），
-        # 这样在训练出问题时，可以从checkpoint点重新load参数，继续训练
+        # 模型训练中, 及时将参数保存到指定位置（设置checkpoint）,
+        # 这样在训练出问题时, 可以从checkpoint点重新load参数, 继续训练
         return self.state_dict(destination, prefix, keep_vars)
 
     def word_embeddings_weight(self):
@@ -62,7 +62,7 @@ class MegatronModule(torch.nn.Module):
                 )
             # 参见initialize_word_embeddings中WE的定义
             return self.word_embeddings.weight
-        # 如果当前进程是PP组的中间进程，则其上未维护WE，因此当然获取不到
+        # 如果当前进程是PP组的中间进程, 则其上未维护WE, 因此当然获取不到
         raise Exception(
             "word_embeddings_weight() should be " "called for first and last stage only"
         )
@@ -79,7 +79,7 @@ class MegatronModule(torch.nn.Module):
         # This function just initializes the word embeddings in the final stage
         # when we are using pipeline parallelism. If we aren't using pipeline
         # parallelism there is nothing to do.
-        # PP组并行度为1时，第一层和最后一层都在一块GPU上，天然共享WE，无需做强制
+        # PP组并行度为1时, 第一层和最后一层都在一块GPU上, 天然共享WE, 无需做强制
         if args.pipeline_model_parallel_size == 1:
             return
 
@@ -96,17 +96,17 @@ class MegatronModule(torch.nn.Module):
         #    the two word_embeddings layers to ensure that every applied weight
         #    update is the same on both stages.
         # ---------------------------------------------------
-        # 如果流水线并行的度不为1时，依次做三件事:
+        # 如果流水线并行的度不为1时, 依次做三件事:
         # 【初始化时】:
-        # 1、在PP组最后一个进程上初始化一个WE，令其取值全为0
-        # 2、在PP组第一个进程与最后一个进程间做一次AllReduce，保证两者的WE完全一致
+        # 1、在PP组最后一个进程上初始化一个WE, 令其取值全为0
+        # 2、在PP组第一个进程与最后一个进程间做一次AllReduce, 保证两者的WE完全一致
         # 【训练时】:
-        # 3、每次想在PP组第一个/最后一个进程上使用WE时，要做一次通信，保证两者用的WE完全一致
+        # 3、每次想在PP组第一个/最后一个进程上使用WE时, 要做一次通信, 保证两者用的WE完全一致
         if mpu.is_pipeline_last_stage():
             # 若当前进程是PP组最后一个进程
             assert not mpu.is_pipeline_first_stage()
             self._word_embeddings_for_head_key = "word_embeddings_for_head"
-            # 初始化一个WE（已按vocab_size维度切割，可参见Megatron原理篇对WE的讲解）
+            # 初始化一个WE（已按vocab_size维度切割, 可参见Megatron原理篇对WE的讲解）
             # VocabParallelEmbedding将在下文详细讲解
             # set word_embeddings weights to 0 here, then copy first
             # stage's weights using all_reduce below.
@@ -127,8 +127,8 @@ class MegatronModule(torch.nn.Module):
         if torch.distributed.is_initialized():
             # 若当前进程是PP组第一个或最后一个进程
             if mpu.is_pipeline_first_stage() or mpu.is_pipeline_last_stage():
-                # 在两进程间做AllReduce，保证它们使用的WE完全一致
-                # mpu.get_embedding_group: 在源码解读1中讲过，是除DP/TP/PP之外设置的又一进程组，
+                # 在两进程间做AllReduce, 保证它们使用的WE完全一致
+                # mpu.get_embedding_group: 在源码解读1中讲过, 是除DP/TP/PP之外设置的又一进程组
                 # 主要就是用来做关于WE的通讯
                 torch.distributed.all_reduce(
                     self.word_embeddings_weight().data, group=mpu.get_embedding_group()
@@ -146,16 +146,26 @@ class MegatronModule(torch.nn.Module):
 def conversion_helper(val, conversion):
     """Apply conversion to val. Recursively apply conversion if `val`
     #is a nested tuple/list structure."""
+
+    # tokens, position_ids, attention_mask = val
+    # isinstance(val, (tuple, list)): True
     if not isinstance(val, (tuple, list)):
         return conversion(val)
     rtn = [conversion_helper(v, conversion) for v in val]
     if isinstance(val, tuple):
         rtn = tuple(rtn)
+    # rtn: [conversion_helper(tokens, conversion), conversion_helper(position_ids, conversion), conversion_helper(attention_mask, conversion)]
+    # 即 [conversion(tokens), conversion(position_ids), conversion(attention_mask)]
     return rtn
 
 
 def fp32_to_float16(val, float16_convertor):
     """Convert fp32 `val` to fp16/bf16"""
+
+    # tokens, position_ids, attention_mask = val
+    # tokens:           torch.Size([2, 128])            torch.int64
+    # position_ids:     torch.Size([2, 128])            torch.int64
+    # attention_mask:   torch.Size([1, 1, 128, 128])    torch.bool
 
     def half_conversion(val):
         val_typecheck = val
@@ -165,6 +175,7 @@ def fp32_to_float16(val, float16_convertor):
             val = float16_convertor(val)
         return val
 
+    # conversion_helper(val, half_conversion): [half_conversion(tokens), half_conversion(position_ids), half_conversion(attention_mask)]
     return conversion_helper(val, half_conversion)
 
 
@@ -185,9 +196,13 @@ def float16_to_fp32(val):
 class Float16Module(MegatronModule):
     def __init__(self, module, args):
         super(Float16Module, self).__init__()
+        # module: CodeGeeXModel(...)
 
+        # args.fp16: True
         if args.fp16:
             self.add_module("module", module.half())
+            # self.add_module("module", module.half()) 等价于 self.module = module.half()
+            # module.half(): 会将所有参数变为fp16类型, 具体来说, LayerNorm会从fp32变为fp16, LayerNorm以外的参数原本就是fp16, 所以没变化
 
             def float16_convertor(val):
                 return val.half()
@@ -204,11 +219,29 @@ class Float16Module(MegatronModule):
         self.float16_convertor = float16_convertor
 
     def forward(self, *inputs, **kwargs):
+        # tokens, position_ids, attention_mask = inputs
+        # labels = kwargs["labels"]
+        # tokens:           torch.Size([2, 128])            torch.int64
+        # position_ids:     torch.Size([2, 128])            torch.int64
+        # attention_mask:   torch.Size([1, 1, 128, 128])    torch.bool
+        # labels:           torch.Size([2, 128])            torch.int64
+
+        # mpu.is_pipeline_first_stage(): True
         if mpu.is_pipeline_first_stage():
             inputs = fp32_to_float16(inputs, self.float16_convertor)
+            # 因为inputs中的元素既不是模型参数也不是float类型, 所以fp32_to_float16(...)这步对inputs没有任何改变
+            # tokens, position_ids, attention_mask = inputs
+            # tokens:           torch.Size([2, 128])            torch.int64
+            # position_ids:     torch.Size([2, 128])            torch.int64
+            # attention_mask:   torch.Size([1, 1, 128, 128])    torch.bool
         outputs = self.module(*inputs, **kwargs)
+        # outputs: torch.Size([2, 128])  torch.float32
+
+        # mpu.is_pipeline_last_stage(): True
         if mpu.is_pipeline_last_stage():
             outputs = float16_to_fp32(outputs)
+            # 因为outputs既不是模型参数也不是半精度(本身就是单精度), 所以float16_to_fp32(...)这步对outputs也没有任何改变
+            # outputs: torch.Size([2, 128])  torch.float32
         return outputs
 
     def state_dict(self, destination=None, prefix="", keep_vars=False):

@@ -20,8 +20,17 @@ from codegeex.megatron.utils import average_losses_across_data_parallel_group
 def model_provider(pre_process=True, post_process=True):
     """Build the model."""
 
+    # pre_process: True
+    # post_process: True
+
     print_rank_0("building GPT model ...")
     see_memory_usage(f"Before Building Model", force=True)
+    # [2024-03-12 21:51:03,723] [INFO] [utils.py:828:see_memory_usage] Before Building Model
+    # [2024-03-12 21:51:03,724] [INFO] [utils.py:829:see_memory_usage] MA 0.0 GB         Max_MA 0.0 GB         CA 0.0 GB         Max_CA 0 GB
+    # [2024-03-12 21:51:03,725] [INFO] [utils.py:837:see_memory_usage] CPU Virtual Memory:  used = 60.68 GB, percent = 3.2%
+
+    # torch.cuda.memory_allocated(device=None): Return the current GPU memory occupied by tensors in bytes for a given device.
+    # torch.cuda.memory_reserved(device=None): Return the current GPU memory managed by the caching allocator in bytes for a given device.
 
     args = get_args()
     with deepspeed.zero.Init(
@@ -63,11 +72,14 @@ def model_provider(pre_process=True, post_process=True):
             args.attn_mask = attention_mask.to(torch.bool)
 
         else:
+            # 根据所属进程子组的不同, 每个进程定义的model都是完整CodeGeeX模型的一个子块
             model = CodeGeeXModel(
                 num_tokentypes=0,
                 parallel_output=True,
             )
-            
+
+            # args.load_state: "/data0/csw/CodeGeeX/scripts/mp4_parallel_weights/"
+            # 加载预训练权重
             if args.load_state is not None:
                 timers = get_timers()
                 print_rank_0("Loading warmstarting model states ...")
@@ -83,10 +95,14 @@ def model_provider(pre_process=True, post_process=True):
                 state_dict = torch.load(model_path, map_location="cpu")
                 if "module" in state_dict:
                     state_dict = state_dict["module"]  # strip other client states
+                # 为当前进程的模型子块加载预训练的模型权重
                 model.load_state_dict(state_dict)
                 timers("load-model-states").stop()
                 timers.log(["load-model-states"])
     see_memory_usage(f"After Building Model", force=True)
+    # [2024-03-12 21:51:08,370] [INFO] [utils.py:828:see_memory_usage] After Building Model
+    # [2024-03-12 21:51:08,370] [INFO] [utils.py:829:see_memory_usage] MA 5.99 GB         Max_MA 5.99 GB         CA 6.23 GB         Max_CA 6 GB
+    # [2024-03-12 21:51:08,371] [INFO] [utils.py:837:see_memory_usage] CPU Virtual Memory:  used = 98.28 GB, percent = 5.3%
     
     return model
 
@@ -109,7 +125,8 @@ def get_batch(data_iterator):
     # }
 
     # 随便拿一个batch的data看看
-    # {'input_ids': tensor([[    2,  3303,    25, 11361,   198,  4299,  1388, 33529,   198, 50268,
+    # {'input_ids': tensor([
+    #         [    2,  3303,    25, 11361,   198,  4299,  1388, 33529,   198, 50268,
     #             64,   796,  2534,   198, 50268,  1640,  1312,   287,  2837,     7,
     #             64,  2599,   198, 50272,  4798,     7,    72,     8,   198, 50268,
     #           7783, 50256, 50256, 50256, 50256, 50256, 50256, 50256, 50256, 50256,
@@ -135,7 +152,8 @@ def get_batch(data_iterator):
     #          50256, 50256, 50256, 50256, 50256, 50256, 50256, 50256, 50256, 50256,
     #          50256, 50256, 50256, 50256, 50256, 50256, 50256, 50256, 50256, 50256,
     #          50256, 50256, 50256, 50256, 50256, 50256, 50256, 50256, 50256]]),
-    # 'attention_mask': tensor([[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    # 'attention_mask': tensor([
+    #         [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
     #          1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     #          0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     #          0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -147,7 +165,8 @@ def get_batch(data_iterator):
     #          0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     #          0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     #          0, 0, 0, 0, 0, 0, 0, 0, 0]]),
-    # 'labels': tensor([[    2,  3303,    25, 11361,   198,  4299,  1388, 33529,   198, 50268,
+    # 'labels': tensor([
+    #         [    2,  3303,    25, 11361,   198,  4299,  1388, 33529,   198, 50268,
     #             64,   796,  2534,   198, 50268,  1640,  1312,   287,  2837,     7,
     #             64,  2599,   198, 50272,  4798,     7,    72,     8,   198, 50268,
     #           7783, 50256,  -100,  -100,  -100,  -100,  -100,  -100,  -100,  -100,
@@ -257,11 +276,20 @@ def get_batch_pipe(data):
 
 
 def loss_func(loss_mask, output_tensor):
+    # loss_mask.shape: [b, s], dtype: torch.float32
+    # output_tensor.shape: [b, s], dtype: torch.float32
+
     losses = output_tensor.float()
+    # output_tensor 是一个已经在同一张量并行组内各进程间经过 All Reduce, 未坍缩的损失矩阵, 同一张量并行组内所有进程的 output_tensor 一样
+    # output_tensor 代表该进程所属模型并行组的模型在当前 micro_batch_size 数据上的损失矩阵
     loss_mask = loss_mask.view(-1).float()
+    # .float() -->  torch.float32
+    # .half()  -->  torch.float16
     loss = torch.sum(losses.view(-1) * loss_mask) / loss_mask.sum()
+    # loss: 形如tensor(3.9353), 代表该进程所属模型并行组的模型在当前 micro_batch_size 数据上的损失值, 此时同一张量并行组内各进程的 loss 一致
 
     # Reduce loss for logging.
+    # averaged_loss 表示当前所有数据并行模型在该 micro_batch_size 数据上的平均损失
     averaged_loss = average_losses_across_data_parallel_group([loss])
 
     return loss, {"lm loss": averaged_loss[0]}
@@ -276,14 +304,25 @@ def forward_step(data_iterator, model):
     timers("batch-generator").start()
     tokens, labels, loss_mask, attention_mask, position_ids = get_batch(data_iterator)
     timers("batch-generator").stop()
+    # 下面是从训练时每次迭代的日志中截取的一段关于迭代用时的输出字段 (训练脚本未使用deepspeed)
+    # time (ms) | forward-compute: 152.33 | backward-compute: 157.91 | backward-params-all-reduce: 101.10 | backward-embedding-all-reduce: 0.03 | optimizer-copy-to-main-grad: 0.72 | optimizer-unscale-and-check-inf: 18.83 | optimizer-clip-main-grad: 28.35 | optimizer-copy-main-to-model-params: 19.37 | optimizer: 129.43 | batch-generator: 0.64
+    # forward-compute 和 backward-compute 分别是在一个 global_batch_size 数据上前向传播 和 反向传播 (不包含梯度更新) 的总耗时
+    # optimizer: 129.43 表示完成 optimizer.step() 的总耗时, 由 backward-params-all-reduce 到 optimizer-copy-main-to-model-params 以及 参数更新 阶段构成
+    # 注意, 从日志中截取的这段输出字段并不包含 optimizer 进行参数更新的耗时
+    # batch-generator: 0.64 是从 dataloader 中取下个批次 global_batch_size 数据 (包含取数据, 分发数据) 的耗时
+
+    # b 指的是 micro_batch_size, s 指的是实际输入的序列长度
     # tokens.shape: [b, s], dtype: torch.int64
     # labels.shape: [b, s], dtype: torch.int64
     # loss_mask.shape: [b, s], dtype: torch.float32
     # attention_mask.shape: [1, 1, s, s], dtype: torch.bool
     # position_ids.shape: [b, s], dtype: torch.int64
 
+    # 如果训练脚本不使用deepspeed, 那么 model: LocalDDP ( Float16Module( CodeGeeXModel(...) ) )
+    # 但因为当前训练脚本使用了deepspeed, 所以 model: DeepSpeedEngine( CodeGeeXModel(...) )
     output_tensor = model(tokens, position_ids, attention_mask, labels=labels)
-    # output_tensor.shape: [b, s]
+    # output_tensor.shape: [b, s], dtype: torch.float32, 代表该进程所属模型并行组的模型在当前 micro_batch_size 数据上的损失矩阵
+    # output_tensor 是一个已经在同一张量并行组内各进程间经过 All Reduce, 未坍缩的损失矩阵, 同一张量并行组内所有进程的 output_tensor 一样
 
     return output_tensor, partial(loss_func, loss_mask)
 

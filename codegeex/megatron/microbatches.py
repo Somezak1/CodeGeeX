@@ -28,6 +28,7 @@ def build_num_microbatches_calculator(args):
             args.global_batch_size, args.micro_batch_size, args.data_parallel_size
         )
         if args.rank == 0:
+            # num_microbatches_calculator.get(): 1
             print(
                 "setting number of micro-batches to constant {}".format(
                     num_microbatches_calculator.get()

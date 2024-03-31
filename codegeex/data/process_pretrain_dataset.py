@@ -9,7 +9,7 @@ from tqdm.auto import tqdm
 from time import perf_counter
 from black import format_str, FileMode
 
-from codegeex.data.types import PromptDataset, PromptSample
+from codegeex.data.types2 import PromptDataset, PromptSample
 from codegeex.data.processor import PromptDatasetProcessor
 from codegeex.data.data_utils import stream_jsonl, LANGUAGE_TAG
 from codegeex.megatron.data.indexed_dataset import make_mmap_builder

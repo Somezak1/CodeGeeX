@@ -305,7 +305,7 @@ def _build_index_mappings(
         seed: seed for random number generator.
     """
     num_epochs = _num_epochs(documents.shape[0], num_samples)
-    # train num_epochs: int(np.ceil(100 / 490)) = 1
+    # train num_epochs: int(np.ceil(100 / 500)) = 1
     np_rng = np.random.RandomState(seed=seed)
 
     _filename = data_prefix
@@ -329,8 +329,8 @@ def _build_index_mappings(
             start_time = time.time()
             doc_idx = _build_doc_idx(documents, num_epochs, np_rng, False)[:num_samples]
             # train
-            # doc_idx: (  将array([0, 1, 2, ..., 489, ..., 0, 1, 2, ..., 489])shuffle后  )[:100]
-            # 将num_epochs个490长度的数组拼接并打乱, 然后取前num_samples个
+            # doc_idx: (  将array([0, 1, 2, ..., 499, ..., 0, 1, 2, ..., 499])shuffle后  )[:100]
+            # 将num_epochs个500长度的数组拼接并打乱, 然后取前num_samples个
             np.save(doc_idx_filename, doc_idx, allow_pickle=True)
 
             print_rank_0(

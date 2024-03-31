@@ -1195,6 +1195,8 @@ class ParallelTransformer(MegatronModule):
                 # ...
                 # custom(38, 39)
                 hidden_states, attention_mask)
+            # 上面的语句实际上执行的是 CheckpointFunction.apply( custom(l, l + self.checkpoint_num_layers), [hidden_states, attention_mask] )
+            # 即 layerL(hidden_states, attention_mask)
             l += self.checkpoint_num_layers
 
         return hidden_states

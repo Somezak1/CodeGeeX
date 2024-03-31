@@ -23,6 +23,11 @@ _MEM_BUFFS = dict()
 
 def allocate_mem_buff(name, numel, dtype, track_usage):
     """Allocate a memory buffer."""
+
+    # name: "checkpointed activations"
+    # numel: 一个整数值
+    # dtype: torch.half
+    # track_usage: False
     assert name not in _MEM_BUFFS, "memory buffer {} already allocated.".format(name)
     _MEM_BUFFS[name] = MemoryBuffer(name, numel, dtype, track_usage)
     return _MEM_BUFFS[name]
@@ -47,8 +52,15 @@ class MemoryBuffer:
     """
 
     def __init__(self, name, numel, dtype, track_usage):
+        # name: "checkpointed activations"
+        # numel: 一个整数值
+        # dtype: torch.half
+        # track_usage: False
+
         if torch.distributed.get_rank() == 0:
             element_size = torch.tensor([], dtype=dtype).element_size()
+            # element_size: 2
+            # torch.tensor([], dtype=dtype).element_size(): 获取 torch.half 占用几个字节
             print(
                 "> building the {} memory buffer with {} num elements "
                 "and {} dtype ({:.1f} MB)...".format(
@@ -70,6 +82,7 @@ class MemoryBuffer:
         self._start = 0
 
         # Values used for tracking usage.
+        # track_usage: False
         self.track_usage = track_usage
         if self.track_usage:
             self.in_use_value = 0.0
@@ -90,6 +103,8 @@ class MemoryBuffer:
     def add(self, tensor):
         """Allocate a chunk of memory from the buffer to tensor and copy
         the values."""
+        # tensor 是一个一维张量
+
         assert (
             tensor.dtype == self.dtype
         ), "Input tensor type {} different from buffer type {}".format(

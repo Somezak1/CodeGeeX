@@ -105,7 +105,7 @@ def initialize_megatron(
         # 部分dropout使用的是常驻种子, 比如Embedding模块中的Dropout, QueryEmbedding模块中的Dropout, ParallelTransformerLayer中ParallelSelfAttention后的Dropout
 
         # 2, 另一个是临时种子
-        # 每个进程的临时种子= 常驻种子 + 一个该进程所属tp组的rank值 + 2718(可随意更改)
+        # 每个进程的临时种子= 常驻种子 + 该进程所属tp组的local rank值 + 2718(可随意更改)
         # 比如对于本次运行/调试脚本 tp=4 pp=1 dp=2 的情况
         # 张量并行组1: [0, 1, 2, 3]
         # 张量并行组2: [4, 5, 6, 7]
@@ -386,8 +386,8 @@ def _set_random_seed(seed_):
     # seed_: 1234
     if seed_ is not None and seed_ > 0:
         # Ensure that different pipeline MP stages get different seeds.
-        # 如果不使用流水线并行, 那么所有进程的随机数种子一样
-        # 如果使用流水线并行, 那么同一流水线并行组组内各进程的随机数种子不同, 组间同对应位置的进程 随机数种子相同
+        # 如果不使用流水线并行, 那么所有进程的常驻随机数种子一样
+        # 如果使用流水线并行, 那么同一流水线并行组组内各进程的常驻随机数种子不同, 组间同对应位置的进程 常驻随机数种子相同
         seed = seed_ + (100 * mpu.get_pipeline_model_parallel_rank())
         random.seed(seed)
         np.random.seed(seed)
@@ -431,5 +431,6 @@ def _initialize_mem_buffs():
     args = get_args()
 
     # Initialize memory for checkpointed activations.
+    # args.distribute_checkpointed_activations: False
     if args.distribute_checkpointed_activations:
         mpu.init_checkpointed_activations_memory_buffer()

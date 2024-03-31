@@ -32,6 +32,9 @@ from codegeex.megatron.mpu.layers import param_is_not_tensor_parallel_duplicate
 
 
 def unwrap_model(model, module_instances=(torchDDP)):
+    # module_instances: (torchDDP, LocalDDP, Float16Module)
+    # 如果训练脚本不使用deepspeed, 那么 model: [ LocalDDP ( Float16Module( CodeGeeXModel(...) ) ) ]
+    # 但因为当前训练脚本使用了deepspeed, 所以 model: [ DeepSpeedEngine(...) ]
     return_list = True
     if not isinstance(model, list):
         model = [model]
@@ -43,6 +46,8 @@ def unwrap_model(model, module_instances=(torchDDP)):
         unwrapped_model.append(model_module)
     if not return_list:
         return unwrapped_model[0]
+    # 如果训练脚本不使用deepspeed, 那么 unwrapped_model: [ CodeGeeXModel(...) ]
+    # 但因为当前训练脚本使用了deepspeed, 所以 unwrapped_model: [ DeepSpeedEngine(...) ]
     return unwrapped_model
 
 

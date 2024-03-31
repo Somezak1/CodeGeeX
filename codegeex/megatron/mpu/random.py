@@ -51,12 +51,21 @@ def init_checkpointed_activations_memory_buffer():
         * args.hidden_size
         // args.tensor_model_parallel_size
     )
+    # args.micro_batch_size: 2
+    # args.max_position_embeddings: 2048
+    # args.hidden_size: 5120
+    # args.tensor_model_parallel_size: 4
+    # per_layer: 5242880
     assert (
         args.num_layers % args.checkpoint_num_layers == 0
     ), "number of layers is not divisible by checkpoint-num-layers"
+    # args.num_layers: 39
+    # args.checkpoint_num_layers: 1
     num_checkpointer_layers = args.num_layers // args.checkpoint_num_layers
+    # num_checkpointer_layers: 39
     numel = per_layer * num_checkpointer_layers
     dtype = torch.half
+    # args.fp16: True
     if not args.fp16:
         dtype = torch.float
 
@@ -67,6 +76,7 @@ def init_checkpointed_activations_memory_buffer():
     _CHECKPOINTED_ACTIVATIONS_MEMORY_BUFFER = allocate_mem_buff(
         "checkpointed activations", numel, dtype, track_usage=False
     )
+    # _CHECKPOINTED_ACTIVATIONS_MEMORY_BUFFER: 是一个 MemoryBuffer(...) 对象
 
 
 def reset_checkpointed_activations_memory_buffer():
@@ -111,6 +121,9 @@ def _set_cuda_rng_state(new_state, device=-1):
 
 def split_tensor_into_1d_equal_chunks(tensor):
     """Break a tensor into equal 1D chunks."""
+    # 将tensor展平成一维数组, 然后同一张量并行组的进程平分存储这个数组
+
+    # tensor: [s, b, h], dtype: torch.float16
     data = tensor.view(-1)
     partition_size = torch.numel(data) // get_tensor_model_parallel_world_size()
     start_index = partition_size * get_tensor_model_parallel_rank()
@@ -286,6 +299,13 @@ class CheckpointFunction(torch.autograd.Function):
 
     @staticmethod
     def forward(ctx, run_function, *args):
+        # ===============================分布式训练时进入该函数的参数================================
+        # hidden_states.shape: [s, b, h], dtype: torch.float16
+        # attention_mask.shape: [1, 1, s, s], dtype: torch.bool
+        # ======================================================================================
+
+        # hidden_states, attention_mask = args
+
         ctx.run_function = run_function
 
         # Copy the rng states.
@@ -302,6 +322,8 @@ class CheckpointFunction(torch.autograd.Function):
             ctx.input_0_shape = args[0].data.shape
             args[0].data = split_tensor_into_1d_equal_chunks(args[0].data)
             args[0].data = _CHECKPOINTED_ACTIVATIONS_MEMORY_BUFFER.add(args[0].data)
+            # _CHECKPOINTED_ACTIVATIONS_MEMORY_BUFFER: 是一个 MemoryBuffer(...) 对象
+            # 上述操作实际上是将原本传入forward的hidden_states展平后, 由张量并行组内的各GPU平分存储至预先划分的整块激活值缓存空间中
 
         # Store everything.
         ctx.save_for_backward(*args)

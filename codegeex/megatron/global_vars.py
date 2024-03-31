@@ -230,6 +230,9 @@ class _Timer:
 
     def elapsed(self, reset=True):
         """Calculate the elapsed time."""
+        # 在使用elapsed()方法前一般都已start()
+        # 因此该方法计算了从start()到调用elapsed()中间所经历的时间
+        # 并将计时器归零后重新启动start()
         started_ = self.started_
         # If the timing in progress, end it first.
         if self.started_:
