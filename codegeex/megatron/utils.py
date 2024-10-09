@@ -33,8 +33,8 @@ from codegeex.megatron.mpu.layers import param_is_not_tensor_parallel_duplicate
 
 def unwrap_model(model, module_instances=(torchDDP)):
     # module_instances: (torchDDP, LocalDDP, Float16Module)
-    # 如果训练脚本不使用deepspeed, 那么 model: [ LocalDDP ( Float16Module( CodeGeeXModel(...) ) ) ]
-    # 但因为当前训练脚本使用了deepspeed, 所以 model: [ DeepSpeedEngine(...) ]
+    # 如果训练脚本不使用 deepspeed, 那么 model: [ LocalDDP ( Float16Module( CodeGeeXModel(...) ) ) ]
+    # 但因为当前训练脚本使用了 deepspeed, 所以 model: [ DeepSpeedEngine(...) ]
     return_list = True
     if not isinstance(model, list):
         model = [model]
@@ -46,8 +46,8 @@ def unwrap_model(model, module_instances=(torchDDP)):
         unwrapped_model.append(model_module)
     if not return_list:
         return unwrapped_model[0]
-    # 如果训练脚本不使用deepspeed, 那么 unwrapped_model: [ CodeGeeXModel(...) ]
-    # 但因为当前训练脚本使用了deepspeed, 所以 unwrapped_model: [ DeepSpeedEngine(...) ]
+    # 如果训练脚本不使用 deepspeed, 那么 unwrapped_model: [ CodeGeeXModel(...) ]
+    # 但因为当前训练脚本使用了 deepspeed, 所以 unwrapped_model: [ DeepSpeedEngine(...) ]
     return unwrapped_model
 
 
@@ -94,20 +94,28 @@ def average_losses_across_data_parallel_group(losses):
     return averaged_losses
 
 
-def report_memory(name):
+def report_memory(name, first_rank=False):
     """Simple GPU memory report."""
-    mega_bytes = 1024.0 * 1024.0
-    string = name + " memory (MB)"
-    string += " | allocated: {}".format(torch.cuda.memory_allocated() / mega_bytes)
-    string += " | max allocated: {}".format(
-        torch.cuda.max_memory_allocated() / mega_bytes
+    mb_bytes = 1024.0 * 1024.0
+    gb_bytes = 1024.0 * 1024.0 * 1024.0
+    string = name + " memory"
+    string += " | allocated: {:.0f} MB ({:.2f} GB)".format(
+        torch.cuda.memory_allocated() / mb_bytes,
+        torch.cuda.memory_allocated() / gb_bytes
     )
-    string += " | reserved: {}".format(torch.cuda.memory_reserved() / mega_bytes)
-    string += " | max reserved: {}".format(
-        torch.cuda.max_memory_reserved() / mega_bytes
+    string += " | max allocated: {:.0f} MB ({:.2f} GB)".format(
+        torch.cuda.max_memory_allocated() / mb_bytes,
+        torch.cuda.max_memory_allocated() / gb_bytes
     )
-    if mpu.get_data_parallel_rank() == 0:
-        print("[Rank {}] {}".format(torch.distributed.get_rank(), string), flush=True)
+    string += " | reserved: {:.0f} MB".format(torch.cuda.memory_reserved() / mb_bytes)
+    string += " | max reserved: {:.0f} MB".format(
+        torch.cuda.max_memory_reserved() / mb_bytes
+    )
+    if first_rank:
+        print_rank_0("\n[Rank {}] {}".format(torch.distributed.get_rank(), string))
+    else:
+        if mpu.get_data_parallel_rank() == 0:
+            print("\n[Rank {}] {}".format(torch.distributed.get_rank(), string), flush=True)
 
 
 def print_params_min_max_norm(optimizer, iteration):

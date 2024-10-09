@@ -112,7 +112,7 @@ def save_checkpoint(iteration, model, optimizer, lr_scheduler):
     args = get_args()
 
     # Only rank zero of the data parallel writes to the disk.
-    # 该节点使用TP=4 PP=1 DP=2的训练配置, 最后只得到了四个权重文件, 即只将第一个模型保存
+    # 该节点使用 TP=4 PP=1 DP=2 的训练配置, 最后只得到了四个权重文件, 即只将第一个模型保存
     # 但该函数实际在操作时每个进程都保存了权重, 按理说应该会有八个权重文件, 而因为两两重名, 所以最后只得到了四个
     # 数据并行组: [0, 4]
     # 数据并行组: [1, 5]
@@ -120,13 +120,13 @@ def save_checkpoint(iteration, model, optimizer, lr_scheduler):
     # 数据并行组: [3, 7]
     # 模型并行组: [0, 1, 2, 3]
     # 模型并行组: [4, 5, 6, 7]
-    # 因为数据并行组组内的权重一样, 比如0和4的权重一致, 1与5的权重一致
+    # 因为数据并行组组内的权重一样, 比如 0 和 4 的权重一致, 1 与 5 的权重一致
 
     # args.deepspeed: True
     if not args.deepspeed:
         model = utils.unwrap_model(model)
 
-    # args.save: '/data0/csw/CodeGeeX/scripts/pretrain-codegeex-13b-test'
+    # args.save: '/home/icksys/csw/CodeGeeX/scripts/pretrain-codegeex-13b-test'
     print_rank_0(
         "saving checkpoint at iteration {:7d} to {}".format(iteration, args.save)
     )
@@ -138,7 +138,7 @@ def save_checkpoint(iteration, model, optimizer, lr_scheduler):
     ):
 
         # Arguments, iteration, and model.
-        # 保存的每个权重文件读取后都是一个字典, 包括以下key
+        # 保存的每个权重文件读取后都是一个字典, 包括以下 key
         # dict_keys(['module', 'buffer_names', 'optimizer', 'param_shapes', 'lr_scheduler',
         #            'sparse_tensor_module_names', 'skipped_steps', 'global_steps', 'global_samples', 'dp_world_size',
         #            'mp_world_size', 'ds_config', 'ds_version', 'args', 'checkpoint_version', 'iteration', 'tokens',
@@ -194,11 +194,15 @@ def save_checkpoint(iteration, model, optimizer, lr_scheduler):
 
         # Saving is a collective communication
         checkpoint_name = get_checkpoint_name(args.save, iteration)
-        # 每个GPU得到的checkpoint_name随GPU编号而不同
-        # GPU0的checkpoint_name: '/data0/csw/CodeGeeX/scripts/pretrain-codegeex-13b-test/global_step25/mp_rank_00_model_states.pt'
-        # GPU1的checkpoint_name: '/data0/csw/CodeGeeX/scripts/pretrain-codegeex-13b-test/global_step25/mp_rank_01_model_states.pt'
-        # GPU2的checkpoint_name: '/data0/csw/CodeGeeX/scripts/pretrain-codegeex-13b-test/global_step25/mp_rank_02_model_states.pt'
-        # GPU3的checkpoint_name: '/data0/csw/CodeGeeX/scripts/pretrain-codegeex-13b-test/global_step25/mp_rank_03_model_states.pt'
+        # 每个 GPU 得到的 checkpoint_name 随 GPU 编号而不同
+        # GPU0 的 checkpoint_name: '/home/icksys/csw/CodeGeeX/scripts/pretrain-codegeex-13b-test/global_step25/mp_rank_00_model_states.pt'
+        # GPU1 的 checkpoint_name: '/home/icksys/csw/CodeGeeX/scripts/pretrain-codegeex-13b-test/global_step25/mp_rank_01_model_states.pt'
+        # GPU2 的 checkpoint_name: '/home/icksys/csw/CodeGeeX/scripts/pretrain-codegeex-13b-test/global_step25/mp_rank_02_model_states.pt'
+        # GPU3 的 checkpoint_name: '/home/icksys/csw/CodeGeeX/scripts/pretrain-codegeex-13b-test/global_step25/mp_rank_03_model_states.pt'
+        # GPU4 的 checkpoint_name: '/home/icksys/csw/CodeGeeX/scripts/pretrain-codegeex-13b-test/global_step25/mp_rank_00_model_states.pt'
+        # GPU5 的 checkpoint_name: '/home/icksys/csw/CodeGeeX/scripts/pretrain-codegeex-13b-test/global_step25/mp_rank_01_model_states.pt'
+        # GPU6 的 checkpoint_name: '/home/icksys/csw/CodeGeeX/scripts/pretrain-codegeex-13b-test/global_step25/mp_rank_02_model_states.pt'
+        # GPU7 的 checkpoint_name: '/home/icksys/csw/CodeGeeX/scripts/pretrain-codegeex-13b-test/global_step25/mp_rank_03_model_states.pt'
 
         # Trim off the filename and mp_rank_* directory.
         for _ in range(2):
@@ -223,9 +227,9 @@ def save_checkpoint(iteration, model, optimizer, lr_scheduler):
 
     # And update the latest iteration
     if not torch.distributed.is_initialized() or torch.distributed.get_rank() == 0:
-        # args.save: '/data0/csw/CodeGeeX/scripts/pretrain-codegeex-13b-test'
+        # args.save: '/home/icksys/csw/CodeGeeX/scripts/pretrain-codegeex-13b-test'
         tracker_filename = get_checkpoint_tracker_filename(args.save)
-        # tracker_filename: '/data0/csw/CodeGeeX/scripts/pretrain-codegeex-13b-test/latest_checkpointed_iteration.txt'
+        # tracker_filename: '/home/icksys/csw/CodeGeeX/scripts/pretrain-codegeex-13b-test/latest_checkpointed_iteration.txt'
         with open(tracker_filename, "w") as f:
             f.write(str(iteration))
 

@@ -192,11 +192,11 @@ class ParallelSelfAttention(MegatronModule):
             prompt_length=None,
             context_length=None,
     ):
-        # 训练时sq==sk==s, 都是传入样本的序列长度
-        # 推理时sq, sk, s三者都不一致, s此时为max_sequence_length
+        # 训练时 sq==sk==s, 都是传入样本的序列长度
+        # 推理时 sq, sk, s 三者都不一致, s 此时为 max_sequence_length
 
         # ===============================分布式推断时进入该函数的参数===============================
-        # 以第一次推断时输入tokens的长度 126 为例
+        # 以第一次推断时输入 tokens 的长度 126 为例
         #                            首次推断                     下次推断
         # hidden_states.shape:       [126, 1, h]                 [1, 1, h]
         # attention_mask:            [1, 1, 2048, 2048]          [1, 1, 2048, 2048]
@@ -216,7 +216,7 @@ class ParallelSelfAttention(MegatronModule):
         # hidden_states.shape: [s, b, h], dtype: torch.float16
         # attention_mask.shape: [1, 1, s, s], dtype: torch.bool
         # 训练时其余参数为缺省值
-        # 此时sq = s = sk
+        # 此时 sq = s = sk
         # =====================================================================================
 
         # =====================
@@ -261,7 +261,7 @@ class ParallelSelfAttention(MegatronModule):
         # layer_past: None
         if layer_past is not None:
             # 只会在推断的编码阶段（即除首次推断以后的推断）进入该条件分支
-            # 此时s_pre=126, sq=1, sk=s_pre+sq=127
+            # 此时 s_pre=126, sq=1, sk=s_pre+sq=127
             past_key, past_value = layer_past
             # past_key.shape: [s_pre, b, np, hn]
             # past_value.shape: [s_pre, b, np, hn]
@@ -326,7 +326,7 @@ class ParallelSelfAttention(MegatronModule):
                                      attention_scores.size(3) - 1,
                                      :attention_scores.size(3)].unsqueeze(2)
                     # attention_mask[..., sk-1, :sk].unsqueeze(2).shape: [1, 1, 1, sk]
-                    # 此时attention_mask里全是False
+                    # 此时attention_mask 里全是 False
                 else:
                     attention_mask = attention_mask[
                                      ...,
@@ -338,11 +338,11 @@ class ParallelSelfAttention(MegatronModule):
         # Attention probs and dropout
         # ===========================
 
-        # 只有推断且不使用KV Cache时会使用到这个分支
+        # 只有推断且不使用 KV Cache 时会使用到这个分支
         if context_length is not None:
             attention_mask = torch.clone(attention_mask)
             attention_mask[:, :, context_length:, :] = True
-            # 以context_length=7为例
+            # 以 context_length=7 为例
             # attention_mask[0, 0, :10, :10]:
             # tensor([
             #     [False,  True,  True,  True,  True,  True,  True,  True,  True,  True],
@@ -356,11 +356,11 @@ class ParallelSelfAttention(MegatronModule):
             #     [True,  True,  True,  True,  True,   True,  True,  True,  True,  True],
             #     [True,  True,  True,  True,  True,   True,  True,  True,  True,  True]
             # ], device='cuda:0')
-            # 即mask掉后面padding的这些token
+            # 即 mask 掉后面 padding 的这些 token
 
         # attention scores and attention mask [b, np, sq, sk]
         # attention_scores = attention_mask_func(attention_scores, attention_mask)
-        # attention_mask.shape: [1, 1, s, s], 训练时sq == sk == s, 都是传入样本的序列长度
+        # attention_mask.shape: [1, 1, s, s], 训练时 sq == sk == s, 都是传入样本的序列长度
         attention_scores = attention_scores - attention_mask * 10000.0
 
         # self.attention_softmax_in_fp32: True
@@ -369,12 +369,12 @@ class ParallelSelfAttention(MegatronModule):
             attention_probs = self.softmax(attention_scores.float()).half()
         else:
             attention_probs = self.softmax(attention_scores.half())
-        # 以如下attention_scores为例
+        # 以如下 attention_scores 为例
         # tensor([[     0., -10000., -10000., -10000.],
         #         [     0.,      0., -10000., -10000.],
         #         [     0.,      0.,      0., -10000.],
         #         [     0.,      0.,      0.,      0.]])
-        # 则attention_probs为
+        # 则 attention_probs 为
         # tensor([[1.0000, 0.0000, 0.0000, 0.0000],
         #         [0.5000, 0.5000, 0.0000, 0.0000],
         #         [0.3333, 0.3333, 0.3333, 0.0000],
@@ -754,7 +754,7 @@ class ParallelTransformerLayer(MegatronModule):
             context_length=None,
     ):
         # ===============================分布式推断时进入该函数的参数===============================
-        # 以第一次推断时输入tokens的长度 126 为例
+        # 以第一次推断时输入 tokens 的长度 126 为例
         #                            首次推断                     下次推断
         # hidden_states.shape:       [126, 1, h]                 [1, 1, h]
         # attention_mask:            [1, 1, 2048, 2048]          [1, 1, 2048, 2048]
@@ -818,8 +818,8 @@ class ParallelTransformerLayer(MegatronModule):
             bias_dropout_add_func = get_bias_dropout_add(self.training)
 
         # re-enable torch grad to enable fused optimization.
-        # 因为attention_bias为0
-        # 所以这步等价于 Dropout(attention_output)+residual
+        # 因为 attention_bias 为 0
+        # 所以这步等价于 Dropout(attention_output) + residual
         with torch.enable_grad():
             layernorm_input = bias_dropout_add_func(
                 attention_output,
@@ -1132,7 +1132,7 @@ class ParallelTransformer(MegatronModule):
             eps=args.layernorm_epsilon)
         # args.layernorm_epsilon: 1e-05
         # self.final_layernorm.weight.shape: [h], dtype: torch.float32
-        # CodeGeeX中的LayerNorm比较奇怪, 初始化时LayerNorm的权重是torch.float32, 前馈时的权重就变为torch.float16了
+        # CodeGeeX 中的 LayerNorm 比较奇怪, 初始化时 LayerNorm 的权重是 torch.float32, 前馈时的权重就变为 torch.float16 了
 
     def _get_layer_index(self, layer_number):
         if self.param_sharing_style == 'grouped':
@@ -1155,7 +1155,7 @@ class ParallelTransformer(MegatronModule):
         """Forward method with activation checkpointing."""
 
         # ===============================分布式推断时进入该函数的参数================================
-        # 以第一次推断时输入tokens的长度 126 为例
+        # 以第一次推断时输入 tokens 的长度 126 为例
         #                            首次推断                     下次推断
         # hidden_states.shape:       [126, 1, h]                 [1, 1, h]
         # attention_mask:            [1, 1, 2048, 2048]          [1, 1, 2048, 2048]
@@ -1186,7 +1186,7 @@ class ParallelTransformer(MegatronModule):
         mpu.reset_checkpointed_activations_memory_buffer()
         l = 0
         # self.checkpoint_num_layers: 1
-        # 完整的过一遍39层ParallelTransformerLayer, 并将最后一层输出的hidden_states返回
+        # 完整的过一遍 39 层 ParallelTransformerLayer, 并将最后一层输出的 hidden_states 返回
         while l < self.num_layers:
             hidden_states = mpu.checkpoint(
                 custom(l, l + self.checkpoint_num_layers),
@@ -1222,7 +1222,7 @@ class ParallelTransformer(MegatronModule):
             context_length=None,
     ):
         # ===============================分布式推断时进入该函数的参数================================
-        # 以第一次推断时输入tokens的长度 126 为例
+        # 以第一次推断时输入 tokens 的长度 126 为例
         #                            首次推断                     下次推断
         # hidden_states.shape:       [1, 126, h]                 [1, 1, h]
         # query_hidden_state.shape:  [1, 126, h]                 [1, 1, h]

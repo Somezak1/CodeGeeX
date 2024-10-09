@@ -89,7 +89,7 @@ def generate_prompt_samples(
 
 def main(
     tokenizer_path: str,
-    # tokenizer_path: "/data0/csw/CodeGeeX/codegeex/tokenizer/"
+    # tokenizer_path: "/home/icksys/csw/CodeGeeX/codegeex/tokenizer/"
     dataset_path: Union[str, List[str]],
     # ① dataset_path: "pt_data/my_data.jsonl"
     # ② dataset_path: "sft_data/my_data.jsonl"
@@ -124,7 +124,7 @@ def main(
     if num_workers == 0:
         num_workers = multiprocessing.cpu_count()
     pool = multiprocessing.Pool(num_workers)
-    # 该进程池最多开启32个进程
+    # 该进程池最多开启 32 个进程
     output_bin_files = {}
     output_idx_files = {}
     builders = {}
@@ -149,7 +149,7 @@ def main(
         eod_token=pad_token_id)
     
     processor.start_time = perf_counter()
-    # imap_unordered 会同时开启32个异步进程进行 process_sample_strict 的执行, 不影响主进程继续运行, 只有在取结果时才会阻塞主进程
+    # imap_unordered 会同时开启 32 个异步进程进行 process_sample_strict 的执行, 不影响主进程继续运行, 只有在取结果时才会阻塞主进程
     doc_iter = pool.imap_unordered(processor.process_sample_strict,
                                    prompt_dataset, 
                                    chunksize=20)
@@ -167,6 +167,6 @@ def main(
 
 
 if __name__ == "__main__":
-    # ① python codegeex/data/process_pretrain_dataset.py  --dataset_path  pt_data/my_data.jsonl  --tokenizer_path /data0/csw/CodeGeeX/codegeex/tokenizer/  --output_prefix pt_data/my_data   --language python  --mode pretrain  --seq_len 128
-    # ② python codegeex/data/process_pretrain_dataset.py  --dataset_path sft_data/my_data.jsonl  --tokenizer_path /data0/csw/CodeGeeX/codegeex/tokenizer/  --output_prefix sft_data/my_data                     --mode sft       --seq_len 128
+    # ① python codegeex/data/process_pretrain_dataset.py  --dataset_path  pt_data/my_data.jsonl  --tokenizer_path /home/icksys/csw/CodeGeeX/codegeex/tokenizer/  --output_prefix pt_data/my_data   --language python  --mode pretrain  --seq_len 128
+    # ② python codegeex/data/process_pretrain_dataset.py  --dataset_path sft_data/my_data.jsonl  --tokenizer_path /home/icksys/csw/CodeGeeX/codegeex/tokenizer/  --output_prefix sft_data/my_data                     --mode sft       --seq_len 128
     fire.Fire(main)

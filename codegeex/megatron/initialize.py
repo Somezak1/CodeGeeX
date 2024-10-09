@@ -82,9 +82,9 @@ def initialize_megatron(
         # Pytorch distributed.
         # 分布式训练 通信初始化的核心函数
         _initialize_distributed()
-        # 在_initialize_distributed()函数中, 使用torch.cuda.set_device(device)为各个进程分配了指定gpu
-        # 在运行torch.cuda.set_device(device)前, 各个进程运行torch.cuda.current_device()的结果都为0
-        # 在运行torch.cuda.set_device(device)后, 各个进程运行torch.cuda.current_device()的结果为自己指定gpu的编号
+        # 在 _initialize_distributed() 函数中, 使用 torch.cuda.set_device(device) 为各个进程分配了指定 gpu
+        # 在运行 torch.cuda.set_device(device) 前, 各个进程运行 torch.cuda.current_device() 的结果都为 0
+        # 在运行 torch.cuda.set_device(device) 后, 各个进程运行 torch.cuda.current_device() 的结果为自己指定 gpu 的编号
 
         # Random seeds for reproducibility.
         if args.rank == 0:
@@ -95,26 +95,26 @@ def initialize_megatron(
         # 1, 一个是常驻种子
         # 如果不使用流水线并行, 那么所有进程的常驻种子一样
         # 如果使用流水线并行, 那么同一流水线并行组组内各进程的常驻种子不同, 组间同对应位置的进程 常驻种子相同
-        # 比如tp=2 pp=2 dp=2时
-        # 流水线并行组1: [0, 4]
-        # 流水线并行组2: [1, 5]
-        # 流水线并行组3: [2, 6]
-        # 流水线并行组4: [3, 7]
-        # 那么0 1 2 3 进程的常驻种子相同, 4 5 6 7 进程的常驻种子相同, 0与4的常驻种子不同
-        # 模型结构中部分参数的初始化使用的是常驻种子, 比如QueryEmbedding模块中的VocabParallelEmbedding, 所有的nn.Embedding
-        # 部分dropout使用的是常驻种子, 比如Embedding模块中的Dropout, QueryEmbedding模块中的Dropout, ParallelTransformerLayer中ParallelSelfAttention后的Dropout
+        # 比如 tp=2 pp=2 dp=2 时
+        # 流水线并行组 1: [0, 4]
+        # 流水线并行组 2: [1, 5]
+        # 流水线并行组 3: [2, 6]
+        # 流水线并行组 4: [3, 7]
+        # 那么 0 1 2 3 进程的常驻种子相同, 4 5 6 7 进程的常驻种子相同, 0 与 4 的常驻种子不同
+        # 模型结构中部分参数的初始化使用的是常驻种子, 比如 QueryEmbedding 模块中的 VocabParallelEmbedding, 所有的 nn.Embedding
+        # 部分 dropout 使用的是常驻种子, 比如 Embedding 模块中的 Dropout, QueryEmbedding 模块中的 Dropout, ParallelTransformerLayer 中 ParallelSelfAttention 后的 Dropout
 
         # 2, 另一个是临时种子
-        # 每个进程的临时种子= 常驻种子 + 该进程所属tp组的local rank值 + 2718(可随意更改)
+        # 每个进程的临时种子 = 常驻种子 + 该进程所属 tp 组的 local rank值 + 2718 (可随意更改)
         # 比如对于本次运行/调试脚本 tp=4 pp=1 dp=2 的情况
-        # 张量并行组1: [0, 1, 2, 3]
-        # 张量并行组2: [4, 5, 6, 7]
-        # 那么进程0的临时种子为args.seed + 0 + 2718
-        # 那么进程4的临时种子为args.seed + 0 + 2718
-        # 那么进程5的临时种子为args.seed + 1 + 2718
-        # 那么进程7的临时种子为args.seed + 3 + 2718
-        # 部分模型结构的参数初始化使用的是临时种子, 比如Embedding模块中的VocabParallelEmbedding, ParallelSelfAttention中的Q,K,V,O参数, ParallelMLP中的矩阵参数
-        # 部分dropout使用的是临时种子, 比如ParaSelfAttention中的Dropout,
+        # 张量并行组 1: [0, 1, 2, 3]
+        # 张量并行组 2: [4, 5, 6, 7]
+        # 那么进程 0 的临时种子为 args.seed + 0 + 2718
+        # 那么进程 4 的临时种子为 args.seed + 0 + 2718
+        # 那么进程 5 的临时种子为 args.seed + 1 + 2718
+        # 那么进程 7 的临时种子为 args.seed + 3 + 2718
+        # 部分模型结构的参数初始化使用的是临时种子, 比如 Embedding 模块中的 VocabParallelEmbedding, ParallelSelfAttention 中的 Q,K,V,O 参数, ParallelMLP 中的矩阵参数
+        # 部分 dropout 使用的是临时种子, 比如 ParaSelfAttention 中的 Dropout
 
         _set_random_seed(args.seed)
 
@@ -256,20 +256,20 @@ def _initialize_distributed():
     local_rank  | 0  |   1  |  0   |   1 |
     rank        | 0  |   1  |  2   |   3 |
 
-    node: 物理结点, 1台机器或者1个容器. 图中2个物理结点
-    rank: 进程在全局上的序号. 图中4个进程
-    local_rank: 进程在node上的序号.
-    torch.cuda.device_count(): 当前进程所在的node上可使用的GPU的数量
-    device: GPU在某个node上的编号
+    node: 物理结点, 1 台机器或者 1 个容器. 图中 2 个物理结点
+    rank: 进程在全局上的序号. 图中 4 个进程
+    local_rank: 进程在 node 上的序号.
+    torch.cuda.device_count(): 当前进程所在的 node 上可使用的 GPU 的数量
+    device: GPU 在某个 node 上的编号
 
     该函数作用:
-    1、设置分布式环境: 初始化进程, 分配GPU, 并设置进程大组（group）
-    2、制定DP/TP/PP分组策略, 设置进程子组（subgroup）
-    3、设置DeepSpeed ZeRO-R, 对activation进行优化
+    1、设置分布式环境: 初始化进程, 分配 GPU, 并设置进程大组（group）
+    2、制定 DP/TP/PP 分组策略, 设置进程子组（subgroup）
+    3、设置 DeepSpeed ZeRO-R, 对 activation 进行优化
     """
     args = get_args()
 
-    # device_count: 8, 当前进程所在的node上可使用的GPU的数量
+    # device_count: 8, 当前进程所在的 node 上可使用的 GPU 的数量
     device_count = torch.cuda.device_count()
 
     # torch.distributed.is_initialized(): False
@@ -296,8 +296,8 @@ def _initialize_distributed():
         # 1. 初始化进程, 分配GPU, 并设置进程大组（group）
         if device_count > 0:
             device = args.rank % device_count
-            # 此次debug的device: 7
-            # 1块GPU 1个进程, device为GPU在该机器上的编号. 例如图例中的进程9, 其所在机器上有8块卡. 因此进程9使用的gpu编号为9%8=1
+            # 此次 debug 的 device: 7
+            # 1 块 GPU 1 个进程, device 为 GPU 在该机器上的编号. 例如图例中的进程 9, 其所在机器上有 8 块卡. 因此进程 9 使用的 gpu 编号为 9%8=1
             if args.local_rank is not None:
                 assert (
                     args.local_rank == device
@@ -312,13 +312,13 @@ def _initialize_distributed():
                 )
                 device = args.force_device
             torch.cuda.set_device(device)
-            # 为当前进程分配GPU
+            # 为当前进程分配 GPU
 
         # Call the init process
         # 设置进程大组
         init_method = "tcp://"
         master_ip = os.getenv("MASTER_ADDR", "localhost")
-        # 获取进程的ip
+        # 获取进程的 ip
         # master_ip: 127.0.0.1
         master_port = os.getenv("MASTER_PORT", "6000")
         # 获取进程的端口号
@@ -350,7 +350,7 @@ def _initialize_distributed():
 
     # Set the tensor model-parallel, pipeline model-parallel, and
     # data-parallel communicators.
-    # 2、制定DP/TP/PP分组策略, 设置进程子组（subgroup）
+    # 2、制定 DP/TP/PP 分组策略, 设置进程子组（subgroup）
     if device_count > 0:
         # mpu.model_parallel_is_initialized(): False
         if mpu.model_parallel_is_initialized():
@@ -365,7 +365,7 @@ def _initialize_distributed():
                 # args.virtual_pipeline_model_parallel_size: None
             )
 
-    # 设置DeepSpeed ZeRO-R, 对activation进行优化
+    # 设置 DeepSpeed ZeRO-R, 对 activation 进行优化
     # args.deepspeed: True
     # args.deepspeed_activation_checkpointing: True
     if args.deepspeed and args.deepspeed_activation_checkpointing:
@@ -394,8 +394,8 @@ def _set_random_seed(seed_):
         torch.manual_seed(seed)
         if torch.cuda.device_count() > 0:
             mpu.model_parallel_cuda_manual_seed(seed)
-        # 为CPU设置随机数种子: torch.manual_seed(seed)
-        # 为特定GPU设置随机数种子: torch.cuda.manual_seed(seed)
+        # 为 CPU 设置随机数种子: torch.manual_seed(seed)
+        # 为特定 GPU 设置随机数种子: torch.cuda.manual_seed(seed)
     else:
         raise ValueError("Seed ({}) should be a positive integer.".format(seed))
 

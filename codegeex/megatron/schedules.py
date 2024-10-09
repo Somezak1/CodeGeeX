@@ -23,7 +23,7 @@ from codegeex.megatron import get_num_microbatches
 from codegeex.megatron import get_timers
 from codegeex.megatron import mpu
 from codegeex.megatron import p2p_communication
-from codegeex.megatron.utils import unwrap_model
+from codegeex.megatron.utils import unwrap_model, report_memory
 from codegeex.megatron.model import DistributedDataParallel as LocalDDP
 from codegeex.megatron.model import Float16Module
 
@@ -49,8 +49,8 @@ def forward_step(forward_step_func, data_iterator, model, input_tensor, losses_r
     Returns output tensor."""
 
     # input_tensor: None
-    # 如果训练脚本不使用deepspeed, 那么 model: LocalDDP ( Float16Module( CodeGeeXModel(...) ) )
-    # 但因为当前训练脚本使用了deepspeed, 所以 model: DeepSpeedEngine( CodeGeeXModel(...) )
+    # 如果训练脚本不使用 deepspeed, 那么 model: LocalDDP ( Float16Module( CodeGeeXModel(...) ) )
+    # 但因为当前训练脚本使用了 deepspeed, 所以 model: DeepSpeedEngine( CodeGeeXModel(...) )
 
     timers = get_timers()
 
@@ -59,24 +59,24 @@ def forward_step(forward_step_func, data_iterator, model, input_tensor, losses_r
     timers("forward-compute").start()
     unwrapped_model = unwrap_model(model, (torchDDP, LocalDDP, Float16Module))
     # unwrap_model 帮 model 脱去包装
-    # 如果训练脚本不使用deepspeed, 那么 unwrapped_model: CodeGeeXModel(...)
-    # 但因为当前训练脚本使用了deepspeed, 所以 unwrapped_model: DeepSpeedEngine( CodeGeeXModel(...) )
+    # 如果训练脚本不使用 deepspeed, 那么 unwrapped_model: CodeGeeXModel(...)
+    # 但因为当前训练脚本使用了 deepspeed, 所以 unwrapped_model: DeepSpeedEngine( CodeGeeXModel(...) )
     if not args.deepspeed:
         unwrapped_model.set_input_tensor(input_tensor)
     else:
         unwrapped_model.module.set_input_tensor(input_tensor)
-    # 流水线并行时才会用到这个input_tensor
+    # 流水线并行时才会用到这个 input_tensor
 
     output_tensor, loss_func = forward_step_func(data_iterator, model)
-    # output_tensor.shape: [b, s], dtype: torch.float32, 代表该进程所属模型并行组的模型在当前 micro_batch_size 数据上的损失矩阵
+    # output_tensor.shape: [b, s], dtype: torch.float32, 代表该进程所属模型并行组 (因此没有流水线并行, 所以张量并行组等价于模型并行组) 的模型在当前 micro_batch_size 数据上的损失矩阵
     # output_tensor 是一个已经在同一张量并行组内各进程间经过 All Reduce, 未坍缩的损失矩阵, 同一张量并行组内所有进程的 output_tensor 一样
 
     # mpu.is_pipeline_last_stage(): True
     if mpu.is_pipeline_last_stage():
         output_tensor = loss_func(output_tensor)
         loss, loss_reduced = output_tensor
-        # loss: 形如tensor(3.9353), 代表该进程所属模型并行组的模型在当前 micro_batch_size 数据上的损失值, 此时同一张量并行组内各进程的 loss 一致
-        # loss_reduced: 形如{"lm loss": : tensor(3.9247)}, 表示当前所有数据并行模型在该 micro_batch_size 数据上的平均损失值
+        # loss: 形如 tensor(3.9353), 代表该进程所属模型并行组的模型 (因此没有流水线并行, 所以张量并行组等价于模型并行组) 在当前 micro_batch_size 数据上的损失值, 此时同一张量并行组内各进程的 loss 一致
+        # loss_reduced: 形如 {"lm loss": : tensor(3.9247)}, 表示当前所有数据并行模型在该 micro_batch_size 数据上的平均损失值
 
         # get_num_microbatches(): 梯度累积次数
         output_tensor = loss / get_num_microbatches()
@@ -97,10 +97,10 @@ def backward_step(
     Returns gradient of loss with respect to input tensor (None if first
     stage)."""
 
-    # 如果训练脚本不使用deepspeed, 那么 optimizer: Float16OptimizerWithFloat16Params( FusedAdam(...) )
-    # 但因为当前训练脚本使用了deepspeed, 所以 optimizer: FusedAdam(...)
+    # 如果训练脚本不使用 deepspeed, 那么 optimizer: Float16OptimizerWithFloat16Params( FusedAdam(...) )
+    # 但因为当前训练脚本使用了 deepspeed, 所以 optimizer: FusedAdam(...)
     # input_tensor: None
-    # output_tensor: 当前进程所在模型在当前 micro_batch_size 数据上的平均训练损失 / 梯度累积次数
+    # output_tensor: 当前进程所在模型并行组的模型在当前 micro_batch_size 数据上的训练损失值 / 梯度累积次数
     # output_tensor_grad: None
 
     args = get_args()
@@ -151,12 +151,12 @@ def forward_backward_no_pipelining(
 ):
     """Run forward and backward passes with no pipeline parallelism
     (no inter-stage communication).
-    # 进行get_num_microbatches()次前向计算和反向传播积累梯度, 但不进行梯度更新
+    # 进行 get_num_microbatches() 次前向计算和反向传播积累梯度, 但不进行梯度更新
 
-    # 如果训练脚本不使用deepspeed, 那么
+    # 如果训练脚本不使用 deepspeed, 那么
     #       model: [ LocalDDP ( Float16Module( CodeGeeXModel(...) ) ) ]
     #       optimizer: Float16OptimizerWithFloat16Params( FusedAdam(...) )
-    # 但因为当前训练脚本使用了deepspeed, 所以
+    # 但因为当前训练脚本使用了 deepspeed, 所以
     #       model: [ DeepSpeedEngine( CodeGeeXModel(...) ) ]
     #       optimizer: FusedAdam(...)
     # forward_only: False
@@ -176,8 +176,8 @@ def forward_backward_no_pipelining(
 
     # args.deepspeed: True
     if args.deepspeed:
-        # 看set_gradient_accumulation_boundary的函数注释
-        # model此时是一个DeepSpeedEngine(Module)类
+        # 看 set_gradient_accumulation_boundary 的函数注释
+        # model 此时是一个 DeepSpeedEngine(Module) 类
         model.set_gradient_accumulation_boundary(False)
 
     losses_reduced = []
@@ -187,18 +187,28 @@ def forward_backward_no_pipelining(
         for i in range(get_num_microbatches() - 1):
             # print_rank_0("====> start of microstep {i}")
             # print_rank_0("====> forward")
+            report_memory("(iterations {} step {} before 【forward_step】 )".format(args.iteration, i), True)
             output_tensor = forward_step(
                 forward_step_func, data_iterator, model, input_tensor, losses_reduced
             )
-            # loss: 形如tensor(3.9353), 代表该进程所属模型并行组的模型在当前 micro_batch_size 数据上的损失值, 此时同一张量并行组内各进程的 loss 一致
+            report_memory("(iterations {} step {} after  【forward_step】 )".format(args.iteration, i), True)
+            # loss: 形如 tensor(3.9353), 代表该进程所属模型并行组 (因此没有流水线并行, 所以张量并行组等价于模型并行组) 的模型在当前 micro_batch_size 数据上的损失值, 此时同一模型并行组内各进程的 loss 一致
             # output_tensor = loss / get_num_microbatches()
+            # output_tensor 用于在 backward_step 中计算 model_param.grad
+            # losses_reduced 是一个由字典组成的列表, 每个字典形式如同 {"lm loss": : tensor(3.9247)}, 表示当前所有数据并行模型在该 micro_batch_size 数据上的平均损失值
+            # 每经过一个 forward_step(...) 都会往 losses_reduced 中添加一个新的元素
+
             # print_rank_0("====> backward")
             if not forward_only:
+                report_memory("(iterations {} step {} before 【backward_step】)".format(args.iteration, i), True)
                 backward_step(
                     optimizer, input_tensor, output_tensor, output_tensor_grad, model
                 )
-                # backward_step()这步相当于只做了model.backward(output_tensor)
-                # 将 output_tensor 反向传播计算的梯度累积到 model_param.main_grad 中
+                report_memory("(iterations {} step {} after  【backward_step】)".format(args.iteration, i), True)
+                # backward_step() 这步相当于只做了 model.backward(output_tensor)
+                # model.backward(output_tensor) 得到 model_param.grad (初始时 model_param.grad = None)
+                # 同时将梯度累积到 main_grad 中去, 即 model_param.main_grad += model_param.grad
+                # 最后 model_param.grad = None
             # print_rank_0("====> end of microstep {i}")
 
     if args.deepspeed:
@@ -207,12 +217,16 @@ def forward_backward_no_pipelining(
     # Run computation for last microbatch out of context handler (want to synchronize gradients).
     # print_rank_0("====> start of the last microstep")
     # print_rank_0("====> forward")
+    report_memory("(iterations {} step {} before 【forward_step】 )".format(args.iteration, get_num_microbatches() - 1), True)
     output_tensor = forward_step(
         forward_step_func, data_iterator, model, input_tensor, losses_reduced
     )
+    report_memory("(iterations {} step {} after  【forward_step】 )".format(args.iteration, get_num_microbatches() - 1), True)
     # print_rank_0("====> backward")
     if not forward_only:
+        report_memory("(iterations {} step {} before 【backward_step】)".format(args.iteration, get_num_microbatches() - 1), True)
         backward_step(optimizer, input_tensor, output_tensor, output_tensor_grad, model)
+        report_memory("(iterations {} step {} after  【backward_step】)".format(args.iteration, get_num_microbatches() - 1), True)
     # print_rank_0("====> end of the last microstep")
 
     return losses_reduced

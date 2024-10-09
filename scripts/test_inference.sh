@@ -4,13 +4,13 @@ GPU=$1
 PROMPT_FILE=$2
 
 SCRIPT_PATH=$(realpath "$0")
-# SCRIPT_PATH: /data0/csw/CodeGeeX/scripts/test_inference.sh
+# SCRIPT_PATH: /home/icksys/csw/CodeGeeX/scripts/test_inference.sh
 SCRIPT_DIR=$(dirname "$SCRIPT_PATH")
-# SCRIPT_DIR: /data0/csw/CodeGeeX/scripts/
+# SCRIPT_DIR: /home/icksys/csw/CodeGeeX/scripts/
 MAIN_DIR=$(dirname "$SCRIPT_DIR")
-# MAIN_DIR: /data0/csw/CodeGeeX/
+# MAIN_DIR: /home/icksys/csw/CodeGeeX/
 TOKENIZER_PATH="$MAIN_DIR/codegeex/tokenizer/"
-# TOKENIZER_PATH: /data0/csw/CodeGeeX/codegeex/tokenizer/
+# TOKENIZER_PATH: /home/icksys/csw/CodeGeeX/codegeex/tokenizer/
 
 # import model configuration
 source "$MAIN_DIR/configs/codegeex_13b.sh"
@@ -44,7 +44,7 @@ CMD="python $MAIN_DIR/tests/test_inference.py \
 #             --num-attention-heads 40 \
 #             --max-position-embeddings 2048 \
 #             --attention-softmax-in-fp32 \
-#             --load /data0/csw/CodeGeeX/scripts/codegeex_13b.pt \
+#             --load /home/icksys/csw/CodeGeeX/scripts/codegeex_13b.pt \
 #             --layernorm-epsilon 1e-5 \
 #             --fp16 \
 #             --ws-encoding-start-id 10 \

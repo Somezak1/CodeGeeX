@@ -47,7 +47,7 @@ def get_element_from_dict_by_path(d, path):
 
 def main():
     # 注释代码
-    # python /data0/csw/CodeGeeX/codegeex/megatron/convert_ckpt_parallel.py       --load-ckpt-path codegeex_13b.pt       --save-ckpt-path mp2_parallel_weights_new       --tokenizer-path /data0/csw/CodeGeeX/codegeex/tokenizer/       --target-tensor-model-parallel-size 2       --num-layers 39       --hidden-size 5120       --num-attention-heads 40       --max-position-embeddings 2048       --attention-softmax-in-fp32       --fp16       --micro-batch-size 1       --make-vocab-size-divisible-by 52224       --seq-length 2048
+    # python /home/icksys/csw/CodeGeeX/codegeex/megatron/convert_ckpt_parallel.py       --load-ckpt-path codegeex_13b.pt       --save-ckpt-path mp2_parallel_weights_new       --tokenizer-path /home/icksys/csw/CodeGeeX/codegeex/tokenizer/       --target-tensor-model-parallel-size 2       --num-layers 39       --hidden-size 5120       --num-attention-heads 40       --max-position-embeddings 2048       --attention-softmax-in-fp32       --fp16       --micro-batch-size 1       --make-vocab-size-divisible-by 52224       --seq-length 2048
     parser = argparse.ArgumentParser()
     parser = get_change_ckpt_args(parser)
     args, _ = parser.parse_known_args()

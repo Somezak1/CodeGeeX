@@ -33,10 +33,10 @@ TRIAL_TAG="13b-test"
 # - trial
 TRIAL_NAME="pretrain-codegeex"
 # - zero stage
-ZERO_STAGE=2
+ZERO_STAGE=1
 # - logging & output
 NOW=$(date +"%Y%m%d_%H%M%S")
-OUTPUT_DIR="/data3/csw/$TRIAL_NAME-$TRIAL_TAG"
+OUTPUT_DIR="/data2/csw/$TRIAL_NAME-$TRIAL_TAG"
 TB_DIR=$OUTPUT_DIR/tb$NOW
 mkdir -p $OUTPUT_DIR
 mkdir -p $TB_DIR
@@ -67,11 +67,11 @@ cat <<EOT > $DS_CONFIG
 EOT
 
 ds_args=""
-#ds_args=" --deepspeed ${ds_args}"
-#ds_args=" --no-pipeline-parallel ${ds_args}"
-#ds_args=" --deepspeed_config=$DS_CONFIG ${ds_args}"
-#ds_args=" --zero-stage=$ZERO_STAGE ${ds_args}"
-#ds_args=" --deepspeed-activation-checkpointing ${ds_args}"
+ds_args=" --deepspeed ${ds_args}"
+ds_args=" --no-pipeline-parallel ${ds_args}"
+ds_args=" --deepspeed_config=$DS_CONFIG ${ds_args}"
+ds_args=" --zero-stage=$ZERO_STAGE ${ds_args}"
+ds_args=" --deepspeed-activation-checkpointing ${ds_args}"
 
 echo "Launching deepspeed"
 deepspeed \
@@ -118,6 +118,5 @@ deepspeed \
     --checkpoint-activations \
     --override-lr-scheduler \
     --tensorboard-dir $TB_DIR \
-    --use-contiguous-buffers-in-ddp \
-    --accumulate-allreduce-grads-in-fp32 \
     $ds_args |& tee ${OUTPUT_DIR}/$NOW.log
+

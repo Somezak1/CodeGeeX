@@ -138,12 +138,12 @@ class Embedding(MegatronModule):
         num_tokentypes=0,
     ):
 
-        # hidden_size: 5120, 每个token的向量维度
+        # hidden_size: 5120, 每个 token 的向量维度
         # vocab_size: 52224, 词表大小
         # max_sequence_length: 2048, 最大上下文长度
-        # embedding_dropout_prob: 0.1,  dropout probability for embeddings
+        # embedding_dropout_prob: 0.1, dropout probability for embeddings
         # init_method: init_method_normal(0.02), 初始化权重的方法
-        # num_tokentypes: 0, 类似于Bert中的segment type
+        # num_tokentypes: 0, 类似于 Bert 中的 segment type
 
         super(Embedding, self).__init__()
         
@@ -156,7 +156,7 @@ class Embedding(MegatronModule):
         
         # Word embeddings (parallel).
         # self.word_embeddings.weight.shape: [vocab_size//p, h], dtype: torch.float16
-        # p表示TP组模型并行度
+        # p 表示 TP 组模型并行度
         self.word_embeddings = mpu.VocabParallelEmbedding(
             vocab_size, self.hidden_size, init_method=self.init_method)
         self._word_embeddings_key = 'word_embeddings'
@@ -178,7 +178,7 @@ class Embedding(MegatronModule):
         # Add this as an optional field that can be added through
         # method call so we can load a pretrain model without
         # token types and add them as needed.
-        # tokentype_embeddings类似于Bert中的segment embedding
+        # tokentype_embeddings类似于 Bert 中的 segment embedding
         self._tokentype_embeddings_key = 'tokentype_embeddings'
         if self.num_tokentypes > 0:
             self.tokentype_embeddings = torch.nn.Embedding(self.num_tokentypes,
@@ -198,7 +198,7 @@ class Embedding(MegatronModule):
         token-type embeddings in case the pretrained model does not have it.
         This allows us to load the model normally and then add this embedding.
         """
-        # 如果在pretrain阶段未定义TE，而在fine-tune阶段TE，则可通过此函数添加
+        # 如果在 pretrain 阶段未定义 TE，而在 fine-tune 阶段 TE，则可通过此函数添加
         if self.tokentype_embeddings is not None:
             raise Exception('tokentype embeddings is already initialized')
         if torch.distributed.get_rank() == 0:
@@ -212,7 +212,7 @@ class Embedding(MegatronModule):
 
     def forward(self, input_ids, position_ids, tokentype_ids=None):
         # ===============================分布式推断时进入该函数的参数================================
-        # 以第一次推断时输入tokens的长度 126 为例
+        # 以第一次推断时输入 tokens 的长度 126 为例
         #                          首次推断                     下次推断
         # input_ids.shape:         [1, 126]                    [1, 1]
         # position_ids:            [1, 126]                    [1, 1]
@@ -227,16 +227,16 @@ class Embedding(MegatronModule):
         # 训练时其余参数为缺省值
         # ======================================================================================
 
-        """定义输入过embedding层的计算方法"""
+        """定义输入过 embedding 层的计算方法"""
         # Embeddings.
         # words_embeddings.shape: [b, s, h], dtype: torch.float16
-        # 再次注意: self.word_embeddings做forward时, 最终的输出结果是AllReduce的
+        # 再次注意: self.word_embeddings 做 forward 时, 最终的输出结果是 AllReduce 的
         words_embeddings = self.word_embeddings(input_ids)
         # position_embeddings.shape: [b, s, h], dtype: torch.float16
         position_embeddings = self.position_embeddings(position_ids)
         # embeddings.shape: [b, s, h], dtype: torch.float16
         embeddings = words_embeddings + position_embeddings
-        # 依需要决定是否增加TE
+        # 依需要决定是否增加 TE
         if tokentype_ids is not None:
             assert self.tokentype_embeddings is not None
             embeddings = embeddings + self.tokentype_embeddings(tokentype_ids)
@@ -268,7 +268,7 @@ class Embedding(MegatronModule):
 
     def load_state_dict(self, state_dict, strict=True):
         """Customized load."""
-        # 用于模型的重载。例如训到一半挂掉了，我们就重新初始化一个新模型，重载上个checkpoint保存下的权重。
+        # 用于模型的重载, 例如训到一半挂掉了, 我们就重新初始化一个新模型, 重载上个 checkpoint 保存下的权重。
 
         # Word embedding.
         if self._word_embeddings_key in state_dict:
@@ -383,12 +383,12 @@ class QueryEmbedding(MegatronModule):
                  num_tokentypes=0):
         super(QueryEmbedding, self).__init__()
 
-        # hidden_size: 5120, 每个token的向量维度
+        # hidden_size: 5120, 每个 token 的向量维度
         # vocab_size: 52224, 词表大小
         # max_sequence_length: 2048, 最大上下文长度
         # embedding_dropout_prob: 0.1,  dropout probability for embeddings
         # init_method: init_method_normal(0.02), 初始化权重的方法
-        # num_tokentypes: 0, 类似于Bert中的segment type
+        # num_tokentypes: 0, 类似于 Bert 中的 segment type
 
         self.hidden_size = hidden_size
         self.init_method = init_method
@@ -441,7 +441,7 @@ class QueryEmbedding(MegatronModule):
 
     def forward(self, position_ids, tokentype_ids=None):
         # ===============================分布式推断时进入该函数的参数================================
-        # 以第一次推断时输入tokens的长度 126 为例
+        # 以第一次推断时输入 tokens 的长度 126 为例
         #                          首次推断                     下次推断
         # position_ids:            [1, 126]                    [1, 1]
         # 其余参数为缺省值
@@ -641,7 +641,7 @@ class TransformerLanguageModel(MegatronModule):
             context_length=None,
     ):
         # ===============================分布式推断时进入该函数的参数================================
-        # 以第一次推断时输入tokens的长度 126 为例
+        # 以第一次推断时输入 tokens 的长度 126 为例
         #                          首次推断                     下次推断
         # input_ids.shape:         [1, 126]                    [1, 1]
         # position_ids:            [1, 126]                    [1, 1]

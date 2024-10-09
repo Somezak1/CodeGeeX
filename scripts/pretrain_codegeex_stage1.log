@@ -1,0 +1,1290 @@
+MASTER_IP=127.0.0.1
+Launching deepspeed
+[2024-09-26 00:31:17,122] [INFO] [runner.py:453:main] cmd = /data3/miniforge-pypy3/envs/csw_codegeex/bin/python3.10 -u -m deepspeed.launcher.launch --world_info=eyIxMjcuMC4wLjEiOiBbMCwgMSwgMiwgMywgNCwgNSwgNiwgN119 --master_addr=127.0.0.1 --master_port=29501 /home/icksys/csw/CodeGeeX/codegeex/megatron/tools/pretrain_codegeex.py --tensor-model-parallel-size 4 --pipeline-model-parallel-size 1 --no-pipeline-parallel --num-layers 39 --hidden-size 5120 --make-vocab-size-divisible-by 52224 --num-attention-heads 40 --seq-length 512 --loss-scale 12 --max-position-embeddings 2048 --micro-batch-size 2 --global-batch-size 8 --train-iters 25 --lr 2e-4 --min-lr 1e-7 --lr-decay-iters 100000 --lr-decay-style cosine --lr-warmup-iters 1500 --log-interval 1 --eval-iters 10 --eval-interval 10 --data-path /home/icksys/csw/CodeGeeX/pt_data/my_data --data-impl mmap --vocab-file /home/icksys/csw/CodeGeeX/codegeex/tokenizer/vocab.json --merge-file /home/icksys/csw/CodeGeeX/codegeex/tokenizer/merges.txt --save-interval 100 --save /data2/csw/pretrain-codegeex-13b-test --load-state /home/icksys/csw/CodeGeeX/scripts/mp4_parallel_weights/ --split 100,0,0 --clip-grad 1.0 --weight-decay 0.1 --adam-beta1 0.9 --adam-beta2 0.95 --fp16 --ln-fp16 --attention-softmax-in-fp32 --checkpoint-activations --override-lr-scheduler --tensorboard-dir /data2/csw/pretrain-codegeex-13b-test/tb20240926_003115 --deepspeed-activation-checkpointing --zero-stage=1 --deepspeed_config=/home/icksys/csw/CodeGeeX/scripts/ds_config.json --no-pipeline-parallel --deepspeed
+[2024-09-26 00:31:18,319] [INFO] [launch.py:96:main] 0 NCCL_IB_GID_INDEX=3
+[2024-09-26 00:31:18,319] [INFO] [launch.py:96:main] 0 NCCL_IB_DISABLE=0
+[2024-09-26 00:31:18,319] [INFO] [launch.py:103:main] WORLD INFO DICT: {'127.0.0.1': [0, 1, 2, 3, 4, 5, 6, 7]}
+[2024-09-26 00:31:18,319] [INFO] [launch.py:109:main] nnodes=1, num_local_procs=8, node_rank=0
+[2024-09-26 00:31:18,319] [INFO] [launch.py:122:main] global_rank_mapping=defaultdict(<class 'list'>, {'127.0.0.1': [0, 1, 2, 3, 4, 5, 6, 7]})
+[2024-09-26 00:31:18,319] [INFO] [launch.py:123:main] dist_world_size=8
+[2024-09-26 00:31:18,319] [INFO] [launch.py:125:main] Setting CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6,7
+using world size: 8, data-parallel-size: 2, tensor-model-parallel size: 4, pipeline-model-parallel size: 1
+using torch.float16 for parameters ...
+------------------------ arguments ------------------------
+  accumulate_allreduce_grads_in_fp32 .............. False
+  adam_beta1 ...................................... 0.9
+  adam_beta2 ...................................... 0.95
+  adam_eps ........................................ 1e-08
+  adlr_autoresume ................................. False
+  adlr_autoresume_interval ........................ 1000
+  apply_query_key_layer_scaling ................... False
+  apply_residual_connection_post_layernorm ........ False
+  attention_dropout ............................... 0.1
+  attention_softmax_in_fp32 ....................... True
+  beam_search ..................................... False
+  beam_search_nucleus ............................. False
+  beam_warmup ..................................... False
+  beam_warmup_length .............................. 0
+  bert_binary_head ................................ True
+  bert_load ....................................... None
+  bf16 ............................................ False
+  bias_dropout_fusion ............................. True
+  bias_gelu_fusion ................................ True
+  biencoder_projection_dim ........................ 0
+  biencoder_shared_query_context_model ............ False
+  block_data_path ................................. None
+  checkpoint_activations .......................... True
+  checkpoint_in_cpu ............................... False
+  checkpoint_num_layers ........................... 1
+  clip_grad ....................................... 1.0
+  co_evaluation ................................... False
+  compress ........................................ False
+  consumed_train_samples .......................... 0
+  consumed_train_tokens ........................... 0
+  consumed_valid_samples .......................... 0
+  contigious_checkpointing ........................ False
+  cpu_optimizer ................................... False
+  cpu_torch_adam .................................. False
+  data_impl ....................................... mmap
+  data_parallel_size .............................. 2
+  data_path ....................................... ['/home/icksys/csw/CodeGeeX/pt_data/my_data']
+  dataloader_type ................................. single
+  DDP_impl ........................................ local
+  decoder_seq_length .............................. None
+  deepscale ....................................... False
+  deepscale_config ................................ None
+  deepspeed ....................................... True
+  deepspeed_activation_checkpointing .............. True
+  deepspeed_config ................................ /home/icksys/csw/CodeGeeX/scripts/ds_config.json
+  deepspeed_mpi ................................... False
+  dist_timeout .................................... 30
+  distribute_checkpointed_activations ............. False
+  distributed_backend ............................. nccl
+  ds_pipeline_enabled ............................. False
+  embedding_path .................................. None
+  encoder_seq_length .............................. 512
+  eod_mask_loss ................................... False
+  eval_interval ................................... 10
+  eval_iters ...................................... 10
+  evaluation ...................................... False
+  evidence_data_path .............................. None
+  exit_duration_in_mins ........................... None
+  exit_interval ................................... None
+  ffn_hidden_size ................................. 20480
+  finetune ........................................ False
+  force_default ................................... False
+  force_device .................................... None
+  fp16 ............................................ True
+  fp16_lm_cross_entropy ........................... False
+  fp32_residual_connection ........................ False
+  global_batch_size ............................... 8
+  gold ............................................ False
+  gold_beta ....................................... 0.05
+  hidden_dropout .................................. 0.1
+  hidden_size ..................................... 5120
+  hysteresis ...................................... 2
+  ict_head_size ................................... None
+  ict_load ........................................ None
+  img_dim ......................................... 224
+  index_cache_dir ................................. None
+  indexer_batch_size .............................. 128
+  indexer_log_interval ............................ 1000
+  init_method_std ................................. 0.02
+  init_method_xavier_uniform ...................... False
+  initial_loss_scale .............................. 4294967296
+  kv_channels ..................................... 128
+  layernorm_epsilon ............................... 1e-05
+  lazy_mpu_init ................................... None
+  ln_fp16 ......................................... True
+  load ............................................ None
+  load_state ...................................... /home/icksys/csw/CodeGeeX/scripts/mp4_parallel_weights/
+  local_rank ...................................... 0
+  log_batch_size_to_tensorboard ................... False
+  log_interval .................................... 1
+  log_learning_rate_to_tensorboard ................ True
+  log_loss_scale_to_tensorboard ................... True
+  log_num_zeros_in_grad ........................... False
+  log_params_norm ................................. False
+  log_timers_to_tensorboard ....................... False
+  log_validation_ppl_to_tensorboard ............... False
+  loss_scale ...................................... 12.0
+  loss_scale_window ............................... 1000
+  low_memory_load ................................. None
+  lr .............................................. 0.0002
+  lr_decay_iters .................................. 100000
+  lr_decay_samples ................................ None
+  lr_decay_style .................................. cosine
+  lr_decay_tokens ................................. None
+  lr_warmup_fraction .............................. None
+  lr_warmup_iters ................................. 1500
+  lr_warmup_samples ............................... 0
+  make_vocab_size_divisible_by .................... 52224
+  mask_prob ....................................... 0.15
+  masked_softmax_fusion ........................... True
+  max_position_embeddings ......................... 2048
+  memory_centric_tiled_linear ..................... False
+  merge_file ...................................... /home/icksys/csw/CodeGeeX/codegeex/tokenizer/merges.txt
+  micro_batch_size ................................ 2
+  min_loss_scale .................................. 1.0
+  min_lr .......................................... 1e-07
+  mmap_warmup ..................................... False
+  ms_model ........................................ False
+  no_learned_position_embeddings .................. False
+  no_load_optim ................................... None
+  no_load_rng ..................................... None
+  no_pipeline_parallel ............................ True
+  no_save_optim ................................... None
+  no_save_rng ..................................... None
+  num_attention_heads ............................. 40
+  num_beams ....................................... 4
+  num_channels .................................... 3
+  num_classes ..................................... 1000
+  num_layers ...................................... 39
+  num_layers_per_virtual_pipeline_stage ........... None
+  num_workers ..................................... 2
+  onnx_safe ....................................... None
+  openai_gelu ..................................... False
+  optimizer ....................................... adam
+  override_lr_scheduler ........................... True
+  params_dtype .................................... torch.float16
+  partition_activations ........................... False
+  patch_dim ....................................... 16
+  pipeline_model_parallel_size .................... 1
+  play_tau ........................................ 2.0
+  profile_backward ................................ False
+  query_in_block_prob ............................. 0.1
+  rampup_batch_size ............................... None
+  rank ............................................ 0
+  remote_device ................................... none
+  reset_attention_mask ............................ False
+  reset_position_ids .............................. False
+  retriever_report_topk_accuracies ................ []
+  retriever_score_scaling ......................... False
+  retriever_seq_length ............................ 256
+  reward_growth ................................... constant
+  sample_rate ..................................... 1.0
+  save ............................................ /data2/csw/pretrain-codegeex-13b-test
+  save_interval ................................... 100
+  scale_embeddings ................................ False
+  scaled_upper_triang_masked_softmax_fusion ....... False
+  scatter_gather_tensors_in_pipeline .............. True
+  scattered_embeddings ............................ False
+  seed ............................................ 1234
+  seq_length ...................................... 512
+  sgd_momentum .................................... 0.9
+  short_seq_prob .................................. 0.1
+  shrink_embedding_gradient_alpha ................. 1.0
+  shrink_embedding_gradient_steps ................. None
+  shrink_logit_embedding_gradient ................. False
+  split ........................................... 100,0,0
+  split_transformers .............................. False
+  synchronize_each_layer .......................... False
+  tempering ....................................... None
+  tensor_model_parallel_size ...................... 4
+  tensorboard_dir ................................. /data2/csw/pretrain-codegeex-13b-test/tb20240926_003115
+  tensorboard_log_interval ........................ 1
+  tensorboard_queue_size .......................... 1000
+  test_data_path .................................. None
+  tile_factor ..................................... 1
+  titles_data_path ................................ None
+  tokenizer_path .................................. None
+  tokenizer_type .................................. GPT2BPETokenizer
+  train_iters ..................................... 25
+  train_samples ................................... None
+  train_tokens .................................... None
+  use_checkpoint_lr_scheduler ..................... False
+  use_contiguous_buffers_in_ddp ................... False
+  use_cpu_initialization .......................... None
+  use_one_sent_docs ............................... False
+  use_pin_memory .................................. False
+  valid_data_path ................................. None
+  virtual_pipeline_model_parallel_size ............ None
+  vocab_extra_ids ................................. 0
+  vocab_file ...................................... /home/icksys/csw/CodeGeeX/codegeex/tokenizer/vocab.json
+  wandb_log_interval .............................. 1
+  wandb_logging ................................... False
+  weight_decay .................................... 0.1
+  world_size ...................................... 8
+  zero_allgather_bucket_size ...................... 0.0
+  zero_contigious_gradients ....................... False
+  zero_reduce_bucket_size ......................... 0.0
+  zero_reduce_scatter ............................. False
+  zero_stage ...................................... 1
+-------------------- end of arguments ---------------------
+setting number of micro-batches to constant 2
+> building GPT2BPETokenizer tokenizer ...
+WARNING: TensorBoard writing requested but is not available (are you using PyTorch 1.1.0 or later?), no TensorBoard logs will be written.
+ > padded vocab (size: 50257) with 1967 dummy tokens (new size: 52224)
+> initializing torch distributed ...
+  > (rank=3) initializing process group: world_size=8 backend=nccl init_method=tcp://127.0.0.1:29501
+  > (rank=0) initializing process group: world_size=8 backend=nccl init_method=tcp://127.0.0.1:29501
+  > (rank=6) initializing process group: world_size=8 backend=nccl init_method=tcp://127.0.0.1:29501
+  > (rank=4) initializing process group: world_size=8 backend=nccl init_method=tcp://127.0.0.1:29501
+  > (rank=5) initializing process group: world_size=8 backend=nccl init_method=tcp://127.0.0.1:29501
+  > (rank=4) process group initialized  > (rank=6) process group initialized
+
+  > (rank=5) process group initialized
+/home/icksys/csw/CodeGeeX/codegeex/megatron/training.py:126: UserWarning: The torch.cuda.*DtypeTensor constructors are no longer recommended. It's best to use methods such as torch.tensor(data, dtype=*, device='cuda') to create tensors. (Triggered internally at /opt/conda/conda-bld/pytorch_1712608935911/work/torch/csrc/tensor/python_tensor.cpp:78.)
+  start_time_tensor = torch.cuda.FloatTensor([_TRAIN_START_TIME])
+/home/icksys/csw/CodeGeeX/codegeex/megatron/training.py:126: UserWarning: The torch.cuda.*DtypeTensor constructors are no longer recommended. It's best to use methods such as torch.tensor(data, dtype=*, device='cuda') to create tensors. (Triggered internally at /opt/conda/conda-bld/pytorch_1712608935911/work/torch/csrc/tensor/python_tensor.cpp:78.)
+  start_time_tensor = torch.cuda.FloatTensor([_TRAIN_START_TIME])
+/home/icksys/csw/CodeGeeX/codegeex/megatron/training.py:126: UserWarning: The torch.cuda.*DtypeTensor constructors are no longer recommended. It's best to use methods such as torch.tensor(data, dtype=*, device='cuda') to create tensors. (Triggered internally at /opt/conda/conda-bld/pytorch_1712608935911/work/torch/csrc/tensor/python_tensor.cpp:78.)
+  start_time_tensor = torch.cuda.FloatTensor([_TRAIN_START_TIME])
+  > (rank=1) initializing process group: world_size=8 backend=nccl init_method=tcp://127.0.0.1:29501
+  > (rank=1) process group initialized
+/home/icksys/csw/CodeGeeX/codegeex/megatron/training.py:126: UserWarning: The torch.cuda.*DtypeTensor constructors are no longer recommended. It's best to use methods such as torch.tensor(data, dtype=*, device='cuda') to create tensors. (Triggered internally at /opt/conda/conda-bld/pytorch_1712608935911/work/torch/csrc/tensor/python_tensor.cpp:78.)
+  start_time_tensor = torch.cuda.FloatTensor([_TRAIN_START_TIME])
+  > (rank=2) initializing process group: world_size=8 backend=nccl init_method=tcp://127.0.0.1:29501
+  > (rank=2) process group initialized
+  > (rank=7) initializing process group: world_size=8 backend=nccl init_method=tcp://127.0.0.1:29501
+/home/icksys/csw/CodeGeeX/codegeex/megatron/training.py:126: UserWarning: The torch.cuda.*DtypeTensor constructors are no longer recommended. It's best to use methods such as torch.tensor(data, dtype=*, device='cuda') to create tensors. (Triggered internally at /opt/conda/conda-bld/pytorch_1712608935911/work/torch/csrc/tensor/python_tensor.cpp:78.)
+  start_time_tensor = torch.cuda.FloatTensor([_TRAIN_START_TIME])
+  > (rank=7) process group initialized
+/home/icksys/csw/CodeGeeX/codegeex/megatron/training.py:126: UserWarning: The torch.cuda.*DtypeTensor constructors are no longer recommended. It's best to use methods such as torch.tensor(data, dtype=*, device='cuda') to create tensors. (Triggered internally at /opt/conda/conda-bld/pytorch_1712608935911/work/torch/csrc/tensor/python_tensor.cpp:78.)
+  start_time_tensor = torch.cuda.FloatTensor([_TRAIN_START_TIME])
+  > (rank=3) process group initialized
+/home/icksys/csw/CodeGeeX/codegeex/megatron/training.py:126: UserWarning: The torch.cuda.*DtypeTensor constructors are no longer recommended. It's best to use methods such as torch.tensor(data, dtype=*, device='cuda') to create tensors. (Triggered internally at /opt/conda/conda-bld/pytorch_1712608935911/work/torch/csrc/tensor/python_tensor.cpp:78.)
+  start_time_tensor = torch.cuda.FloatTensor([_TRAIN_START_TIME])
+  > (rank=0) process group initialized
+> initializing tensor model parallel with size 4
+> initializing pipeline model parallel with size 1
+> setting random seeds to 1234 ...
+[2024-09-26 00:31:21,379] [INFO] [checkpointing.py:226:model_parallel_cuda_manual_seed] > initializing model parallel cuda seeds on global rank 0, model parallel rank 0, and data parallel rank 0 with model parallel seed: 3952 and data parallel seed: 1234
+/home/icksys/csw/CodeGeeX/codegeex/megatron/training.py:126: UserWarning: The torch.cuda.*DtypeTensor constructors are no longer recommended. It's best to use methods such as torch.tensor(data, dtype=*, device='cuda') to create tensors. (Triggered internally at /opt/conda/conda-bld/pytorch_1712608935911/work/torch/csrc/tensor/python_tensor.cpp:78.)
+  start_time_tensor = torch.cuda.FloatTensor([_TRAIN_START_TIME])
+time to initialize megatron (seconds): -37.352
+[after megatron is initialized] datetime: 2024-09-26 00:31:22
+Creating output dir ...
+building GPT model ...
+[2024-09-26 00:31:22,725] [INFO] [utils.py:828:see_memory_usage] Before Building Model
+[2024-09-26 00:31:22,727] [INFO] [utils.py:829:see_memory_usage] MA 0.0 GB         Max_MA 0.0 GB         CA 0.0 GB         Max_CA 0 GB
+[2024-09-26 00:31:22,727] [INFO] [utils.py:837:see_memory_usage] CPU Virtual Memory:  used = 34.78 GB, percent = 3.5%
+Loading warmstarting model states ...
+Loading model from /home/icksys/csw/CodeGeeX/scripts/mp4_parallel_weights/mp_rank_00_model_states.pt ...
+[2024-09-26 00:31:28,088] [INFO] [utils.py:828:see_memory_usage] After Building Model
+[2024-09-26 00:31:28,089] [INFO] [utils.py:829:see_memory_usage] MA 5.99 GB         Max_MA 5.99 GB         CA 6.23 GB         Max_CA 6 GB
+[2024-09-26 00:31:28,089] [INFO] [utils.py:837:see_memory_usage] CPU Virtual Memory:  used = 84.04 GB, percent = 8.3%
+time (ms) | load-model-states: 4786.21
+ > number of parameters on (tensor, pipeline) model parallel rank (0, 0): 3227279360
+ > number of parameters on (tensor, pipeline) model parallel rank (3, 0): 3227279360
+ > number of parameters on (tensor, pipeline) model parallel rank (1, 0): 3227279360
+[2024-09-26 00:31:28,568] [INFO] [utils.py:828:see_memory_usage] Before Adam Init
+[2024-09-26 00:31:28,569] [INFO] [utils.py:829:see_memory_usage] MA 5.99 GB         Max_MA 5.99 GB         CA 6.23 GB         Max_CA 6 GB
+[2024-09-26 00:31:28,569] [INFO] [utils.py:837:see_memory_usage] CPU Virtual Memory:  used = 50.79 GB, percent = 5.0%
+/data3/miniforge-pypy3/envs/csw_codegeex/lib/python3.10/site-packages/torch/distributed/distributed_c10d.py:819: UserWarning: torch.distributed.distributed_c10d._get_global_rank is deprecated please use torch.distributed.distributed_c10d.get_global_rank instead
+  warnings.warn(
+/data3/miniforge-pypy3/envs/csw_codegeex/lib/python3.10/site-packages/torch/distributed/distributed_c10d.py:819: UserWarning: torch.distributed.distributed_c10d._get_global_rank is deprecated please use torch.distributed.distributed_c10d.get_global_rank instead
+  warnings.warn(
+[2024-09-26 00:31:28,902] [INFO] [utils.py:828:see_memory_usage] After Adam Init
+[2024-09-26 00:31:28,903] [INFO] [utils.py:829:see_memory_usage] MA 5.99 GB         Max_MA 5.99 GB         CA 6.23 GB         Max_CA 6 GB
+[2024-09-26 00:31:28,903] [INFO] [utils.py:837:see_memory_usage] CPU Virtual Memory:  used = 41.67 GB, percent = 4.1%
+/data3/miniforge-pypy3/envs/csw_codegeex/lib/python3.10/site-packages/torch/distributed/distributed_c10d.py:819: UserWarning: torch.distributed.distributed_c10d._get_global_rank is deprecated please use torch.distributed.distributed_c10d.get_global_rank instead
+  warnings.warn(
+/data3/miniforge-pypy3/envs/csw_codegeex/lib/python3.10/site-packages/torch/distributed/distributed_c10d.py:819: UserWarning: torch.distributed.distributed_c10d._get_global_rank is deprecated please use torch.distributed.distributed_c10d.get_global_rank instead
+  warnings.warn(
+[2024-09-26 00:31:28,967] [INFO] [utils.py:828:see_memory_usage] After Float16OptimizerWithFloat16Params Wrapped
+[2024-09-26 00:31:28,967] [INFO] [utils.py:829:see_memory_usage] MA 5.99 GB         Max_MA 5.99 GB         CA 6.23 GB         Max_CA 6 GB
+[2024-09-26 00:31:28,967] [INFO] [utils.py:837:see_memory_usage] CPU Virtual Memory:  used = 39.52 GB, percent = 3.9%
+> learning rate decay style: cosine
+DeepSpeed is enabled.
+1
+[2024-09-26 00:31:28,967] [INFO] [logging.py:69:log_dist] [Rank 0] DeepSpeed info: version=0.6.3, git-hash=unknown, git-branch=unknown
+/data3/miniforge-pypy3/envs/csw_codegeex/lib/python3.10/site-packages/torch/distributed/distributed_c10d.py:819: UserWarning: torch.distributed.distributed_c10d._get_global_rank is deprecated please use torch.distributed.distributed_c10d.get_global_rank instead
+  warnings.warn(
+/data3/miniforge-pypy3/envs/csw_codegeex/lib/python3.10/site-packages/torch/distributed/distributed_c10d.py:819: UserWarning: torch.distributed.distributed_c10d._get_global_rank is deprecated please use torch.distributed.distributed_c10d.get_global_rank instead
+  warnings.warn(
+ > number of parameters on (tensor, pipeline) model parallel rank (2, 0): 3227279360
+[2024-09-26 00:31:29,245] [INFO] [engine.py:278:__init__] DeepSpeed Flops Profiler Enabled: False
+[2024-09-26 00:31:29,245] [INFO] [engine.py:1042:_configure_optimizer] Removing param_group that has no 'params' in the client Optimizer
+[2024-09-26 00:31:29,245] [INFO] [engine.py:1048:_configure_optimizer] Using client Optimizer as basic optimizer
+[2024-09-26 00:31:29,276] [INFO] [engine.py:1064:_configure_optimizer] DeepSpeed Basic Optimizer = FusedAdam
+[2024-09-26 00:31:29,276] [INFO] [utils.py:52:is_zero_supported_optimizer] Checking ZeRO support for optimizer=FusedAdam type=<class 'apex.optimizers.fused_adam.FusedAdam'>
+[2024-09-26 00:31:29,276] [INFO] [logging.py:69:log_dist] [Rank 0] Creating fp16 ZeRO stage 1 optimizer
+[2024-09-26 00:31:29,276] [INFO] [stage_1_and_2.py:132:__init__] Reduce bucket size 50000000
+[2024-09-26 00:31:29,276] [INFO] [stage_1_and_2.py:133:__init__] Allgather bucket size 50000000
+[2024-09-26 00:31:29,276] [INFO] [stage_1_and_2.py:134:__init__] CPU Offload: False
+[2024-09-26 00:31:29,276] [INFO] [stage_1_and_2.py:135:__init__] Round robin gradient partitioning: False
+/data3/miniforge-pypy3/envs/csw_codegeex/lib/python3.10/site-packages/torch/distributed/distributed_c10d.py:819: UserWarning: torch.distributed.distributed_c10d._get_global_rank is deprecated please use torch.distributed.distributed_c10d.get_global_rank instead
+  warnings.warn(
+/data3/miniforge-pypy3/envs/csw_codegeex/lib/python3.10/site-packages/torch/distributed/distributed_c10d.py:819: UserWarning: torch.distributed.distributed_c10d._get_global_rank is deprecated please use torch.distributed.distributed_c10d.get_global_rank instead
+  warnings.warn(
+Using /home/icksys/.cache/torch_extensions/py310_cu121 as PyTorch extensions root...
+Emitting ninja build file /home/icksys/.cache/torch_extensions/py310_cu121/utils/build.ninja...
+Building extension module utils...
+Allowing ninja to set a default number of workers... (overridable by setting the environment variable MAX_JOBS=N)
+ninja: no work to do.
+Loading extension module utils...
+Time to load utils op: 0.051354408264160156 seconds
+Using /home/icksys/.cache/torch_extensions/py310_cu121 as PyTorch extensions root...
+Using /home/icksys/.cache/torch_extensions/py310_cu121 as PyTorch extensions root...
+Emitting ninja build file /home/icksys/.cache/torch_extensions/py310_cu121/utils/build.ninja...
+Building extension module utils...
+Allowing ninja to set a default number of workers... (overridable by setting the environment variable MAX_JOBS=N)
+Using /home/icksys/.cache/torch_extensions/py310_cu121 as PyTorch extensions root...
+Using /home/icksys/.cache/torch_extensions/py310_cu121 as PyTorch extensions root...
+ninja: no work to do.
+Loading extension module utils...
+Time to load utils op: 0.050678253173828125 seconds
+Using /home/icksys/.cache/torch_extensions/py310_cu121 as PyTorch extensions root...
+Emitting ninja build file /home/icksys/.cache/torch_extensions/py310_cu121/utils/build.ninja...
+Building extension module utils...
+Allowing ninja to set a default number of workers... (overridable by setting the environment variable MAX_JOBS=N)
+ninja: no work to do.
+Loading extension module utils...
+Loading extension module utils...
+Time to load utils op: 0.0493013858795166 secondsTime to load utils op: 0.10114240646362305 seconds
+
+Loading extension module utils...
+Time to load utils op: 0.10133695602416992 seconds
+Loading extension module utils...
+Time to load utils op: 0.10153460502624512 seconds
+Using /home/icksys/.cache/torch_extensions/py310_cu121 as PyTorch extensions root...
+Using /home/icksys/.cache/torch_extensions/py310_cu121 as PyTorch extensions root...
+Emitting ninja build file /home/icksys/.cache/torch_extensions/py310_cu121/utils/build.ninja...
+Building extension module utils...
+Allowing ninja to set a default number of workers... (overridable by setting the environment variable MAX_JOBS=N)
+ninja: no work to do.
+Loading extension module utils...
+Time to load utils op: 0.049436330795288086 seconds
+Loading extension module utils...
+Time to load utils op: 0.10176634788513184 seconds
+Rank: 0 partition count [2, 2] and sizes[(1612840960, False), (798720, False)]
+Rank: 5 partition count [2, 2] and sizes[(1612840960, False), (798720, False)]
+Rank: 3 partition count [2, 2] and sizes[(1612840960, False), (798720, False)]
+Rank: 4 partition count [2, 2] and sizes[(1612840960, False), (798720, False)]
+Rank: 7 partition count [2, 2] and sizes[(1612840960, False), (798720, False)]
+Rank: 1 partition count [2, 2] and sizes[(1612840960, False), (798720, False)]
+Rank: 6 partition count [2, 2] and sizes[(1612840960, False), (798720, False)]
+Rank: 2 partition count [2, 2] and sizes[(1612840960, False), (798720, False)]
+Using /home/icksys/.cache/torch_extensions/py310_cu121 as PyTorch extensions root...
+No modifications detected for re-loaded extension module utils, skipping build step...
+Loading extension module utils...
+Time to load utils op: 0.0003905296325683594 seconds
+Using /home/icksys/.cache/torch_extensions/py310_cu121 as PyTorch extensions root...
+No modifications detected for re-loaded extension module utils, skipping build step...
+Loading extension module utils...
+Time to load utils op: 0.00043463706970214844 seconds
+Using /home/icksys/.cache/torch_extensions/py310_cu121 as PyTorch extensions root...
+No modifications detected for re-loaded extension module utils, skipping build step...
+Loading extension module utils...
+Using /home/icksys/.cache/torch_extensions/py310_cu121 as PyTorch extensions root...
+Time to load utils op: 0.0004820823669433594 seconds
+No modifications detected for re-loaded extension module utils, skipping build step...
+Loading extension module utils...
+Time to load utils op: 0.0004944801330566406 seconds
+Using /home/icksys/.cache/torch_extensions/py310_cu121 as PyTorch extensions root...
+Using /home/icksys/.cache/torch_extensions/py310_cu121 as PyTorch extensions root...
+No modifications detected for re-loaded extension module utils, skipping build step...
+Loading extension module utils...
+No modifications detected for re-loaded extension module utils, skipping build step...
+Loading extension module utils...
+Time to load utils op: 0.0005087852478027344 seconds
+Time to load utils op: 0.000530242919921875 seconds
+Using /home/icksys/.cache/torch_extensions/py310_cu121 as PyTorch extensions root...
+No modifications detected for re-loaded extension module utils, skipping build step...
+Loading extension module utils...
+Time to load utils op: 0.0010447502136230469 seconds
+[2024-09-26 00:31:37,524] [INFO] [utils.py:828:see_memory_usage] Before initializing optimizer states
+[2024-09-26 00:31:37,524] [INFO] [utils.py:829:see_memory_usage] MA 12.02 GB         Max_MA 15.02 GB         CA 21.27 GB         Max_CA 21 GB
+[2024-09-26 00:31:37,524] [INFO] [utils.py:837:see_memory_usage] CPU Virtual Memory:  used = 51.18 GB, percent = 5.1%
+[2024-09-26 00:31:37,619] [INFO] [utils.py:828:see_memory_usage] After initializing optimizer states
+[2024-09-26 00:31:37,620] [INFO] [utils.py:829:see_memory_usage] MA 24.05 GB         Max_MA 30.06 GB         CA 39.3 GB         Max_CA 39 GB
+[2024-09-26 00:31:37,620] [INFO] [utils.py:837:see_memory_usage] CPU Virtual Memory:  used = 51.18 GB, percent = 5.1%
+[2024-09-26 00:31:37,620] [INFO] [stage_1_and_2.py:507:__init__] optimizer state initialized
+[2024-09-26 00:31:37,695] [INFO] [utils.py:828:see_memory_usage] After initializing ZeRO optimizer
+[2024-09-26 00:31:37,696] [INFO] [utils.py:829:see_memory_usage] MA 24.05 GB         Max_MA 24.05 GB         CA 39.3 GB         Max_CA 39 GB
+[2024-09-26 00:31:37,696] [INFO] [utils.py:837:see_memory_usage] CPU Virtual Memory:  used = 51.18 GB, percent = 5.1%
+[2024-09-26 00:31:37,696] [INFO] [logging.py:69:log_dist] [Rank 0] DeepSpeed Final Optimizer = FusedAdam
+[2024-09-26 00:31:37,696] [INFO] [engine.py:774:_configure_lr_scheduler] DeepSpeed using client LR scheduler
+[2024-09-26 00:31:37,696] [INFO] [logging.py:69:log_dist] [Rank 0] DeepSpeed LR Scheduler = <codegeex.megatron.learning_rates.AnnealingLR object at 0x7f38f406c610>
+[2024-09-26 00:31:37,696] [INFO] [logging.py:69:log_dist] [Rank 0] step=0, skipped=0, lr=[0.0, 0.0], mom=[(0.9, 0.95), (0.9, 0.95)]
+[2024-09-26 00:31:37,697] [INFO] [config.py:1059:print] DeepSpeedEngine configuration:
+[2024-09-26 00:31:37,697] [INFO] [config.py:1063:print]   activation_checkpointing_config  {
+    "partition_activations": false,
+    "contiguous_memory_optimization": false,
+    "cpu_checkpointing": false,
+    "number_checkpoints": null,
+    "synchronize_checkpoint_boundary": false,
+    "profile": false
+}
+[2024-09-26 00:31:37,697] [INFO] [config.py:1063:print]   aio_config ................... {'block_size': 1048576, 'queue_depth': 8, 'thread_count': 1, 'single_submit': False, 'overlap_events': True}
+[2024-09-26 00:31:37,697] [INFO] [config.py:1063:print]   amp_enabled .................. False
+[2024-09-26 00:31:37,697] [INFO] [config.py:1063:print]   amp_params ................... False
+[2024-09-26 00:31:37,697] [INFO] [config.py:1063:print]   autotuning_config ............ {
+    "enabled": false,
+    "start_step": null,
+    "end_step": null,
+    "metric_path": null,
+    "arg_mappings": null,
+    "metric": "throughput",
+    "model_info": null,
+    "results_dir": null,
+    "exps_dir": null,
+    "overwrite": true,
+    "fast": true,
+    "start_profile_step": 3,
+    "end_profile_step": 5,
+    "tuner_type": "gridsearch",
+    "tuner_early_stopping": 5,
+    "tuner_num_trials": 50,
+    "model_info_path": null,
+    "mp_size": 1,
+    "max_train_batch_size": null,
+    "min_train_batch_size": 1,
+    "max_train_micro_batch_size_per_gpu": 1.024000e+03,
+    "min_train_micro_batch_size_per_gpu": 1,
+    "num_tuning_micro_batch_sizes": 3
+}
+[2024-09-26 00:31:37,697] [INFO] [config.py:1063:print]   bfloat16_enabled ............. False
+[2024-09-26 00:31:37,697] [INFO] [config.py:1063:print]   checkpoint_tag_validation_enabled  True
+[2024-09-26 00:31:37,697] [INFO] [config.py:1063:print]   checkpoint_tag_validation_fail  False
+[2024-09-26 00:31:37,697] [INFO] [config.py:1063:print]   communication_data_type ...... None
+[2024-09-26 00:31:37,697] [INFO] [config.py:1063:print]   curriculum_enabled ........... False
+[2024-09-26 00:31:37,697] [INFO] [config.py:1063:print]   curriculum_params ............ False
+[2024-09-26 00:31:37,697] [INFO] [config.py:1063:print]   dataloader_drop_last ......... False
+[2024-09-26 00:31:37,697] [INFO] [config.py:1063:print]   disable_allgather ............ False
+[2024-09-26 00:31:37,697] [INFO] [config.py:1063:print]   dump_state ................... False
+[2024-09-26 00:31:37,697] [INFO] [config.py:1063:print]   dynamic_loss_scale_args ...... {'init_scale': 4096, 'scale_window': 500, 'delayed_shift': 2, 'min_scale': 1}
+[2024-09-26 00:31:37,697] [INFO] [config.py:1063:print]   eigenvalue_enabled ........... False
+[2024-09-26 00:31:37,697] [INFO] [config.py:1063:print]   eigenvalue_gas_boundary_resolution  1
+[2024-09-26 00:31:37,697] [INFO] [config.py:1063:print]   eigenvalue_layer_name ........ bert.encoder.layer
+[2024-09-26 00:31:37,698] [INFO] [config.py:1063:print]   eigenvalue_layer_num ......... 0
+[2024-09-26 00:31:37,698] [INFO] [config.py:1063:print]   eigenvalue_max_iter .......... 100
+[2024-09-26 00:31:37,698] [INFO] [config.py:1063:print]   eigenvalue_stability ......... 1e-06
+[2024-09-26 00:31:37,698] [INFO] [config.py:1063:print]   eigenvalue_tol ............... 0.01
+[2024-09-26 00:31:37,698] [INFO] [config.py:1063:print]   eigenvalue_verbose ........... False
+[2024-09-26 00:31:37,698] [INFO] [config.py:1063:print]   elasticity_enabled ........... False
+[2024-09-26 00:31:37,698] [INFO] [config.py:1063:print]   flops_profiler_config ........ {
+    "enabled": false,
+    "profile_step": 1,
+    "module_depth": -1,
+    "top_modules": 1,
+    "detailed": true,
+    "output_file": null
+}
+[2024-09-26 00:31:37,698] [INFO] [config.py:1063:print]   fp16_enabled ................. True
+[2024-09-26 00:31:37,698] [INFO] [config.py:1063:print]   fp16_master_weights_and_gradients  False
+[2024-09-26 00:31:37,698] [INFO] [config.py:1063:print]   fp16_mixed_quantize .......... False
+[2024-09-26 00:31:37,698] [INFO] [config.py:1063:print]   global_rank .................. 0
+[2024-09-26 00:31:37,698] [INFO] [config.py:1063:print]   gradient_accumulation_steps .. 2
+[2024-09-26 00:31:37,698] [INFO] [config.py:1063:print]   gradient_clipping ............ 0.0
+[2024-09-26 00:31:37,698] [INFO] [config.py:1063:print]   gradient_predivide_factor .... 1.0
+[2024-09-26 00:31:37,698] [INFO] [config.py:1063:print]   initial_dynamic_scale ........ 4096
+[2024-09-26 00:31:37,698] [INFO] [config.py:1063:print]   loss_scale ................... 0
+[2024-09-26 00:31:37,698] [INFO] [config.py:1063:print]   memory_breakdown ............. False
+[2024-09-26 00:31:37,698] [INFO] [config.py:1063:print]   optimizer_legacy_fusion ...... False
+[2024-09-26 00:31:37,698] [INFO] [config.py:1063:print]   optimizer_name ............... None
+[2024-09-26 00:31:37,698] [INFO] [config.py:1063:print]   optimizer_params ............. None
+[2024-09-26 00:31:37,698] [INFO] [config.py:1063:print]   pipeline ..................... {'stages': 'auto', 'partition': 'best', 'seed_layers': False, 'activation_checkpoint_interval': 0}
+[2024-09-26 00:31:37,698] [INFO] [config.py:1063:print]   pld_enabled .................. False
+[2024-09-26 00:31:37,698] [INFO] [config.py:1063:print]   pld_params ................... False
+[2024-09-26 00:31:37,698] [INFO] [config.py:1063:print]   prescale_gradients ........... False
+[2024-09-26 00:31:37,698] [INFO] [config.py:1063:print]   quantize_change_rate ......... 0.001
+[2024-09-26 00:31:37,698] [INFO] [config.py:1063:print]   quantize_groups .............. 1
+[2024-09-26 00:31:37,698] [INFO] [config.py:1063:print]   quantize_offset .............. 1000
+[2024-09-26 00:31:37,698] [INFO] [config.py:1063:print]   quantize_period .............. 1000
+[2024-09-26 00:31:37,698] [INFO] [config.py:1063:print]   quantize_rounding ............ 0
+[2024-09-26 00:31:37,698] [INFO] [config.py:1063:print]   quantize_start_bits .......... 16
+[2024-09-26 00:31:37,698] [INFO] [config.py:1063:print]   quantize_target_bits ......... 8
+[2024-09-26 00:31:37,698] [INFO] [config.py:1063:print]   quantize_training_enabled .... False
+[2024-09-26 00:31:37,698] [INFO] [config.py:1063:print]   quantize_type ................ 0
+[2024-09-26 00:31:37,698] [INFO] [config.py:1063:print]   quantize_verbose ............. False
+[2024-09-26 00:31:37,698] [INFO] [config.py:1063:print]   scheduler_name ............... None
+[2024-09-26 00:31:37,698] [INFO] [config.py:1063:print]   scheduler_params ............. None
+[2024-09-26 00:31:37,698] [INFO] [config.py:1063:print]   sparse_attention ............. None
+[2024-09-26 00:31:37,698] [INFO] [config.py:1063:print]   sparse_gradients_enabled ..... False
+[2024-09-26 00:31:37,698] [INFO] [config.py:1063:print]   steps_per_print .............. 5
+[2024-09-26 00:31:37,698] [INFO] [config.py:1063:print]   tensorboard_enabled .......... False
+[2024-09-26 00:31:37,698] [INFO] [config.py:1063:print]   tensorboard_job_name ......... DeepSpeedJobName
+[2024-09-26 00:31:37,698] [INFO] [config.py:1063:print]   tensorboard_output_path ......
+[2024-09-26 00:31:37,698] [INFO] [config.py:1063:print]   train_batch_size ............. 8
+[2024-09-26 00:31:37,698] [INFO] [config.py:1063:print]   train_micro_batch_size_per_gpu  2
+[2024-09-26 00:31:37,698] [INFO] [config.py:1063:print]   use_quantizer_kernel ......... False
+[2024-09-26 00:31:37,698] [INFO] [config.py:1063:print]   wall_clock_breakdown ......... True
+[2024-09-26 00:31:37,698] [INFO] [config.py:1063:print]   world_size ................... 2
+[2024-09-26 00:31:37,698] [INFO] [config.py:1063:print]   zero_allow_untested_optimizer  False
+[2024-09-26 00:31:37,698] [INFO] [config.py:1063:print]   zero_config .................. {
+    "stage": 1,
+    "contiguous_gradients": false,
+    "reduce_scatter": true,
+    "reduce_bucket_size": 5.000000e+07,
+    "allgather_partitions": true,
+    "allgather_bucket_size": 5.000000e+07,
+    "overlap_comm": true,
+    "load_from_fp32_weights": true,
+    "elastic_checkpoint": false,
+    "offload_param": null,
+    "offload_optimizer": null,
+    "sub_group_size": 1.000000e+09,
+    "prefetch_bucket_size": 5.000000e+07,
+    "param_persistence_threshold": 1.000000e+05,
+    "max_live_parameters": 1.000000e+09,
+    "max_reuse_distance": 1.000000e+09,
+    "gather_16bit_weights_on_model_save": false,
+    "ignore_unused_parameters": true,
+    "round_robin_gradients": false,
+    "legacy_stage1": false
+}
+[2024-09-26 00:31:37,698] [INFO] [config.py:1063:print]   zero_enabled ................. True
+[2024-09-26 00:31:37,698] [INFO] [config.py:1063:print]   zero_optimization_stage ...... 1
+[2024-09-26 00:31:37,698] [INFO] [config.py:1065:print]   json = {
+    "train_batch_size": 8,
+    "train_micro_batch_size_per_gpu": 2,
+    "steps_per_print": 5,
+    "zero_optimization": {
+        "stage": 1,
+        "reduce_bucket_size": 5.000000e+07,
+        "allgather_bucket_size": 5.000000e+07,
+        "overlap_comm": true,
+        "contiguous_gradients": false
+    },
+    "fp16": {
+        "enabled": true,
+        "loss_scale": 0,
+        "loss_scale_window": 500,
+        "hysteresis": 2,
+        "min_loss_scale": 1,
+        "initial_scale_power": 12
+    },
+    "wall_clock_breakdown": true
+}
+Using /home/icksys/.cache/torch_extensions/py310_cu121 as PyTorch extensions root...
+No modifications detected for re-loaded extension module utils, skipping build step...
+Loading extension module utils...
+Time to load utils op: 0.0002269744873046875 seconds
+FinishInitialization.
+Finishparallel.
+[after model, optimizer, and learning rate scheduler are built] datetime: 2024-09-26 00:31:37
+> building train, validation, and test datasets ...
+ > datasets target sizes (minimum size):
+    train:      200
+    validation: 240
+    test:       80
+> building train, validation, and test datasets for GPT ...
+ > building dataset index ...
+    creating numpy buffer of mmap...
+    creating memory view of numpy buffer...
+ > finished creating indexed dataset in 0.000197 seconds
+    number of documents: 500
+ > building dataset index ...
+    creating numpy buffer of mmap...
+    creating memory view of numpy buffer...
+ > finished creating indexed dataset in 0.000087 seconds
+    number of documents: 500
+ > building dataset index ...
+    creating numpy buffer of mmap...
+    creating memory view of numpy buffer...
+ > finished creating indexed dataset in 0.000066 seconds
+    number of documents: 500
+ > dataset split:
+    train:
+     document indices in [0, 500) total of 500 documents
+    validation:
+     document indices in [500, 500) total of 0 documents
+    test:
+     document indices in [500, 500) total of 0 documents
+ > loading doc-idx mapping from /home/icksys/csw/CodeGeeX/pt_data/my_data_train_indexmap_200ns_512sl_1234s_doc_idx.npy
+    total number of samples: 200
+    total number of epochs: 1
+train_dataset:<class 'codegeex.megatron.data.prompt_dataset.PromptDataset'>
+valid_dataset:<class 'NoneType'>
+test_dataset:<class 'NoneType'>
+> finished creating GPT datasets ...
+[after dataloaders are built] datetime: 2024-09-26 00:31:38 time (ms) | model-and-optimizer-setup: 14845.99 | train/valid/test-data-iterators-setup: 602.51
+
+done with setup ...
+training ...
+[before the start of training step] datetime: 2024-09-26 00:31:38
+
+[Rank 0] (iterations 0 step 0 before 【forward_step】 ) memory | allocated: 24622 MB (24.05 GB) | max allocated: 24622 MB (24.05 GB) | reserved: 40246 MB | max reserved: 40246 MB
+[2024-09-26 00:31:38,982] [INFO] [checkpointing.py:547:forward] Activation Checkpointing Information
+[2024-09-26 00:31:38,983] [INFO] [checkpointing.py:548:forward] ----Partition Activations False, CPU CHECKPOINTING False
+[2024-09-26 00:31:38,983] [INFO] [checkpointing.py:551:forward] ----contiguous Memory Checkpointing False with 39 total layers
+[2024-09-26 00:31:38,983] [INFO] [checkpointing.py:554:forward] ----Synchronization False
+[2024-09-26 00:31:38,983] [INFO] [checkpointing.py:555:forward] ----Profiling time in checkpointing False
+
+[Rank 0] (iterations 0 step 0 after  【forward_step】 ) memory | allocated: 24784 MB (24.20 GB) | max allocated: 24790 MB (24.21 GB) | reserved: 40248 MB | max reserved: 40248 MB
+
+[Rank 0] (iterations 0 step 0 before 【backward_step】) memory | allocated: 24784 MB (24.20 GB) | max allocated: 24790 MB (24.21 GB) | reserved: 40248 MB | max reserved: 40248 MB
+/data3/miniforge-pypy3/envs/csw_codegeex/lib/python3.10/site-packages/torch/autograd/graph.py:744: UserWarning: c10d::broadcast_: an autograd kernel was not registered to the Autograd key(s) but we are trying to backprop through it. This may lead to silently incorrect behavior. This behavior is deprecated and will be removed in a future version of PyTorch. If your operator is differentiable, please ensure you have registered an autograd kernel to the correct Autograd key (e.g. DispatchKey::Autograd, DispatchKey::CompositeImplicitAutograd). If your operator is not differentiable, or to squash this warning and use the previous behavior, please register torch::CppFunction::makeFallthrough() to DispatchKey::Autograd. (Triggered internally at /opt/conda/conda-bld/pytorch_1712608935911/work/torch/csrc/autograd/autograd_not_implemented_fallback.cpp:63.)
+  return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+/data3/miniforge-pypy3/envs/csw_codegeex/lib/python3.10/site-packages/torch/autograd/graph.py:744: UserWarning: c10d::broadcast_: an autograd kernel was not registered to the Autograd key(s) but we are trying to backprop through it. This may lead to silently incorrect behavior. This behavior is deprecated and will be removed in a future version of PyTorch. If your operator is differentiable, please ensure you have registered an autograd kernel to the correct Autograd key (e.g. DispatchKey::Autograd, DispatchKey::CompositeImplicitAutograd). If your operator is not differentiable, or to squash this warning and use the previous behavior, please register torch::CppFunction::makeFallthrough() to DispatchKey::Autograd. (Triggered internally at /opt/conda/conda-bld/pytorch_1712608935911/work/torch/csrc/autograd/autograd_not_implemented_fallback.cpp:63.)
+  return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+/data3/miniforge-pypy3/envs/csw_codegeex/lib/python3.10/site-packages/torch/autograd/graph.py:744: UserWarning: c10d::broadcast_: an autograd kernel was not registered to the Autograd key(s) but we are trying to backprop through it. This may lead to silently incorrect behavior. This behavior is deprecated and will be removed in a future version of PyTorch. If your operator is differentiable, please ensure you have registered an autograd kernel to the correct Autograd key (e.g. DispatchKey::Autograd, DispatchKey::CompositeImplicitAutograd). If your operator is not differentiable, or to squash this warning and use the previous behavior, please register torch::CppFunction::makeFallthrough() to DispatchKey::Autograd. (Triggered internally at /opt/conda/conda-bld/pytorch_1712608935911/work/torch/csrc/autograd/autograd_not_implemented_fallback.cpp:63.)
+  return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+/data3/miniforge-pypy3/envs/csw_codegeex/lib/python3.10/site-packages/torch/autograd/graph.py:744: UserWarning: c10d::broadcast_: an autograd kernel was not registered to the Autograd key(s) but we are trying to backprop through it. This may lead to silently incorrect behavior. This behavior is deprecated and will be removed in a future version of PyTorch. If your operator is differentiable, please ensure you have registered an autograd kernel to the correct Autograd key (e.g. DispatchKey::Autograd, DispatchKey::CompositeImplicitAutograd). If your operator is not differentiable, or to squash this warning and use the previous behavior, please register torch::CppFunction::makeFallthrough() to DispatchKey::Autograd. (Triggered internally at /opt/conda/conda-bld/pytorch_1712608935911/work/torch/csrc/autograd/autograd_not_implemented_fallback.cpp:63.)
+  return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+/data3/miniforge-pypy3/envs/csw_codegeex/lib/python3.10/site-packages/torch/autograd/graph.py:744: UserWarning: c10d::broadcast_: an autograd kernel was not registered to the Autograd key(s) but we are trying to backprop through it. This may lead to silently incorrect behavior. This behavior is deprecated and will be removed in a future version of PyTorch. If your operator is differentiable, please ensure you have registered an autograd kernel to the correct Autograd key (e.g. DispatchKey::Autograd, DispatchKey::CompositeImplicitAutograd). If your operator is not differentiable, or to squash this warning and use the previous behavior, please register torch::CppFunction::makeFallthrough() to DispatchKey::Autograd. (Triggered internally at /opt/conda/conda-bld/pytorch_1712608935911/work/torch/csrc/autograd/autograd_not_implemented_fallback.cpp:63.)
+  return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+/data3/miniforge-pypy3/envs/csw_codegeex/lib/python3.10/site-packages/torch/autograd/graph.py:744: UserWarning: c10d::broadcast_: an autograd kernel was not registered to the Autograd key(s) but we are trying to backprop through it. This may lead to silently incorrect behavior. This behavior is deprecated and will be removed in a future version of PyTorch. If your operator is differentiable, please ensure you have registered an autograd kernel to the correct Autograd key (e.g. DispatchKey::Autograd, DispatchKey::CompositeImplicitAutograd). If your operator is not differentiable, or to squash this warning and use the previous behavior, please register torch::CppFunction::makeFallthrough() to DispatchKey::Autograd. (Triggered internally at /opt/conda/conda-bld/pytorch_1712608935911/work/torch/csrc/autograd/autograd_not_implemented_fallback.cpp:63.)
+  return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+/data3/miniforge-pypy3/envs/csw_codegeex/lib/python3.10/site-packages/torch/autograd/graph.py:744: UserWarning: c10d::broadcast_: an autograd kernel was not registered to the Autograd key(s) but we are trying to backprop through it. This may lead to silently incorrect behavior. This behavior is deprecated and will be removed in a future version of PyTorch. If your operator is differentiable, please ensure you have registered an autograd kernel to the correct Autograd key (e.g. DispatchKey::Autograd, DispatchKey::CompositeImplicitAutograd). If your operator is not differentiable, or to squash this warning and use the previous behavior, please register torch::CppFunction::makeFallthrough() to DispatchKey::Autograd. (Triggered internally at /opt/conda/conda-bld/pytorch_1712608935911/work/torch/csrc/autograd/autograd_not_implemented_fallback.cpp:63.)
+  return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+/data3/miniforge-pypy3/envs/csw_codegeex/lib/python3.10/site-packages/torch/autograd/graph.py:744: UserWarning: c10d::broadcast_: an autograd kernel was not registered to the Autograd key(s) but we are trying to backprop through it. This may lead to silently incorrect behavior. This behavior is deprecated and will be removed in a future version of PyTorch. If your operator is differentiable, please ensure you have registered an autograd kernel to the correct Autograd key (e.g. DispatchKey::Autograd, DispatchKey::CompositeImplicitAutograd). If your operator is not differentiable, or to squash this warning and use the previous behavior, please register torch::CppFunction::makeFallthrough() to DispatchKey::Autograd. (Triggered internally at /opt/conda/conda-bld/pytorch_1712608935911/work/torch/csrc/autograd/autograd_not_implemented_fallback.cpp:63.)
+  return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+
+[Rank 0] (iterations 0 step 0 after  【backward_step】) memory | allocated: 30794 MB (30.07 GB) | max allocated: 31050 MB (30.32 GB) | reserved: 40252 MB | max reserved: 40252 MB
+
+[Rank 0] (iterations 0 step 1 before 【forward_step】 ) memory | allocated: 30794 MB (30.07 GB) | max allocated: 31050 MB (30.32 GB) | reserved: 40252 MB | max reserved: 40252 MB
+
+[Rank 0] (iterations 0 step 1 after  【forward_step】 ) memory | allocated: 30949 MB (30.22 GB) | max allocated: 31050 MB (30.32 GB) | reserved: 40252 MB | max reserved: 40252 MB
+
+[Rank 0] (iterations 0 step 1 before 【backward_step】) memory | allocated: 30949 MB (30.22 GB) | max allocated: 31050 MB (30.32 GB) | reserved: 40252 MB | max reserved: 40252 MB
+
+[Rank 0] (iterations 0 step 1 after  【backward_step】) memory | allocated: 27743 MB (27.09 GB) | max allocated: 31177 MB (30.45 GB) | reserved: 40252 MB | max reserved: 40252 MB
+
+[Rank 0] (iterations 0 before 【update model】) memory | allocated: 27743 MB (27.09 GB) | max allocated: 31177 MB (30.45 GB) | reserved: 40252 MB | max reserved: 40252 MB
+[2024-09-26 00:31:40,242] [INFO] [stage_1_and_2.py:1651:step] [deepspeed] OVERFLOW! Rank 0 Skipping step. Attempted loss scale: 4096, reducing to 4096
+[2024-09-26 00:31:40,243] [INFO] [logging.py:69:log_dist] [Rank 0] rank=0 time (ms) | forward_microstep: 776.33 | backward_microstep: 331.24 | backward_inner_microstep: 242.11 | backward_allreduce_microstep: 89.04 | step_microstep: 589.90
+[2024-09-26 00:31:40,243] [INFO] [logging.py:69:log_dist] [Rank 0] rank=0 time (ms) | forward: 776.33 | backward: 331.23 | backward_inner: 242.10 | backward_allreduce: 89.04 | step: 589.91
+
+[Rank 0] (iterations 0 after  【update model】) memory | allocated: 24639 MB (24.06 GB) | max allocated: 31177 MB (30.45 GB) | reserved: 40252 MB | max reserved: 40252 MB
+
+[Rank 0] (iterations 1 step 0 before 【forward_step】 ) memory | allocated: 24639 MB (24.06 GB) | max allocated: 31177 MB (30.45 GB) | reserved: 40252 MB | max reserved: 40252 MB
+==> iteration        1/      25 | consumed samples:            8 | consumed tokens:         4096 | elapsed time per iteration (ms): 1784.7 | learning rate: 0.000E+00 | global batch size:     8 | lm loss: 3.940890E+00 | loss scale: 4096.0 | number of skipped iterations:   0 | number of nan iterations:   0 |
+time (ms) | forward-compute: 828.39 | backward-compute: 343.12 | optimizer: 604.80 | batch-generator: 10.31
+
+[Rank 0] (iterations 1 step 0 after  【forward_step】 ) memory | allocated: 24794 MB (24.21 GB) | max allocated: 31177 MB (30.45 GB) | reserved: 40252 MB | max reserved: 40252 MB
+
+[Rank 0] (iterations 1 step 0 before 【backward_step】) memory | allocated: 24794 MB (24.21 GB) | max allocated: 31177 MB (30.45 GB) | reserved: 40252 MB | max reserved: 40252 MB
+
+[Rank 0] (iterations 1 step 0 after  【backward_step】) memory | allocated: 30794 MB (30.07 GB) | max allocated: 31177 MB (30.45 GB) | reserved: 40252 MB | max reserved: 40252 MB
+
+[Rank 0] (iterations 1 step 1 before 【forward_step】 ) memory | allocated: 30794 MB (30.07 GB) | max allocated: 31177 MB (30.45 GB) | reserved: 40252 MB | max reserved: 40252 MB
+
+[Rank 0] (iterations 1 step 1 after  【forward_step】 ) memory | allocated: 30949 MB (30.22 GB) | max allocated: 31177 MB (30.45 GB) | reserved: 40252 MB | max reserved: 40252 MB
+
+[Rank 0] (iterations 1 step 1 before 【backward_step】) memory | allocated: 30949 MB (30.22 GB) | max allocated: 31177 MB (30.45 GB) | reserved: 40252 MB | max reserved: 40252 MB
+
+[Rank 0] (iterations 1 step 1 after  【backward_step】) memory | allocated: 27743 MB (27.09 GB) | max allocated: 31177 MB (30.45 GB) | reserved: 40252 MB | max reserved: 40252 MB
+
+[Rank 0] (iterations 1 before 【update model】) memory | allocated: 27743 MB (27.09 GB) | max allocated: 31177 MB (30.45 GB) | reserved: 40252 MB | max reserved: 40252 MB
+[2024-09-26 00:31:40,704] [INFO] [stage_1_and_2.py:1651:step] [deepspeed] OVERFLOW! Rank 0 Skipping step. Attempted loss scale: 4096, reducing to 2048.0
+[2024-09-26 00:31:40,704] [INFO] [logging.py:69:log_dist] [Rank 0] rank=0 time (ms) | forward_microstep: 98.95 | backward_microstep: 316.50 | backward_inner_microstep: 227.28 | backward_allreduce_microstep: 89.14 | step_microstep: 23.97
+[2024-09-26 00:31:40,705] [INFO] [logging.py:69:log_dist] [Rank 0] rank=0 time (ms) | forward: 98.93 | backward: 316.49 | backward_inner: 227.27 | backward_allreduce: 89.14 | step: 23.96
+
+[Rank 0] (iterations 1 after  【update model】) memory | allocated: 24639 MB (24.06 GB) | max allocated: 31177 MB (30.45 GB) | reserved: 40252 MB | max reserved: 40252 MB
+==> iteration        2/      25 | consumed samples:           16 | consumed tokens:         8192 | elapsed time per iteration (ms): 445.3 | learning rate: 0.000E+00 | global batch size:     8 | lm loss: 3.870921E+00 | loss scale: 2048.0 | number of skipped iterations:   0 | number of nan iterations:   0 |
+time (ms) | forward-compute: 93.36 | backward-compute: 320.32 | optimizer: 25.35 | batch-generator: 1.37
+
+[Rank 0] (iterations 2 step 0 before 【forward_step】 ) memory | allocated: 24639 MB (24.06 GB) | max allocated: 31177 MB (30.45 GB) | reserved: 40252 MB | max reserved: 40252 MB
+
+[Rank 0] (iterations 2 step 0 after  【forward_step】 ) memory | allocated: 24793 MB (24.21 GB) | max allocated: 31177 MB (30.45 GB) | reserved: 40252 MB | max reserved: 40252 MB
+
+[Rank 0] (iterations 2 step 0 before 【backward_step】) memory | allocated: 24793 MB (24.21 GB) | max allocated: 31177 MB (30.45 GB) | reserved: 40252 MB | max reserved: 40252 MB
+
+[Rank 0] (iterations 2 step 0 after  【backward_step】) memory | allocated: 30794 MB (30.07 GB) | max allocated: 31177 MB (30.45 GB) | reserved: 40252 MB | max reserved: 40252 MB
+
+[Rank 0] (iterations 2 step 1 before 【forward_step】 ) memory | allocated: 30794 MB (30.07 GB) | max allocated: 31177 MB (30.45 GB) | reserved: 40252 MB | max reserved: 40252 MB
+
+[Rank 0] (iterations 2 step 1 after  【forward_step】 ) memory | allocated: 30949 MB (30.22 GB) | max allocated: 31177 MB (30.45 GB) | reserved: 40252 MB | max reserved: 40252 MB
+
+[Rank 0] (iterations 2 step 1 before 【backward_step】) memory | allocated: 30949 MB (30.22 GB) | max allocated: 31177 MB (30.45 GB) | reserved: 40252 MB | max reserved: 40252 MB
+
+[Rank 0] (iterations 2 step 1 after  【backward_step】) memory | allocated: 27743 MB (27.09 GB) | max allocated: 31177 MB (30.45 GB) | reserved: 40252 MB | max reserved: 40252 MB
+
+[Rank 0] (iterations 2 before 【update model】) memory | allocated: 27743 MB (27.09 GB) | max allocated: 31177 MB (30.45 GB) | reserved: 40252 MB | max reserved: 40252 MB
+[2024-09-26 00:31:41,147] [INFO] [stage_1_and_2.py:1651:step] [deepspeed] OVERFLOW! Rank 0 Skipping step. Attempted loss scale: 2048.0, reducing to 1024.0
+[2024-09-26 00:31:41,147] [INFO] [logging.py:69:log_dist] [Rank 0] rank=0 time (ms) | forward_microstep: 91.52 | backward_microstep: 315.36 | backward_inner_microstep: 227.53 | backward_allreduce_microstep: 87.75 | step_microstep: 24.00
+[2024-09-26 00:31:41,148] [INFO] [logging.py:69:log_dist] [Rank 0] rank=0 time (ms) | forward: 91.50 | backward: 315.35 | backward_inner: 227.52 | backward_allreduce: 87.75 | step: 24.00
+
+[Rank 0] (iterations 2 after  【update model】) memory | allocated: 24639 MB (24.06 GB) | max allocated: 31177 MB (30.45 GB) | reserved: 40252 MB | max reserved: 40252 MB
+==> iteration        3/      25 | consumed samples:           24 | consumed tokens:        12288 | elapsed time per iteration (ms): 443.0 | learning rate: 0.000E+00 | global batch size:     8 | lm loss: 3.394910E+00 | loss scale: 1024.0 | number of skipped iterations:   0 | number of nan iterations:   0 |
+time (ms) | forward-compute: 92.76 | backward-compute: 318.13 | optimizer: 25.45 | batch-generator: 1.14
+
+[Rank 0] (iterations 3 step 0 before 【forward_step】 ) memory | allocated: 24639 MB (24.06 GB) | max allocated: 31177 MB (30.45 GB) | reserved: 40252 MB | max reserved: 40252 MB
+
+[Rank 0] (iterations 3 step 0 after  【forward_step】 ) memory | allocated: 24794 MB (24.21 GB) | max allocated: 31177 MB (30.45 GB) | reserved: 40252 MB | max reserved: 40252 MB
+
+[Rank 0] (iterations 3 step 0 before 【backward_step】) memory | allocated: 24794 MB (24.21 GB) | max allocated: 31177 MB (30.45 GB) | reserved: 40252 MB | max reserved: 40252 MB
+
+[Rank 0] (iterations 3 step 0 after  【backward_step】) memory | allocated: 30794 MB (30.07 GB) | max allocated: 31177 MB (30.45 GB) | reserved: 40252 MB | max reserved: 40252 MB
+
+[Rank 0] (iterations 3 step 1 before 【forward_step】 ) memory | allocated: 30794 MB (30.07 GB) | max allocated: 31177 MB (30.45 GB) | reserved: 40252 MB | max reserved: 40252 MB
+
+[Rank 0] (iterations 3 step 1 after  【forward_step】 ) memory | allocated: 30949 MB (30.22 GB) | max allocated: 31177 MB (30.45 GB) | reserved: 40252 MB | max reserved: 40252 MB
+
+[Rank 0] (iterations 3 step 1 before 【backward_step】) memory | allocated: 30949 MB (30.22 GB) | max allocated: 31177 MB (30.45 GB) | reserved: 40252 MB | max reserved: 40252 MB
+
+[Rank 0] (iterations 3 step 1 after  【backward_step】) memory | allocated: 27743 MB (27.09 GB) | max allocated: 31177 MB (30.45 GB) | reserved: 40252 MB | max reserved: 40252 MB
+
+[Rank 0] (iterations 3 before 【update model】) memory | allocated: 27743 MB (27.09 GB) | max allocated: 31177 MB (30.45 GB) | reserved: 40252 MB | max reserved: 40252 MB
+[2024-09-26 00:31:41,587] [INFO] [stage_1_and_2.py:1651:step] [deepspeed] OVERFLOW! Rank 0 Skipping step. Attempted loss scale: 1024.0, reducing to 512.0
+[2024-09-26 00:31:41,587] [INFO] [logging.py:69:log_dist] [Rank 0] rank=0 time (ms) | forward_microstep: 90.94 | backward_microstep: 314.42 | backward_inner_microstep: 227.52 | backward_allreduce_microstep: 86.82 | step_microstep: 23.96
+[2024-09-26 00:31:41,588] [INFO] [logging.py:69:log_dist] [Rank 0] rank=0 time (ms) | forward: 90.92 | backward: 314.40 | backward_inner: 227.51 | backward_allreduce: 86.82 | step: 23.96
+
+[Rank 0] (iterations 3 after  【update model】) memory | allocated: 24639 MB (24.06 GB) | max allocated: 31177 MB (30.45 GB) | reserved: 40252 MB | max reserved: 40252 MB
+==> iteration        4/      25 | consumed samples:           32 | consumed tokens:        16384 | elapsed time per iteration (ms): 440.0 | learning rate: 0.000E+00 | global batch size:     8 | lm loss: 3.737069E+00 | loss scale: 512.0 | number of skipped iterations:   0 | number of nan iterations:   0 |
+time (ms) | forward-compute: 91.03 | backward-compute: 316.98 | optimizer: 25.46 | batch-generator: 1.12
+
+[Rank 0] (iterations 4 step 0 before 【forward_step】 ) memory | allocated: 24639 MB (24.06 GB) | max allocated: 31177 MB (30.45 GB) | reserved: 40252 MB | max reserved: 40252 MB
+
+[Rank 0] (iterations 4 step 0 after  【forward_step】 ) memory | allocated: 24794 MB (24.21 GB) | max allocated: 31177 MB (30.45 GB) | reserved: 40252 MB | max reserved: 40252 MB
+
+[Rank 0] (iterations 4 step 0 before 【backward_step】) memory | allocated: 24794 MB (24.21 GB) | max allocated: 31177 MB (30.45 GB) | reserved: 40252 MB | max reserved: 40252 MB
+
+[Rank 0] (iterations 4 step 0 after  【backward_step】) memory | allocated: 30794 MB (30.07 GB) | max allocated: 31177 MB (30.45 GB) | reserved: 40252 MB | max reserved: 40252 MB
+
+[Rank 0] (iterations 4 step 1 before 【forward_step】 ) memory | allocated: 30794 MB (30.07 GB) | max allocated: 31177 MB (30.45 GB) | reserved: 40252 MB | max reserved: 40252 MB
+
+[Rank 0] (iterations 4 step 1 after  【forward_step】 ) memory | allocated: 30949 MB (30.22 GB) | max allocated: 31177 MB (30.45 GB) | reserved: 40252 MB | max reserved: 40252 MB
+
+[Rank 0] (iterations 4 step 1 before 【backward_step】) memory | allocated: 30949 MB (30.22 GB) | max allocated: 31177 MB (30.45 GB) | reserved: 40252 MB | max reserved: 40252 MB
+
+[Rank 0] (iterations 4 step 1 after  【backward_step】) memory | allocated: 27743 MB (27.09 GB) | max allocated: 31177 MB (30.45 GB) | reserved: 40252 MB | max reserved: 40252 MB
+
+[Rank 0] (iterations 4 before 【update model】) memory | allocated: 27743 MB (27.09 GB) | max allocated: 31177 MB (30.45 GB) | reserved: 40252 MB | max reserved: 40252 MB
+[2024-09-26 00:31:42,198] [INFO] [logging.py:69:log_dist] [Rank 0] rank=0 time (ms) | optimizer_allgather: 45.22 | optimizer_gradients: 86.75 | optimizer_step: 38.46
+[2024-09-26 00:31:42,198] [INFO] [logging.py:69:log_dist] [Rank 0] step=5, skipped=4, lr=[1.3333333333333334e-07, 1.3333333333333334e-07], mom=[(0.9, 0.95), (0.9, 0.95)]
+[2024-09-26 00:31:42,198] [INFO] [timer.py:193:stop] 0/5, SamplesPerSec=12.020735268513606, MemAllocated=24.06GB, MaxMemAllocated=36.1GB
+[2024-09-26 00:31:42,198] [INFO] [logging.py:69:log_dist] [Rank 0] rank=0 time (ms) | forward_microstep: 91.12 | backward_microstep: 315.29 | backward_inner_microstep: 227.40 | backward_allreduce_microstep: 87.82 | step_microstep: 194.31
+[2024-09-26 00:31:42,199] [INFO] [logging.py:69:log_dist] [Rank 0] rank=0 time (ms) | forward: 91.11 | backward: 315.28 | backward_inner: 227.39 | backward_allreduce: 87.82 | step: 194.32
+
+[Rank 0] (iterations 4 after  【update model】) memory | allocated: 24639 MB (24.06 GB) | max allocated: 36972 MB (36.10 GB) | reserved: 46406 MB | max reserved: 46406 MB
+==> iteration        5/      25 | consumed samples:           40 | consumed tokens:        20480 | elapsed time per iteration (ms): 610.6 | learning rate: 1.333E-07 | global batch size:     8 | lm loss: 3.457759E+00 | loss scale: 512.0 | number of skipped iterations:   0 | number of nan iterations:   0 |
+
+[Rank 1] (after 5 iterations) memory | allocated: 24639 MB (24.06 GB) | max allocated: 36972 MB (36.10 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 3] (after 5 iterations) memory | allocated: 24639 MB (24.06 GB) | max allocated: 36972 MB (36.10 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 2] (after 5 iterations) memory | allocated: 24639 MB (24.06 GB) | max allocated: 36972 MB (36.10 GB) | reserved: 46406 MB | max reserved: 46406 MB
+time (ms) | forward-compute: 91.58 | backward-compute: 317.31 | optimizer: 194.86 | batch-generator: 1.16
+
+[Rank 0] (after 5 iterations) memory | allocated: 24639 MB (24.06 GB) | max allocated: 36972 MB (36.10 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 5 step 0 before 【forward_step】 ) memory | allocated: 24639 MB (24.06 GB) | max allocated: 36972 MB (36.10 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 5 step 0 after  【forward_step】 ) memory | allocated: 24794 MB (24.21 GB) | max allocated: 36972 MB (36.10 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 5 step 0 before 【backward_step】) memory | allocated: 24794 MB (24.21 GB) | max allocated: 36972 MB (36.10 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 5 step 0 after  【backward_step】) memory | allocated: 30794 MB (30.07 GB) | max allocated: 36972 MB (36.10 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 5 step 1 before 【forward_step】 ) memory | allocated: 30794 MB (30.07 GB) | max allocated: 36972 MB (36.10 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 5 step 1 after  【forward_step】 ) memory | allocated: 30949 MB (30.22 GB) | max allocated: 36972 MB (36.10 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 5 step 1 before 【backward_step】) memory | allocated: 30949 MB (30.22 GB) | max allocated: 36972 MB (36.10 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 5 step 1 after  【backward_step】) memory | allocated: 27743 MB (27.09 GB) | max allocated: 36972 MB (36.10 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 5 before 【update model】) memory | allocated: 27743 MB (27.09 GB) | max allocated: 36972 MB (36.10 GB) | reserved: 46406 MB | max reserved: 46406 MB
+[2024-09-26 00:31:42,774] [INFO] [logging.py:69:log_dist] [Rank 0] rank=0 time (ms) | optimizer_allgather: 44.83 | optimizer_gradients: 54.38 | optimizer_step: 38.44
+[2024-09-26 00:31:42,774] [INFO] [logging.py:69:log_dist] [Rank 0] rank=0 time (ms) | forward_microstep: 88.09 | backward_microstep: 314.54 | backward_inner_microstep: 226.72 | backward_allreduce_microstep: 87.74 | step_microstep: 161.70
+[2024-09-26 00:31:42,775] [INFO] [logging.py:69:log_dist] [Rank 0] rank=0 time (ms) | forward: 88.08 | backward: 314.52 | backward_inner: 226.71 | backward_allreduce: 87.74 | step: 161.70
+
+[Rank 0] (iterations 5 after  【update model】) memory | allocated: 24639 MB (24.06 GB) | max allocated: 36972 MB (36.10 GB) | reserved: 46406 MB | max reserved: 46406 MB
+==> iteration        6/      25 | consumed samples:           48 | consumed tokens:        24576 | elapsed time per iteration (ms): 576.5 | learning rate: 2.667E-07 | global batch size:     8 | lm loss: 3.824957E+00 | loss scale: 512.0 | number of skipped iterations:   0 | number of nan iterations:   0 |
+time (ms) | forward-compute: 90.26 | backward-compute: 316.12 | optimizer: 162.59 | batch-generator: 1.19
+
+[Rank 0] (iterations 6 step 0 before 【forward_step】 ) memory | allocated: 24639 MB (24.06 GB) | max allocated: 36972 MB (36.10 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 6 step 0 after  【forward_step】 ) memory | allocated: 24794 MB (24.21 GB) | max allocated: 36972 MB (36.10 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 6 step 0 before 【backward_step】) memory | allocated: 24794 MB (24.21 GB) | max allocated: 36972 MB (36.10 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 6 step 0 after  【backward_step】) memory | allocated: 30794 MB (30.07 GB) | max allocated: 36972 MB (36.10 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 6 step 1 before 【forward_step】 ) memory | allocated: 30794 MB (30.07 GB) | max allocated: 36972 MB (36.10 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 6 step 1 after  【forward_step】 ) memory | allocated: 30949 MB (30.22 GB) | max allocated: 36972 MB (36.10 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 6 step 1 before 【backward_step】) memory | allocated: 30949 MB (30.22 GB) | max allocated: 36972 MB (36.10 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 6 step 1 after  【backward_step】) memory | allocated: 27743 MB (27.09 GB) | max allocated: 36972 MB (36.10 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 6 before 【update model】) memory | allocated: 27743 MB (27.09 GB) | max allocated: 36972 MB (36.10 GB) | reserved: 46406 MB | max reserved: 46406 MB
+[2024-09-26 00:31:43,213] [INFO] [stage_1_and_2.py:1651:step] [deepspeed] OVERFLOW! Rank 0 Skipping step. Attempted loss scale: 512.0, reducing to 256.0
+[2024-09-26 00:31:43,214] [INFO] [logging.py:69:log_dist] [Rank 0] rank=0 time (ms) | forward_microstep: 89.05 | backward_microstep: 314.07 | backward_inner_microstep: 226.32 | backward_allreduce_microstep: 87.67 | step_microstep: 24.27
+[2024-09-26 00:31:43,214] [INFO] [logging.py:69:log_dist] [Rank 0] rank=0 time (ms) | forward: 89.04 | backward: 314.05 | backward_inner: 226.31 | backward_allreduce: 87.67 | step: 24.27
+
+[Rank 0] (iterations 6 after  【update model】) memory | allocated: 24639 MB (24.06 GB) | max allocated: 36972 MB (36.10 GB) | reserved: 46406 MB | max reserved: 46406 MB
+==> iteration        7/      25 | consumed samples:           56 | consumed tokens:        28672 | elapsed time per iteration (ms): 439.2 | learning rate: 2.667E-07 | global batch size:     8 | lm loss: 3.792559E+00 | loss scale: 256.0 | number of skipped iterations:   0 | number of nan iterations:   0 |
+time (ms) | forward-compute: 90.48 | backward-compute: 316.66 | optimizer: 25.55 | batch-generator: 1.20
+
+[Rank 0] (iterations 7 step 0 before 【forward_step】 ) memory | allocated: 24639 MB (24.06 GB) | max allocated: 36972 MB (36.10 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 7 step 0 after  【forward_step】 ) memory | allocated: 24794 MB (24.21 GB) | max allocated: 36972 MB (36.10 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 7 step 0 before 【backward_step】) memory | allocated: 24794 MB (24.21 GB) | max allocated: 36972 MB (36.10 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 7 step 0 after  【backward_step】) memory | allocated: 30795 MB (30.07 GB) | max allocated: 36972 MB (36.10 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 7 step 1 before 【forward_step】 ) memory | allocated: 30795 MB (30.07 GB) | max allocated: 36972 MB (36.10 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 7 step 1 after  【forward_step】 ) memory | allocated: 30949 MB (30.22 GB) | max allocated: 36972 MB (36.10 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 7 step 1 before 【backward_step】) memory | allocated: 30949 MB (30.22 GB) | max allocated: 36972 MB (36.10 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 7 step 1 after  【backward_step】) memory | allocated: 27744 MB (27.09 GB) | max allocated: 36972 MB (36.10 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 7 before 【update model】) memory | allocated: 27744 MB (27.09 GB) | max allocated: 36972 MB (36.10 GB) | reserved: 46406 MB | max reserved: 46406 MB
+[2024-09-26 00:31:43,789] [INFO] [logging.py:69:log_dist] [Rank 0] rank=0 time (ms) | optimizer_allgather: 45.05 | optimizer_gradients: 54.42 | optimizer_step: 38.34
+[2024-09-26 00:31:43,789] [INFO] [logging.py:69:log_dist] [Rank 0] rank=0 time (ms) | forward_microstep: 88.23 | backward_microstep: 314.21 | backward_inner_microstep: 226.53 | backward_allreduce_microstep: 87.60 | step_microstep: 161.35
+[2024-09-26 00:31:43,790] [INFO] [logging.py:69:log_dist] [Rank 0] rank=0 time (ms) | forward: 88.22 | backward: 314.19 | backward_inner: 226.51 | backward_allreduce: 87.60 | step: 161.35
+
+[Rank 0] (iterations 7 after  【update model】) memory | allocated: 24639 MB (24.06 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+==> iteration        8/      25 | consumed samples:           64 | consumed tokens:        32768 | elapsed time per iteration (ms): 575.5 | learning rate: 4.000E-07 | global batch size:     8 | lm loss: 3.917546E+00 | loss scale: 256.0 | number of skipped iterations:   0 | number of nan iterations:   0 |
+time (ms) | forward-compute: 90.09 | backward-compute: 316.03 | optimizer: 162.46 | batch-generator: 1.15
+
+[Rank 0] (iterations 8 step 0 before 【forward_step】 ) memory | allocated: 24639 MB (24.06 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 8 step 0 after  【forward_step】 ) memory | allocated: 24794 MB (24.21 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 8 step 0 before 【backward_step】) memory | allocated: 24794 MB (24.21 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 8 step 0 after  【backward_step】) memory | allocated: 30794 MB (30.07 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 8 step 1 before 【forward_step】 ) memory | allocated: 30794 MB (30.07 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 8 step 1 after  【forward_step】 ) memory | allocated: 30949 MB (30.22 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 8 step 1 before 【backward_step】) memory | allocated: 30949 MB (30.22 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 8 step 1 after  【backward_step】) memory | allocated: 27743 MB (27.09 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 8 before 【update model】) memory | allocated: 27743 MB (27.09 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+[2024-09-26 00:31:44,362] [INFO] [logging.py:69:log_dist] [Rank 0] rank=0 time (ms) | optimizer_allgather: 44.88 | optimizer_gradients: 54.21 | optimizer_step: 38.28
+[2024-09-26 00:31:44,363] [INFO] [logging.py:69:log_dist] [Rank 0] rank=0 time (ms) | forward_microstep: 88.26 | backward_microstep: 314.18 | backward_inner_microstep: 227.28 | backward_allreduce_microstep: 86.82 | step_microstep: 161.14
+[2024-09-26 00:31:44,363] [INFO] [logging.py:69:log_dist] [Rank 0] rank=0 time (ms) | forward: 88.24 | backward: 314.17 | backward_inner: 227.27 | backward_allreduce: 86.82 | step: 161.14
+
+[Rank 0] (iterations 8 after  【update model】) memory | allocated: 24639 MB (24.06 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+==> iteration        9/      25 | consumed samples:           72 | consumed tokens:        36864 | elapsed time per iteration (ms): 573.6 | learning rate: 5.333E-07 | global batch size:     8 | lm loss: 3.732222E+00 | loss scale: 256.0 | number of skipped iterations:   0 | number of nan iterations:   0 |
+time (ms) | forward-compute: 88.27 | backward-compute: 315.92 | optimizer: 162.41 | batch-generator: 1.20
+
+[Rank 0] (iterations 9 step 0 before 【forward_step】 ) memory | allocated: 24639 MB (24.06 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 9 step 0 after  【forward_step】 ) memory | allocated: 24794 MB (24.21 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 9 step 0 before 【backward_step】) memory | allocated: 24794 MB (24.21 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 9 step 0 after  【backward_step】) memory | allocated: 30794 MB (30.07 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 9 step 1 before 【forward_step】 ) memory | allocated: 30794 MB (30.07 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 9 step 1 after  【forward_step】 ) memory | allocated: 30949 MB (30.22 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 9 step 1 before 【backward_step】) memory | allocated: 30949 MB (30.22 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 9 step 1 after  【backward_step】) memory | allocated: 27743 MB (27.09 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 9 before 【update model】) memory | allocated: 27743 MB (27.09 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+[2024-09-26 00:31:44,938] [INFO] [logging.py:69:log_dist] [Rank 0] rank=0 time (ms) | optimizer_allgather: 44.93 | optimizer_gradients: 54.36 | optimizer_step: 38.32
+[2024-09-26 00:31:44,938] [INFO] [logging.py:69:log_dist] [Rank 0] step=10, skipped=5, lr=[6.666666666666667e-07, 6.666666666666667e-07], mom=[(0.9, 0.95), (0.9, 0.95)]
+[2024-09-26 00:31:44,938] [INFO] [timer.py:193:stop] 0/10, SamplesPerSec=10.95518005055858, MemAllocated=24.06GB, MaxMemAllocated=36.11GB
+[2024-09-26 00:31:44,939] [INFO] [logging.py:69:log_dist] [Rank 0] rank=0 time (ms) | forward_microstep: 89.64 | backward_microstep: 313.95 | backward_inner_microstep: 227.49 | backward_allreduce_microstep: 86.39 | step_microstep: 161.75
+[2024-09-26 00:31:44,939] [INFO] [logging.py:69:log_dist] [Rank 0] rank=0 time (ms) | forward: 89.62 | backward: 313.94 | backward_inner: 227.48 | backward_allreduce: 86.39 | step: 161.75
+
+[Rank 0] (iterations 9 after  【update model】) memory | allocated: 24639 MB (24.06 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+==> iteration       10/      25 | consumed samples:           80 | consumed tokens:        40960 | elapsed time per iteration (ms): 575.3 | learning rate: 6.667E-07 | global batch size:     8 | lm loss: 3.301053E+00 | loss scale: 256.0 | number of skipped iterations:   0 | number of nan iterations:   0 |
+time (ms) | forward-compute: 90.39 | backward-compute: 315.68 | optimizer: 162.59 | batch-generator: 1.19
+
+[Rank 0] (iterations 10 step 0 before 【forward_step】 ) memory | allocated: 24639 MB (24.06 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 10 step 0 after  【forward_step】 ) memory | allocated: 24794 MB (24.21 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 10 step 0 before 【backward_step】) memory | allocated: 24794 MB (24.21 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 10 step 0 after  【backward_step】) memory | allocated: 30794 MB (30.07 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 10 step 1 before 【forward_step】 ) memory | allocated: 30794 MB (30.07 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 10 step 1 after  【forward_step】 ) memory | allocated: 30949 MB (30.22 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 10 step 1 before 【backward_step】) memory | allocated: 30949 MB (30.22 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 10 step 1 after  【backward_step】) memory | allocated: 27743 MB (27.09 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 10 before 【update model】) memory | allocated: 27743 MB (27.09 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+[2024-09-26 00:31:45,513] [INFO] [logging.py:69:log_dist] [Rank 0] rank=0 time (ms) | optimizer_allgather: 44.79 | optimizer_gradients: 54.32 | optimizer_step: 38.34
+[2024-09-26 00:31:45,514] [INFO] [logging.py:69:log_dist] [Rank 0] rank=0 time (ms) | forward_microstep: 89.00 | backward_microstep: 314.15 | backward_inner_microstep: 227.53 | backward_allreduce_microstep: 86.54 | step_microstep: 161.88
+[2024-09-26 00:31:45,514] [INFO] [logging.py:69:log_dist] [Rank 0] rank=0 time (ms) | forward: 88.99 | backward: 314.13 | backward_inner: 227.52 | backward_allreduce: 86.54 | step: 161.88
+
+[Rank 0] (iterations 10 after  【update model】) memory | allocated: 24639 MB (24.06 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+==> iteration       11/      25 | consumed samples:           88 | consumed tokens:        45056 | elapsed time per iteration (ms): 575.9 | learning rate: 8.000E-07 | global batch size:     8 | lm loss: 2.816233E+00 | loss scale: 256.0 | number of skipped iterations:   0 | number of nan iterations:   0 |
+time (ms) | forward-compute: 90.88 | backward-compute: 314.86 | optimizer: 163.37 | batch-generator: 1.18
+
+[Rank 0] (iterations 11 step 0 before 【forward_step】 ) memory | allocated: 24639 MB (24.06 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 11 step 0 after  【forward_step】 ) memory | allocated: 24794 MB (24.21 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 11 step 0 before 【backward_step】) memory | allocated: 24794 MB (24.21 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 11 step 0 after  【backward_step】) memory | allocated: 30795 MB (30.07 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 11 step 1 before 【forward_step】 ) memory | allocated: 30795 MB (30.07 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 11 step 1 after  【forward_step】 ) memory | allocated: 30949 MB (30.22 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 11 step 1 before 【backward_step】) memory | allocated: 30949 MB (30.22 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 11 step 1 after  【backward_step】) memory | allocated: 27744 MB (27.09 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 11 before 【update model】) memory | allocated: 27744 MB (27.09 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+[2024-09-26 00:31:46,089] [INFO] [logging.py:69:log_dist] [Rank 0] rank=0 time (ms) | optimizer_allgather: 44.91 | optimizer_gradients: 54.39 | optimizer_step: 38.30
+[2024-09-26 00:31:46,089] [INFO] [logging.py:69:log_dist] [Rank 0] rank=0 time (ms) | forward_microstep: 88.85 | backward_microstep: 315.31 | backward_inner_microstep: 226.71 | backward_allreduce_microstep: 88.53 | step_microstep: 161.14
+[2024-09-26 00:31:46,090] [INFO] [logging.py:69:log_dist] [Rank 0] rank=0 time (ms) | forward: 88.83 | backward: 315.30 | backward_inner: 226.69 | backward_allreduce: 88.53 | step: 161.15
+
+[Rank 0] (iterations 11 after  【update model】) memory | allocated: 24639 MB (24.06 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+==> iteration       12/      25 | consumed samples:           96 | consumed tokens:        49152 | elapsed time per iteration (ms): 575.7 | learning rate: 9.333E-07 | global batch size:     8 | lm loss: 2.538281E+00 | loss scale: 256.0 | number of skipped iterations:   0 | number of nan iterations:   0 |
+time (ms) | forward-compute: 88.93 | backward-compute: 316.99 | optimizer: 162.75 | batch-generator: 1.35
+
+[Rank 0] (iterations 12 step 0 before 【forward_step】 ) memory | allocated: 24639 MB (24.06 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 12 step 0 after  【forward_step】 ) memory | allocated: 24794 MB (24.21 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 12 step 0 before 【backward_step】) memory | allocated: 24794 MB (24.21 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 12 step 0 after  【backward_step】) memory | allocated: 30794 MB (30.07 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 12 step 1 before 【forward_step】 ) memory | allocated: 30794 MB (30.07 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 12 step 1 after  【forward_step】 ) memory | allocated: 30949 MB (30.22 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 12 step 1 before 【backward_step】) memory | allocated: 30949 MB (30.22 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 12 step 1 after  【backward_step】) memory | allocated: 27743 MB (27.09 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 12 before 【update model】) memory | allocated: 27743 MB (27.09 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+[2024-09-26 00:31:46,664] [INFO] [logging.py:69:log_dist] [Rank 0] rank=0 time (ms) | optimizer_allgather: 44.83 | optimizer_gradients: 54.20 | optimizer_step: 38.34
+[2024-09-26 00:31:46,665] [INFO] [logging.py:69:log_dist] [Rank 0] rank=0 time (ms) | forward_microstep: 89.59 | backward_microstep: 314.39 | backward_inner_microstep: 226.71 | backward_allreduce_microstep: 87.60 | step_microstep: 161.17
+[2024-09-26 00:31:46,665] [INFO] [logging.py:69:log_dist] [Rank 0] rank=0 time (ms) | forward: 89.58 | backward: 314.37 | backward_inner: 226.70 | backward_allreduce: 87.60 | step: 161.17
+
+[Rank 0] (iterations 12 after  【update model】) memory | allocated: 24639 MB (24.06 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+==> iteration       13/      25 | consumed samples:          104 | consumed tokens:        53248 | elapsed time per iteration (ms): 575.3 | learning rate: 1.067E-06 | global batch size:     8 | lm loss: 1.441929E+00 | loss scale: 256.0 | number of skipped iterations:   0 | number of nan iterations:   0 |
+time (ms) | forward-compute: 88.93 | backward-compute: 316.93 | optimizer: 162.59 | batch-generator: 1.22
+
+[Rank 0] (iterations 13 step 0 before 【forward_step】 ) memory | allocated: 24639 MB (24.06 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 13 step 0 after  【forward_step】 ) memory | allocated: 24794 MB (24.21 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 13 step 0 before 【backward_step】) memory | allocated: 24794 MB (24.21 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 13 step 0 after  【backward_step】) memory | allocated: 30795 MB (30.07 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 13 step 1 before 【forward_step】 ) memory | allocated: 30795 MB (30.07 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 13 step 1 after  【forward_step】 ) memory | allocated: 30950 MB (30.22 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 13 step 1 before 【backward_step】) memory | allocated: 30950 MB (30.22 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 13 step 1 after  【backward_step】) memory | allocated: 27744 MB (27.09 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 13 before 【update model】) memory | allocated: 27744 MB (27.09 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+[2024-09-26 00:31:47,242] [INFO] [logging.py:69:log_dist] [Rank 0] rank=0 time (ms) | optimizer_allgather: 44.95 | optimizer_gradients: 54.37 | optimizer_step: 38.26
+[2024-09-26 00:31:47,242] [INFO] [logging.py:69:log_dist] [Rank 0] rank=0 time (ms) | forward_microstep: 90.18 | backward_microstep: 316.12 | backward_inner_microstep: 227.44 | backward_allreduce_microstep: 88.61 | step_microstep: 161.45
+[2024-09-26 00:31:47,243] [INFO] [logging.py:69:log_dist] [Rank 0] rank=0 time (ms) | forward: 90.16 | backward: 316.11 | backward_inner: 227.43 | backward_allreduce: 88.61 | step: 161.45
+
+[Rank 0] (iterations 13 after  【update model】) memory | allocated: 24639 MB (24.06 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+==> iteration       14/      25 | consumed samples:          112 | consumed tokens:        57344 | elapsed time per iteration (ms): 577.3 | learning rate: 1.200E-06 | global batch size:     8 | lm loss: 1.329542E+00 | loss scale: 256.0 | number of skipped iterations:   0 | number of nan iterations:   0 |
+time (ms) | forward-compute: 90.64 | backward-compute: 317.11 | optimizer: 162.74 | batch-generator: 1.16
+
+[Rank 0] (iterations 14 step 0 before 【forward_step】 ) memory | allocated: 24639 MB (24.06 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 14 step 0 after  【forward_step】 ) memory | allocated: 24794 MB (24.21 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 14 step 0 before 【backward_step】) memory | allocated: 24794 MB (24.21 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 14 step 0 after  【backward_step】) memory | allocated: 30795 MB (30.07 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 14 step 1 before 【forward_step】 ) memory | allocated: 30795 MB (30.07 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 14 step 1 after  【forward_step】 ) memory | allocated: 30950 MB (30.22 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 14 step 1 before 【backward_step】) memory | allocated: 30950 MB (30.22 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 14 step 1 after  【backward_step】) memory | allocated: 27744 MB (27.09 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 14 before 【update model】) memory | allocated: 27744 MB (27.09 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+[2024-09-26 00:31:47,817] [INFO] [logging.py:69:log_dist] [Rank 0] rank=0 time (ms) | optimizer_allgather: 44.84 | optimizer_gradients: 54.29 | optimizer_step: 38.31
+[2024-09-26 00:31:47,818] [INFO] [logging.py:69:log_dist] [Rank 0] step=15, skipped=5, lr=[1.3333333333333334e-06, 1.3333333333333334e-06], mom=[(0.9, 0.95), (0.9, 0.95)]
+[2024-09-26 00:31:47,818] [INFO] [timer.py:193:stop] 0/15, SamplesPerSec=10.44019857188619, MemAllocated=24.06GB, MaxMemAllocated=36.11GB
+[2024-09-26 00:31:47,818] [INFO] [logging.py:69:log_dist] [Rank 0] rank=0 time (ms) | forward_microstep: 90.08 | backward_microstep: 313.88 | backward_inner_microstep: 228.20 | backward_allreduce_microstep: 85.60 | step_microstep: 161.45
+[2024-09-26 00:31:47,818] [INFO] [logging.py:69:log_dist] [Rank 0] rank=0 time (ms) | forward: 90.06 | backward: 313.87 | backward_inner: 228.19 | backward_allreduce: 85.60 | step: 161.45
+
+[Rank 0] (iterations 14 after  【update model】) memory | allocated: 24639 MB (24.06 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+==> iteration       15/      25 | consumed samples:          120 | consumed tokens:        61440 | elapsed time per iteration (ms): 575.6 | learning rate: 1.333E-06 | global batch size:     8 | lm loss: 6.265512E-01 | loss scale: 256.0 | number of skipped iterations:   0 | number of nan iterations:   0 |
+time (ms) | forward-compute: 91.01 | backward-compute: 314.94 | optimizer: 162.62 | batch-generator: 1.20
+
+[Rank 0] (iterations 15 step 0 before 【forward_step】 ) memory | allocated: 24639 MB (24.06 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 15 step 0 after  【forward_step】 ) memory | allocated: 24794 MB (24.21 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 15 step 0 before 【backward_step】) memory | allocated: 24794 MB (24.21 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 15 step 0 after  【backward_step】) memory | allocated: 30794 MB (30.07 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 15 step 1 before 【forward_step】 ) memory | allocated: 30794 MB (30.07 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 15 step 1 after  【forward_step】 ) memory | allocated: 30949 MB (30.22 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 15 step 1 before 【backward_step】) memory | allocated: 30949 MB (30.22 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 15 step 1 after  【backward_step】) memory | allocated: 27743 MB (27.09 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 15 before 【update model】) memory | allocated: 27743 MB (27.09 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+[2024-09-26 00:31:48,391] [INFO] [logging.py:69:log_dist] [Rank 0] rank=0 time (ms) | optimizer_allgather: 45.00 | optimizer_gradients: 54.28 | optimizer_step: 38.33
+[2024-09-26 00:31:48,391] [INFO] [logging.py:69:log_dist] [Rank 0] rank=0 time (ms) | forward_microstep: 88.62 | backward_microstep: 313.05 | backward_inner_microstep: 226.55 | backward_allreduce_microstep: 86.42 | step_microstep: 161.46
+[2024-09-26 00:31:48,391] [INFO] [logging.py:69:log_dist] [Rank 0] rank=0 time (ms) | forward: 88.60 | backward: 313.04 | backward_inner: 226.54 | backward_allreduce: 86.42 | step: 161.46
+
+[Rank 0] (iterations 15 after  【update model】) memory | allocated: 24639 MB (24.06 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+==> iteration       16/      25 | consumed samples:          128 | consumed tokens:        65536 | elapsed time per iteration (ms): 573.0 | learning rate: 1.467E-06 | global batch size:     8 | lm loss: 5.310295E-01 | loss scale: 256.0 | number of skipped iterations:   0 | number of nan iterations:   0 |
+time (ms) | forward-compute: 89.13 | backward-compute: 314.42 | optimizer: 162.58 | batch-generator: 1.18
+
+[Rank 0] (iterations 16 step 0 before 【forward_step】 ) memory | allocated: 24639 MB (24.06 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 16 step 0 after  【forward_step】 ) memory | allocated: 24794 MB (24.21 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 16 step 0 before 【backward_step】) memory | allocated: 24794 MB (24.21 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 16 step 0 after  【backward_step】) memory | allocated: 30795 MB (30.07 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 16 step 1 before 【forward_step】 ) memory | allocated: 30795 MB (30.07 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 16 step 1 after  【forward_step】 ) memory | allocated: 30949 MB (30.22 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 16 step 1 before 【backward_step】) memory | allocated: 30949 MB (30.22 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 16 step 1 after  【backward_step】) memory | allocated: 27744 MB (27.09 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 16 before 【update model】) memory | allocated: 27744 MB (27.09 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+[2024-09-26 00:31:48,966] [INFO] [logging.py:69:log_dist] [Rank 0] rank=0 time (ms) | optimizer_allgather: 44.85 | optimizer_gradients: 54.26 | optimizer_step: 38.34
+[2024-09-26 00:31:48,966] [INFO] [logging.py:69:log_dist] [Rank 0] rank=0 time (ms) | forward_microstep: 89.76 | backward_microstep: 314.09 | backward_inner_microstep: 227.50 | backward_allreduce_microstep: 86.52 | step_microstep: 161.48
+[2024-09-26 00:31:48,966] [INFO] [logging.py:69:log_dist] [Rank 0] rank=0 time (ms) | forward: 89.75 | backward: 314.08 | backward_inner: 227.49 | backward_allreduce: 86.52 | step: 161.49
+
+[Rank 0] (iterations 16 after  【update model】) memory | allocated: 24639 MB (24.06 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+==> iteration       17/      25 | consumed samples:          136 | consumed tokens:        69632 | elapsed time per iteration (ms): 575.1 | learning rate: 1.600E-06 | global batch size:     8 | lm loss: 4.478340E-01 | loss scale: 256.0 | number of skipped iterations:   0 | number of nan iterations:   0 |
+time (ms) | forward-compute: 90.68 | backward-compute: 314.81 | optimizer: 162.59 | batch-generator: 1.20
+
+[Rank 0] (iterations 17 step 0 before 【forward_step】 ) memory | allocated: 24639 MB (24.06 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 17 step 0 after  【forward_step】 ) memory | allocated: 24794 MB (24.21 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 17 step 0 before 【backward_step】) memory | allocated: 24794 MB (24.21 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 17 step 0 after  【backward_step】) memory | allocated: 30794 MB (30.07 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 17 step 1 before 【forward_step】 ) memory | allocated: 30794 MB (30.07 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 17 step 1 after  【forward_step】 ) memory | allocated: 30950 MB (30.22 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 17 step 1 before 【backward_step】) memory | allocated: 30950 MB (30.22 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 17 step 1 after  【backward_step】) memory | allocated: 27743 MB (27.09 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 17 before 【update model】) memory | allocated: 27743 MB (27.09 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+[2024-09-26 00:31:49,540] [INFO] [logging.py:69:log_dist] [Rank 0] rank=0 time (ms) | optimizer_allgather: 44.91 | optimizer_gradients: 54.37 | optimizer_step: 38.35
+[2024-09-26 00:31:49,540] [INFO] [logging.py:69:log_dist] [Rank 0] rank=0 time (ms) | forward_microstep: 89.23 | backward_microstep: 313.56 | backward_inner_microstep: 227.15 | backward_allreduce_microstep: 86.34 | step_microstep: 161.23
+[2024-09-26 00:31:49,540] [INFO] [logging.py:69:log_dist] [Rank 0] rank=0 time (ms) | forward: 89.21 | backward: 313.54 | backward_inner: 227.13 | backward_allreduce: 86.34 | step: 161.23
+
+[Rank 0] (iterations 17 after  【update model】) memory | allocated: 24639 MB (24.06 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+==> iteration       18/      25 | consumed samples:          144 | consumed tokens:        73728 | elapsed time per iteration (ms): 574.1 | learning rate: 1.733E-06 | global batch size:     8 | lm loss: 3.560873E-01 | loss scale: 256.0 | number of skipped iterations:   0 | number of nan iterations:   0 |
+time (ms) | forward-compute: 90.08 | backward-compute: 314.44 | optimizer: 162.51 | batch-generator: 1.44
+
+[Rank 0] (iterations 18 step 0 before 【forward_step】 ) memory | allocated: 24639 MB (24.06 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 18 step 0 after  【forward_step】 ) memory | allocated: 24794 MB (24.21 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 18 step 0 before 【backward_step】) memory | allocated: 24794 MB (24.21 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 18 step 0 after  【backward_step】) memory | allocated: 30794 MB (30.07 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 18 step 1 before 【forward_step】 ) memory | allocated: 30794 MB (30.07 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 18 step 1 after  【forward_step】 ) memory | allocated: 30949 MB (30.22 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 18 step 1 before 【backward_step】) memory | allocated: 30949 MB (30.22 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 18 step 1 after  【backward_step】) memory | allocated: 27743 MB (27.09 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 18 before 【update model】) memory | allocated: 27743 MB (27.09 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+[2024-09-26 00:31:50,113] [INFO] [logging.py:69:log_dist] [Rank 0] rank=0 time (ms) | optimizer_allgather: 44.87 | optimizer_gradients: 54.28 | optimizer_step: 38.36
+[2024-09-26 00:31:50,114] [INFO] [logging.py:69:log_dist] [Rank 0] rank=0 time (ms) | forward_microstep: 88.86 | backward_microstep: 313.58 | backward_inner_microstep: 226.36 | backward_allreduce_microstep: 87.15 | step_microstep: 161.34
+[2024-09-26 00:31:50,114] [INFO] [logging.py:69:log_dist] [Rank 0] rank=0 time (ms) | forward: 88.84 | backward: 313.56 | backward_inner: 226.35 | backward_allreduce: 87.15 | step: 161.34
+
+[Rank 0] (iterations 18 after  【update model】) memory | allocated: 24639 MB (24.06 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+==> iteration       19/      25 | consumed samples:          152 | consumed tokens:        77824 | elapsed time per iteration (ms): 573.7 | learning rate: 1.867E-06 | global batch size:     8 | lm loss: 3.444687E-01 | loss scale: 256.0 | number of skipped iterations:   0 | number of nan iterations:   0 |
+time (ms) | forward-compute: 89.00 | backward-compute: 315.15 | optimizer: 162.78 | batch-generator: 1.16
+
+[Rank 0] (iterations 19 step 0 before 【forward_step】 ) memory | allocated: 24639 MB (24.06 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 19 step 0 after  【forward_step】 ) memory | allocated: 24794 MB (24.21 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 19 step 0 before 【backward_step】) memory | allocated: 24794 MB (24.21 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 19 step 0 after  【backward_step】) memory | allocated: 30794 MB (30.07 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 19 step 1 before 【forward_step】 ) memory | allocated: 30794 MB (30.07 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 19 step 1 after  【forward_step】 ) memory | allocated: 30950 MB (30.22 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 19 step 1 before 【backward_step】) memory | allocated: 30950 MB (30.22 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 19 step 1 after  【backward_step】) memory | allocated: 27743 MB (27.09 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 19 before 【update model】) memory | allocated: 27743 MB (27.09 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+[2024-09-26 00:31:50,708] [INFO] [logging.py:69:log_dist] [Rank 0] rank=0 time (ms) | optimizer_allgather: 45.01 | optimizer_gradients: 54.40 | optimizer_step: 38.29
+[2024-09-26 00:31:50,708] [INFO] [logging.py:69:log_dist] [Rank 0] step=20, skipped=5, lr=[2e-06, 2e-06], mom=[(0.9, 0.95), (0.9, 0.95)]
+[2024-09-26 00:31:50,708] [INFO] [timer.py:193:stop] 0/20, SamplesPerSec=10.237546421369553, MemAllocated=24.06GB, MaxMemAllocated=36.11GB
+[2024-09-26 00:31:50,709] [INFO] [logging.py:69:log_dist] [Rank 0] rank=0 time (ms) | forward_microstep: 88.45 | backward_microstep: 334.63 | backward_inner_microstep: 248.90 | backward_allreduce_microstep: 85.65 | step_microstep: 161.83
+[2024-09-26 00:31:50,709] [INFO] [logging.py:69:log_dist] [Rank 0] rank=0 time (ms) | forward: 88.43 | backward: 334.62 | backward_inner: 248.89 | backward_allreduce: 85.65 | step: 161.84
+
+[Rank 0] (iterations 19 after  【update model】) memory | allocated: 24639 MB (24.06 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+==> iteration       20/      25 | consumed samples:          160 | consumed tokens:        81920 | elapsed time per iteration (ms): 594.5 | learning rate: 2.000E-06 | global batch size:     8 | lm loss: 3.413731E-01 | loss scale: 256.0 | number of skipped iterations:   0 | number of nan iterations:   0 |
+time (ms) | forward-compute: 110.08 | backward-compute: 314.53 | optimizer: 162.83 | batch-generator: 1.17
+
+[Rank 0] (iterations 20 step 0 before 【forward_step】 ) memory | allocated: 24639 MB (24.06 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 20 step 0 after  【forward_step】 ) memory | allocated: 24794 MB (24.21 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 20 step 0 before 【backward_step】) memory | allocated: 24794 MB (24.21 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 20 step 0 after  【backward_step】) memory | allocated: 30795 MB (30.07 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 20 step 1 before 【forward_step】 ) memory | allocated: 30795 MB (30.07 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 20 step 1 after  【forward_step】 ) memory | allocated: 30949 MB (30.22 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 20 step 1 before 【backward_step】) memory | allocated: 30949 MB (30.22 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 20 step 1 after  【backward_step】) memory | allocated: 27744 MB (27.09 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 20 before 【update model】) memory | allocated: 27744 MB (27.09 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+[2024-09-26 00:31:51,281] [INFO] [logging.py:69:log_dist] [Rank 0] rank=0 time (ms) | optimizer_allgather: 44.80 | optimizer_gradients: 54.33 | optimizer_step: 38.24
+[2024-09-26 00:31:51,282] [INFO] [logging.py:69:log_dist] [Rank 0] rank=0 time (ms) | forward_microstep: 89.04 | backward_microstep: 313.19 | backward_inner_microstep: 225.79 | backward_allreduce_microstep: 87.32 | step_microstep: 161.12
+[2024-09-26 00:31:51,282] [INFO] [logging.py:69:log_dist] [Rank 0] rank=0 time (ms) | forward: 89.02 | backward: 313.17 | backward_inner: 225.78 | backward_allreduce: 87.32 | step: 161.12
+
+[Rank 0] (iterations 20 after  【update model】) memory | allocated: 24639 MB (24.06 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+==> iteration       21/      25 | consumed samples:          168 | consumed tokens:        86016 | elapsed time per iteration (ms): 573.6 | learning rate: 2.133E-06 | global batch size:     8 | lm loss: 3.583691E-01 | loss scale: 256.0 | number of skipped iterations:   0 | number of nan iterations:   0 |
+time (ms) | forward-compute: 88.85 | backward-compute: 315.03 | optimizer: 162.68 | batch-generator: 1.18
+
+[Rank 0] (iterations 21 step 0 before 【forward_step】 ) memory | allocated: 24639 MB (24.06 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 21 step 0 after  【forward_step】 ) memory | allocated: 24794 MB (24.21 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 21 step 0 before 【backward_step】) memory | allocated: 24794 MB (24.21 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 21 step 0 after  【backward_step】) memory | allocated: 30795 MB (30.07 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 21 step 1 before 【forward_step】 ) memory | allocated: 30795 MB (30.07 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 21 step 1 after  【forward_step】 ) memory | allocated: 30950 MB (30.22 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 21 step 1 before 【backward_step】) memory | allocated: 30950 MB (30.22 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 21 step 1 after  【backward_step】) memory | allocated: 27744 MB (27.09 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 21 before 【update model】) memory | allocated: 27744 MB (27.09 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+[2024-09-26 00:31:51,856] [INFO] [logging.py:69:log_dist] [Rank 0] rank=0 time (ms) | optimizer_allgather: 44.92 | optimizer_gradients: 54.33 | optimizer_step: 38.33
+[2024-09-26 00:31:51,857] [INFO] [logging.py:69:log_dist] [Rank 0] rank=0 time (ms) | forward_microstep: 89.27 | backward_microstep: 313.75 | backward_inner_microstep: 226.06 | backward_allreduce_microstep: 87.62 | step_microstep: 161.26
+[2024-09-26 00:31:51,857] [INFO] [logging.py:69:log_dist] [Rank 0] rank=0 time (ms) | forward: 89.25 | backward: 313.74 | backward_inner: 226.04 | backward_allreduce: 87.62 | step: 161.26
+
+[Rank 0] (iterations 21 after  【update model】) memory | allocated: 24639 MB (24.06 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+==> iteration       22/      25 | consumed samples:          176 | consumed tokens:        90112 | elapsed time per iteration (ms): 574.5 | learning rate: 2.267E-06 | global batch size:     8 | lm loss: 3.606269E-01 | loss scale: 256.0 | number of skipped iterations:   0 | number of nan iterations:   0 |
+time (ms) | forward-compute: 90.07 | backward-compute: 314.91 | optimizer: 162.45 | batch-generator: 1.21
+
+[Rank 0] (iterations 22 step 0 before 【forward_step】 ) memory | allocated: 24639 MB (24.06 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 22 step 0 after  【forward_step】 ) memory | allocated: 24794 MB (24.21 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 22 step 0 before 【backward_step】) memory | allocated: 24794 MB (24.21 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 22 step 0 after  【backward_step】) memory | allocated: 30794 MB (30.07 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 22 step 1 before 【forward_step】 ) memory | allocated: 30794 MB (30.07 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 22 step 1 after  【forward_step】 ) memory | allocated: 30949 MB (30.22 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 22 step 1 before 【backward_step】) memory | allocated: 30949 MB (30.22 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 22 step 1 after  【backward_step】) memory | allocated: 27743 MB (27.09 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 22 before 【update model】) memory | allocated: 27743 MB (27.09 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+[2024-09-26 00:31:52,433] [INFO] [logging.py:69:log_dist] [Rank 0] rank=0 time (ms) | optimizer_allgather: 44.83 | optimizer_gradients: 54.16 | optimizer_step: 38.36
+[2024-09-26 00:31:52,433] [INFO] [logging.py:69:log_dist] [Rank 0] rank=0 time (ms) | forward_microstep: 88.60 | backward_microstep: 314.23 | backward_inner_microstep: 225.89 | backward_allreduce_microstep: 88.27 | step_microstep: 161.43
+[2024-09-26 00:31:52,433] [INFO] [logging.py:69:log_dist] [Rank 0] rank=0 time (ms) | forward: 88.59 | backward: 314.21 | backward_inner: 225.88 | backward_allreduce: 88.26 | step: 161.43
+
+[Rank 0] (iterations 22 after  【update model】) memory | allocated: 24639 MB (24.06 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+==> iteration       23/      25 | consumed samples:          184 | consumed tokens:        94208 | elapsed time per iteration (ms): 576.8 | learning rate: 2.400E-06 | global batch size:     8 | lm loss: 3.618389E-01 | loss scale: 256.0 | number of skipped iterations:   0 | number of nan iterations:   0 |
+time (ms) | forward-compute: 88.98 | backward-compute: 317.97 | optimizer: 162.79 | batch-generator: 1.20
+
+[Rank 0] (iterations 23 step 0 before 【forward_step】 ) memory | allocated: 24639 MB (24.06 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 23 step 0 after  【forward_step】 ) memory | allocated: 24793 MB (24.21 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 23 step 0 before 【backward_step】) memory | allocated: 24793 MB (24.21 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 23 step 0 after  【backward_step】) memory | allocated: 30794 MB (30.07 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 23 step 1 before 【forward_step】 ) memory | allocated: 30794 MB (30.07 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 23 step 1 after  【forward_step】 ) memory | allocated: 30950 MB (30.22 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 23 step 1 before 【backward_step】) memory | allocated: 30950 MB (30.22 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 23 step 1 after  【backward_step】) memory | allocated: 27743 MB (27.09 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 23 before 【update model】) memory | allocated: 27743 MB (27.09 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+[2024-09-26 00:31:53,006] [INFO] [logging.py:69:log_dist] [Rank 0] rank=0 time (ms) | optimizer_allgather: 45.04 | optimizer_gradients: 54.26 | optimizer_step: 38.35
+[2024-09-26 00:31:53,006] [INFO] [logging.py:69:log_dist] [Rank 0] rank=0 time (ms) | forward_microstep: 88.66 | backward_microstep: 313.38 | backward_inner_microstep: 226.60 | backward_allreduce_microstep: 86.71 | step_microstep: 161.31
+[2024-09-26 00:31:53,007] [INFO] [logging.py:69:log_dist] [Rank 0] rank=0 time (ms) | forward: 88.64 | backward: 313.37 | backward_inner: 226.59 | backward_allreduce: 86.71 | step: 161.32
+
+[Rank 0] (iterations 23 after  【update model】) memory | allocated: 24639 MB (24.06 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+==> iteration       24/      25 | consumed samples:          192 | consumed tokens:        98304 | elapsed time per iteration (ms): 572.9 | learning rate: 2.533E-06 | global batch size:     8 | lm loss: 3.633130E-01 | loss scale: 256.0 | number of skipped iterations:   0 | number of nan iterations:   0 |
+time (ms) | forward-compute: 88.42 | backward-compute: 314.72 | optimizer: 162.65 | batch-generator: 1.13
+
+[Rank 0] (iterations 24 step 0 before 【forward_step】 ) memory | allocated: 24639 MB (24.06 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 24 step 0 after  【forward_step】 ) memory | allocated: 24793 MB (24.21 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 24 step 0 before 【backward_step】) memory | allocated: 24793 MB (24.21 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 24 step 0 after  【backward_step】) memory | allocated: 30794 MB (30.07 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 24 step 1 before 【forward_step】 ) memory | allocated: 30794 MB (30.07 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 24 step 1 after  【forward_step】 ) memory | allocated: 30949 MB (30.22 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 24 step 1 before 【backward_step】) memory | allocated: 30949 MB (30.22 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 24 step 1 after  【backward_step】) memory | allocated: 27743 MB (27.09 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+
+[Rank 0] (iterations 24 before 【update model】) memory | allocated: 27743 MB (27.09 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+[2024-09-26 00:31:53,580] [INFO] [logging.py:69:log_dist] [Rank 0] rank=0 time (ms) | optimizer_allgather: 44.86 | optimizer_gradients: 54.73 | optimizer_step: 38.30
+[2024-09-26 00:31:53,580] [INFO] [logging.py:69:log_dist] [Rank 0] step=25, skipped=5, lr=[2.666666666666667e-06, 2.666666666666667e-06], mom=[(0.9, 0.95), (0.9, 0.95)]
+[2024-09-26 00:31:53,581] [INFO] [timer.py:193:stop] 0/25, SamplesPerSec=10.118782553094007, MemAllocated=24.06GB, MaxMemAllocated=36.11GB
+[2024-09-26 00:31:53,581] [INFO] [logging.py:69:log_dist] [Rank 0] rank=0 time (ms) | forward_microstep: 89.42 | backward_microstep: 313.35 | backward_inner_microstep: 226.05 | backward_allreduce_microstep: 87.23 | step_microstep: 162.15
+[2024-09-26 00:31:53,581] [INFO] [logging.py:69:log_dist] [Rank 0] rank=0 time (ms) | forward: 89.40 | backward: 313.33 | backward_inner: 226.04 | backward_allreduce: 87.23 | step: 162.15
+
+[Rank 0] (iterations 24 after  【update model】) memory | allocated: 24639 MB (24.06 GB) | max allocated: 36972 MB (36.11 GB) | reserved: 46406 MB | max reserved: 46406 MB
+==> iteration       25/      25 | consumed samples:          200 | consumed tokens:       102400 | elapsed time per iteration (ms): 574.3 | learning rate: 2.667E-06 | global batch size:     8 | lm loss: 3.388082E-01 | loss scale: 256.0 | number of skipped iterations:   0 | number of nan iterations:   0 |
+time (ms) | forward-compute: 89.61 | backward-compute: 314.87 | optimizer: 162.97 | batch-generator: 1.22
+[after training is done] datetime: 2024-09-26 00:31:53
+saving checkpoint at iteration      25 to /data2/csw/pretrain-codegeex-13b-test
+/data3/miniforge-pypy3/envs/csw_codegeex/lib/python3.10/site-packages/torch/nn/modules/module.py:1898: UserWarning: Positional args are being deprecated, use kwargs instead. Refer to https://pytorch.org/docs/master/generated/torch.nn.Module.html#torch.nn.Module.state_dict for details.
+  warnings.warn(
+/data3/miniforge-pypy3/envs/csw_codegeex/lib/python3.10/site-packages/torch/nn/modules/module.py:1898: UserWarning: Positional args are being deprecated, use kwargs instead. Refer to https://pytorch.org/docs/master/generated/torch.nn.Module.html#torch.nn.Module.state_dict for details.
+  warnings.warn(
+/data3/miniforge-pypy3/envs/csw_codegeex/lib/python3.10/site-packages/torch/nn/modules/module.py:1898: UserWarning: Positional args are being deprecated, use kwargs instead. Refer to https://pytorch.org/docs/master/generated/torch.nn.Module.html#torch.nn.Module.state_dict for details.
+  warnings.warn(
+/data3/miniforge-pypy3/envs/csw_codegeex/lib/python3.10/site-packages/torch/nn/modules/module.py:1898: UserWarning: Positional args are being deprecated, use kwargs instead. Refer to https://pytorch.org/docs/master/generated/torch.nn.Module.html#torch.nn.Module.state_dict for details.
+  warnings.warn(
+[2024-09-26 00:31:53,604] [INFO] [logging.py:69:log_dist] [Rank 0] Saving model checkpoint: /data2/csw/pretrain-codegeex-13b-test/global_step25/mp_rank_00_model_states.pt
+[2024-09-26 00:31:53,607] [INFO] [logging.py:69:log_dist] [Rank 1] Saving model checkpoint: /data2/csw/pretrain-codegeex-13b-test/global_step25/mp_rank_01_model_states.pt
+[2024-09-26 00:33:02,122] [INFO] [engine.py:3058:_save_zero_checkpoint] zero checkpoint saved /data2/csw/pretrain-codegeex-13b-test/global_step25/zero_pp_rank_0_mp_rank_03_optim_states.pt
+[2024-09-26 00:33:09,369] [INFO] [engine.py:3058:_save_zero_checkpoint] zero checkpoint saved /data2/csw/pretrain-codegeex-13b-test/global_step25/zero_pp_rank_0_mp_rank_01_optim_states.pt
+[2024-09-26 00:33:09,945] [INFO] [engine.py:3058:_save_zero_checkpoint] zero checkpoint saved /data2/csw/pretrain-codegeex-13b-test/global_step25/zero_pp_rank_0_mp_rank_00_optim_states.pt
+[2024-09-26 00:33:10,896] [INFO] [engine.py:3058:_save_zero_checkpoint] zero checkpoint saved /data2/csw/pretrain-codegeex-13b-test/global_step25/zero_pp_rank_1_mp_rank_02_optim_states.pt
+[2024-09-26 00:33:11,585] [INFO] [engine.py:3058:_save_zero_checkpoint] zero checkpoint saved /data2/csw/pretrain-codegeex-13b-test/global_step25/zero_pp_rank_1_mp_rank_01_optim_states.pt
+[2024-09-26 00:33:11,925] [INFO] [engine.py:3058:_save_zero_checkpoint] zero checkpoint saved /data2/csw/pretrain-codegeex-13b-test/global_step25/zero_pp_rank_1_mp_rank_03_optim_states.pt
+[2024-09-26 00:33:12,251] [INFO] [engine.py:3058:_save_zero_checkpoint] zero checkpoint saved /data2/csw/pretrain-codegeex-13b-test/global_step25/zero_pp_rank_1_mp_rank_00_optim_states.pt
+[2024-09-26 00:33:13,259] [INFO] [engine.py:3058:_save_zero_checkpoint] zero checkpoint saved /data2/csw/pretrain-codegeex-13b-test/global_step25/zero_pp_rank_0_mp_rank_02_optim_states.pt
+  successfully saved checkpoint at iteration      25 to /data2/csw/pretrain-codegeex-13b-test
+[2024-09-26 00:33:16,446] [INFO] [launch.py:210:main] Process 903313 exits successfully.
+[2024-09-26 00:33:16,446] [INFO] [launch.py:210:main] Process 903314 exits successfully.
+[2024-09-26 00:33:17,447] [INFO] [launch.py:210:main] Process 903316 exits successfully.
+[2024-09-26 00:33:17,448] [INFO] [launch.py:210:main] Process 903311 exits successfully.
+[2024-09-26 00:33:17,448] [INFO] [launch.py:210:main] Process 903318 exits successfully.
+[2024-09-26 00:33:17,448] [INFO] [launch.py:210:main] Process 903317 exits successfully.
+[2024-09-26 00:33:17,448] [INFO] [launch.py:210:main] Process 903315 exits successfully.
+[2024-09-26 00:33:17,448] [INFO] [launch.py:210:main] Process 903312 exits successfully.

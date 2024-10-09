@@ -122,9 +122,9 @@ def add_code_generation_args(parser):
     
 def main():
     # 运行指令
-    # python /data0/csw/CodeGeeX/tests/test_inference.py \
-    # --prompt-file /data0/csw/CodeGeeX/tests/test_prompt.txt \
-    # --tokenizer-path /data0/csw/CodeGeeX/codegeex/tokenizer/ \
+    # python /home/icksys/csw/CodeGeeX/tests/test_inference.py \
+    # --prompt-file /home/icksys/csw/CodeGeeX/tests/test_prompt.txt \
+    # --tokenizer-path /home/icksys/csw/CodeGeeX/codegeex/tokenizer/ \
     # --micro-batch-size 1 \
     # --out-seq-length 1024 \
     # --temperature 0.8 \
@@ -136,7 +136,7 @@ def main():
     # --num-attention-heads 40 \
     # --max-position-embeddings 2048 \
     # --attention-softmax-in-fp32 \
-    # --load /data0/csw/CodeGeeX/scripts/codegeex_13b.pt \
+    # --load /home/icksys/csw/CodeGeeX/scripts/codegeex_13b.pt \
     # --layernorm-epsilon 1e-5 \
     # --fp16 \
     # --ws-encoding-start-id 10 \
@@ -150,9 +150,9 @@ def main():
     # args:
     # Namespace(num_layers=39, hidden_size=5120, num_attention_heads=40, padded_vocab_size=52224,
     #           max_position_embeddings=2048, temperature=0.8, greedy=True, top_p=0.95, top_k=0, out_seq_length=1024,
-    #           prompt_file='/data0/csw/CodeGeeX/tests/test_prompt.txt',
-    #           tokenizer_path='/data0/csw/CodeGeeX/codegeex/tokenizer/',
-    #           load='/data0/csw/CodeGeeX/scripts/codegeex_13b.pt', state_dict_path=None, micro_batch_size=1,
+    #           prompt_file='/home/icksys/csw/CodeGeeX/tests/test_prompt.txt',
+    #           tokenizer_path='/home/icksys/csw/CodeGeeX/codegeex/tokenizer/',
+    #           load='/home/icksys/csw/CodeGeeX/scripts/codegeex_13b.pt', state_dict_path=None, micro_batch_size=1,
     #           quantize=False, interative=False)
     print("Loading tokenizer ...")
     tokenizer = CodeGeeXTokenizer(

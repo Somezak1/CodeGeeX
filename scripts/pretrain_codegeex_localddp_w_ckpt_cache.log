@@ -1,13 +1,11 @@
-[2024-03-31 16:41:42,674] [WARNING] [runner.py:155:fetch_hostfile] Unable to find hostfile, will proceed with training with local resources only.
-[2024-03-31 16:41:42,725] [INFO] [runner.py:453:main] cmd = /data0/anaconda3/envs/csw_codegeex/bin/python -u -m deepspeed.launcher.launch --world_info=eyJsb2NhbGhvc3QiOiBbMCwgMSwgMiwgMywgNCwgNSwgNiwgN119 --master_addr=127.0.0.1 --master_port=29501 /data0/csw/CodeGeeX/codegeex/megatron/tools/pretrain_codegeex.py --tensor-model-parallel-size 4 --pipeline-model-parallel-size 1 --no-pipeline-parallel --num-layers 39 --hidden-size 5120 --make-vocab-size-divisible-by 52224 --num-attention-heads 40 --seq-length 512 --loss-scale 12 --max-position-embeddings 2048 --micro-batch-size 2 --global-batch-size 4 --train-iters 25 --lr 2e-4 --min-lr 1e-7 --lr-decay-iters 100000 --lr-decay-style cosine --lr-warmup-iters 1500 --log-interval 1 --eval-iters 10 --eval-interval 10 --data-path /data0/csw/CodeGeeX/pt_data/my_data --data-impl mmap --vocab-file /data0/csw/CodeGeeX/codegeex/tokenizer/vocab.json --merge-file /data0/csw/CodeGeeX/codegeex/tokenizer/merges.txt --save-interval 100 --save /data0/csw/CodeGeeX/scripts/pretrain-codegeex-13b-test --load-state /data0/csw/CodeGeeX/scripts/mp4_parallel_weights/ --split 100,0,0 --clip-grad 1.0 --weight-decay 0.1 --adam-beta1 0.9 --adam-beta2 0.95 --fp16 --ln-fp16 --attention-softmax-in-fp32 --checkpoint-activations --override-lr-scheduler --tensorboard-dir /data0/csw/CodeGeeX/scripts/pretrain-codegeex-13b-test/tb20240331_164141 --use-contiguous-buffers-in-ddp --accumulate-allreduce-grads-in-fp32 --distribute-checkpointed-activations
-[2024-03-31 16:41:43,935] [INFO] [launch.py:96:main] 0 NCCL_IB_GID_INDEX=3
-[2024-03-31 16:41:43,935] [INFO] [launch.py:96:main] 0 NCCL_IB_DISABLE=0
-[2024-03-31 16:41:43,935] [INFO] [launch.py:103:main] WORLD INFO DICT: {'localhost': [0, 1, 2, 3, 4, 5, 6, 7]}
-[2024-03-31 16:41:43,935] [INFO] [launch.py:109:main] nnodes=1, num_local_procs=8, node_rank=0
-[2024-03-31 16:41:43,935] [INFO] [launch.py:122:main] global_rank_mapping=defaultdict(<class 'list'>, {'localhost': [0, 1, 2, 3, 4, 5, 6, 7]})
-[2024-03-31 16:41:43,935] [INFO] [launch.py:123:main] dist_world_size=8
-[2024-03-31 16:41:43,935] [INFO] [launch.py:125:main] Setting CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6,7
-using world size: 8, data-parallel-size: 2, tensor-model-parallel size: 4, pipeline-model-parallel size: 1 
+[2024-09-26 00:48:39,977] [INFO] [launch.py:96:main] 0 NCCL_IB_GID_INDEX=3
+[2024-09-26 00:48:39,977] [INFO] [launch.py:96:main] 0 NCCL_IB_DISABLE=0
+[2024-09-26 00:48:39,977] [INFO] [launch.py:103:main] WORLD INFO DICT: {'127.0.0.1': [0, 1, 2, 3, 4, 5, 6, 7]}
+[2024-09-26 00:48:39,977] [INFO] [launch.py:109:main] nnodes=1, num_local_procs=8, node_rank=0
+[2024-09-26 00:48:39,977] [INFO] [launch.py:122:main] global_rank_mapping=defaultdict(<class 'list'>, {'127.0.0.1': [0, 1, 2, 3, 4, 5, 6, 7]})
+[2024-09-26 00:48:39,977] [INFO] [launch.py:123:main] dist_world_size=8
+[2024-09-26 00:48:39,977] [INFO] [launch.py:125:main] Setting CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6,7
+using world size: 8, data-parallel-size: 2, tensor-model-parallel size: 4, pipeline-model-parallel size: 1
 using torch.float16 for parameters ...
 ------------------------ arguments ------------------------
   accumulate_allreduce_grads_in_fp32 .............. True
@@ -46,7 +44,7 @@ using torch.float16 for parameters ...
   cpu_torch_adam .................................. False
   data_impl ....................................... mmap
   data_parallel_size .............................. 2
-  data_path ....................................... ['/data0/csw/CodeGeeX/pt_data/my_data']
+  data_path ....................................... ['/home/icksys/csw/CodeGeeX/pt_data/my_data']
   dataloader_type ................................. single
   DDP_impl ........................................ local
   decoder_seq_length .............................. None
@@ -76,7 +74,7 @@ using torch.float16 for parameters ...
   fp16 ............................................ True
   fp16_lm_cross_entropy ........................... False
   fp32_residual_connection ........................ False
-  global_batch_size ............................... 4
+  global_batch_size ............................... 8
   gold ............................................ False
   gold_beta ....................................... 0.05
   hidden_dropout .................................. 0.1
@@ -96,7 +94,7 @@ using torch.float16 for parameters ...
   lazy_mpu_init ................................... None
   ln_fp16 ......................................... True
   load ............................................ None
-  load_state ...................................... /data0/csw/CodeGeeX/scripts/mp4_parallel_weights/
+  load_state ...................................... /home/icksys/csw/CodeGeeX/scripts/mp4_parallel_weights/
   local_rank ...................................... 0
   log_batch_size_to_tensorboard ................... False
   log_interval .................................... 1
@@ -122,7 +120,7 @@ using torch.float16 for parameters ...
   masked_softmax_fusion ........................... True
   max_position_embeddings ......................... 2048
   memory_centric_tiled_linear ..................... False
-  merge_file ...................................... /data0/csw/CodeGeeX/codegeex/tokenizer/merges.txt
+  merge_file ...................................... /home/icksys/csw/CodeGeeX/codegeex/tokenizer/merges.txt
   micro_batch_size ................................ 2
   min_loss_scale .................................. 1.0
   min_lr .......................................... 1e-07
@@ -162,7 +160,7 @@ using torch.float16 for parameters ...
   retriever_seq_length ............................ 256
   reward_growth ................................... constant
   sample_rate ..................................... 1.0
-  save ............................................ /data0/csw/CodeGeeX/scripts/pretrain-codegeex-13b-test
+  save ............................................ /data3/csw/pretrain-codegeex-13b-test
   save_interval ................................... 100
   scale_embeddings ................................ False
   scaled_upper_triang_masked_softmax_fusion ....... False
@@ -180,7 +178,7 @@ using torch.float16 for parameters ...
   synchronize_each_layer .......................... False
   tempering ....................................... None
   tensor_model_parallel_size ...................... 4
-  tensorboard_dir ................................. /data0/csw/CodeGeeX/scripts/pretrain-codegeex-13b-test/tb20240331_164141
+  tensorboard_dir ................................. /data3/csw/pretrain-codegeex-13b-test/tb20240926_004836
   tensorboard_log_interval ........................ 1
   tensorboard_queue_size .......................... 1000
   test_data_path .................................. None
@@ -199,7 +197,7 @@ using torch.float16 for parameters ...
   valid_data_path ................................. None
   virtual_pipeline_model_parallel_size ............ None
   vocab_extra_ids ................................. 0
-  vocab_file ...................................... /data0/csw/CodeGeeX/codegeex/tokenizer/vocab.json
+  vocab_file ...................................... /home/icksys/csw/CodeGeeX/codegeex/tokenizer/vocab.json
   wandb_log_interval .............................. 1
   wandb_logging ................................... False
   weight_decay .................................... 0.1
@@ -210,97 +208,72 @@ using torch.float16 for parameters ...
   zero_reduce_scatter ............................. False
   zero_stage ...................................... 1.0
 -------------------- end of arguments ---------------------
-setting number of micro-batches to constant 1
+setting number of micro-batches to constant 2
 > building GPT2BPETokenizer tokenizer ...
  > padded vocab (size: 50257) with 1967 dummy tokens (new size: 52224)
 WARNING: TensorBoard writing requested but is not available (are you using PyTorch 1.1.0 or later?), no TensorBoard logs will be written.
-  > (rank=2) initializing process group: world_size=8 backend=nccl init_method=tcp://127.0.0.1:29501
-  > (rank=1) initializing process group: world_size=8 backend=nccl init_method=tcp://127.0.0.1:29501
 > initializing torch distributed ...
   > (rank=0) initializing process group: world_size=8 backend=nccl init_method=tcp://127.0.0.1:29501
-  > (rank=3) initializing process group: world_size=8 backend=nccl init_method=tcp://127.0.0.1:29501
-  > (rank=6) initializing process group: world_size=8 backend=nccl init_method=tcp://127.0.0.1:29501
-  > (rank=7) initializing process group: world_size=8 backend=nccl init_method=tcp://127.0.0.1:29501
   > (rank=4) initializing process group: world_size=8 backend=nccl init_method=tcp://127.0.0.1:29501
+  > (rank=4) process group initialized
+/home/icksys/csw/CodeGeeX/codegeex/megatron/training.py:126: UserWarning: The torch.cuda.*DtypeTensor constructors are no longer recommended. It's best to use methods such as torch.tensor(data, dtype=*, device='cuda') to create tensors. (Triggered internally at /opt/conda/conda-bld/pytorch_1712608935911/work/torch/csrc/tensor/python_tensor.cpp:78.)
+  start_time_tensor = torch.cuda.FloatTensor([_TRAIN_START_TIME])
+  > (rank=2) initializing process group: world_size=8 backend=nccl init_method=tcp://127.0.0.1:29501
+  > (rank=2) process group initialized
   > (rank=5) initializing process group: world_size=8 backend=nccl init_method=tcp://127.0.0.1:29501
+/home/icksys/csw/CodeGeeX/codegeex/megatron/training.py:126: UserWarning: The torch.cuda.*DtypeTensor constructors are no longer recommended. It's best to use methods such as torch.tensor(data, dtype=*, device='cuda') to create tensors. (Triggered internally at /opt/conda/conda-bld/pytorch_1712608935911/work/torch/csrc/tensor/python_tensor.cpp:78.)
+  start_time_tensor = torch.cuda.FloatTensor([_TRAIN_START_TIME])
+  > (rank=5) process group initialized
+/home/icksys/csw/CodeGeeX/codegeex/megatron/training.py:126: UserWarning: The torch.cuda.*DtypeTensor constructors are no longer recommended. It's best to use methods such as torch.tensor(data, dtype=*, device='cuda') to create tensors. (Triggered internally at /opt/conda/conda-bld/pytorch_1712608935911/work/torch/csrc/tensor/python_tensor.cpp:78.)
+  start_time_tensor = torch.cuda.FloatTensor([_TRAIN_START_TIME])
+  > (rank=1) initializing process group: world_size=8 backend=nccl init_method=tcp://127.0.0.1:29501
+  > (rank=1) process group initialized
+  > (rank=7) initializing process group: world_size=8 backend=nccl init_method=tcp://127.0.0.1:29501
+/home/icksys/csw/CodeGeeX/codegeex/megatron/training.py:126: UserWarning: The torch.cuda.*DtypeTensor constructors are no longer recommended. It's best to use methods such as torch.tensor(data, dtype=*, device='cuda') to create tensors. (Triggered internally at /opt/conda/conda-bld/pytorch_1712608935911/work/torch/csrc/tensor/python_tensor.cpp:78.)
+  start_time_tensor = torch.cuda.FloatTensor([_TRAIN_START_TIME])
+  > (rank=7) process group initialized
+  > (rank=6) initializing process group: world_size=8 backend=nccl init_method=tcp://127.0.0.1:29501
+  > (rank=3) initializing process group: world_size=8 backend=nccl init_method=tcp://127.0.0.1:29501
+/home/icksys/csw/CodeGeeX/codegeex/megatron/training.py:126: UserWarning: The torch.cuda.*DtypeTensor constructors are no longer recommended. It's best to use methods such as torch.tensor(data, dtype=*, device='cuda') to create tensors. (Triggered internally at /opt/conda/conda-bld/pytorch_1712608935911/work/torch/csrc/tensor/python_tensor.cpp:78.)
+  start_time_tensor = torch.cuda.FloatTensor([_TRAIN_START_TIME])
+  > (rank=3) process group initialized
+  > (rank=6) process group initialized
+/home/icksys/csw/CodeGeeX/codegeex/megatron/training.py:126: UserWarning: The torch.cuda.*DtypeTensor constructors are no longer recommended. It's best to use methods such as torch.tensor(data, dtype=*, device='cuda') to create tensors. (Triggered internally at /opt/conda/conda-bld/pytorch_1712608935911/work/torch/csrc/tensor/python_tensor.cpp:78.)
+  start_time_tensor = torch.cuda.FloatTensor([_TRAIN_START_TIME])
+/home/icksys/csw/CodeGeeX/codegeex/megatron/training.py:126: UserWarning: The torch.cuda.*DtypeTensor constructors are no longer recommended. It's best to use methods such as torch.tensor(data, dtype=*, device='cuda') to create tensors. (Triggered internally at /opt/conda/conda-bld/pytorch_1712608935911/work/torch/csrc/tensor/python_tensor.cpp:78.)
+  start_time_tensor = torch.cuda.FloatTensor([_TRAIN_START_TIME])
   > (rank=0) process group initialized
 > initializing tensor model parallel with size 4
 > initializing pipeline model parallel with size 1
-  > (rank=1) process group initialized
-  > (rank=2) process group initialized
-  > (rank=3) process group initialized
-  > (rank=6) process group initialized
-  > (rank=4) process group initialized
-  > (rank=5) process group initialized
-  > (rank=7) process group initialized
 > setting random seeds to 1234 ...
 > initializing model parallel cuda seeds on global rank 0, model parallel rank 0, and data parallel rank 0 with model parallel seed: 3952 and data parallel seed: 1234
 > building the checkpointed activations memory buffer with 204472320 num elements and torch.float16 dtype (390.0 MB)...
-time to initialize megatron (seconds): -48.721
-[after megatron is initialized] datetime: 2024-03-31 16:41:51 
+/home/icksys/csw/CodeGeeX/codegeex/megatron/training.py:126: UserWarning: The torch.cuda.*DtypeTensor constructors are no longer recommended. It's best to use methods such as torch.tensor(data, dtype=*, device='cuda') to create tensors. (Triggered internally at /opt/conda/conda-bld/pytorch_1712608935911/work/torch/csrc/tensor/python_tensor.cpp:78.)
+  start_time_tensor = torch.cuda.FloatTensor([_TRAIN_START_TIME])
+time to initialize megatron (seconds): -20.499
+[after megatron is initialized] datetime: 2024-09-26 00:48:43
 Creating output dir ...
 building GPT model ...
-[2024-03-31 16:41:51,362] [INFO] [utils.py:828:see_memory_usage] Before Building Model
-[2024-03-31 16:41:51,364] [INFO] [utils.py:829:see_memory_usage] MA 0.38 GB         Max_MA 0.38 GB         CA 0.38 GB         Max_CA 0 GB 
-[2024-03-31 16:41:51,364] [INFO] [utils.py:837:see_memory_usage] CPU Virtual Memory:  used = 61.96 GB, percent = 3.3%
+[2024-09-26 00:48:43,558] [INFO] [utils.py:828:see_memory_usage] Before Building Model
+[2024-09-26 00:48:43,559] [INFO] [utils.py:829:see_memory_usage] MA 0.38 GB         Max_MA 0.38 GB         CA 0.38 GB         Max_CA 0 GB
+[2024-09-26 00:48:43,559] [INFO] [utils.py:837:see_memory_usage] CPU Virtual Memory:  used = 35.6 GB, percent = 3.5%
 Loading warmstarting model states ...
-Loading model from /data0/csw/CodeGeeX/scripts/mp4_parallel_weights/mp_rank_00_model_states.pt ...
-[2024-03-31 16:41:57,313] [INFO] [utils.py:828:see_memory_usage] After Building Model
-[2024-03-31 16:41:57,313] [INFO] [utils.py:829:see_memory_usage] MA 6.37 GB         Max_MA 6.37 GB         CA 6.61 GB         Max_CA 7 GB 
-[2024-03-31 16:41:57,314] [INFO] [utils.py:837:see_memory_usage] CPU Virtual Memory:  used = 111.12 GB, percent = 5.9%
-time (ms) | load-model-states: 5031.96
- > number of parameters on (tensor, pipeline) model parallel rank (0, 0): 3227279360
-[2024-03-31 16:41:57,667] [INFO] [utils.py:828:see_memory_usage] Before moving to GPU
-[2024-03-31 16:41:57,668] [INFO] [utils.py:829:see_memory_usage] MA 6.37 GB         Max_MA 6.37 GB         CA 6.61 GB         Max_CA 7 GB 
-[2024-03-31 16:41:57,668] [INFO] [utils.py:837:see_memory_usage] CPU Virtual Memory:  used = 92.09 GB, percent = 4.9%
+Loading model from /home/icksys/csw/CodeGeeX/scripts/mp4_parallel_weights/mp_rank_00_model_states.pt ...
  > moving model to GPU ...
- > moving to GPU done
- > moving model to GPU ...
- > moving to GPU done
- > converting model to fp16 ...
- > number of parameters on (tensor, pipeline) model parallel rank (2, 0): 3227279360
- > moving model to GPU ...
- > moving model to GPU ...
- > converting to fp16 done
- > creating DDP model ...
- > moving to GPU done
- > converting model to fp16 ...
- > moving to GPU done
- > converting model to fp16 ...
- > moving model to GPU ...
- > converting to fp16 done
- > creating DDP model ...
- > converting to fp16 done
- > creating DDP model ...
- > creating DDP model done
  > moving to GPU done
  > converting model to fp16 ...
  > converting to fp16 done
  > creating DDP model ...
  > creating DDP model done
- > creating DDP model done
-[2024-03-31 16:41:57,778] [INFO] [utils.py:828:see_memory_usage] After moving to GPU
-[2024-03-31 16:41:57,778] [INFO] [utils.py:829:see_memory_usage] MA 6.39 GB         Max_MA 6.39 GB         CA 6.63 GB         Max_CA 7 GB 
-[2024-03-31 16:41:57,778] [INFO] [utils.py:837:see_memory_usage] CPU Virtual Memory:  used = 87.87 GB, percent = 4.7%
- > creating DDP model done
-[2024-03-31 16:41:57,866] [INFO] [utils.py:828:see_memory_usage] Before Float16Module Warpped
-[2024-03-31 16:41:57,866] [INFO] [utils.py:829:see_memory_usage] MA 6.39 GB         Max_MA 6.39 GB         CA 6.63 GB         Max_CA 7 GB 
-[2024-03-31 16:41:57,867] [INFO] [utils.py:837:see_memory_usage] CPU Virtual Memory:  used = 85.64 GB, percent = 4.6%
- > converting model to fp16 ...
- > converting to fp16 done
-[2024-03-31 16:41:57,958] [INFO] [utils.py:828:see_memory_usage] After Float16Module Warpped
-[2024-03-31 16:41:57,959] [INFO] [utils.py:829:see_memory_usage] MA 6.39 GB         Max_MA 6.39 GB         CA 6.63 GB         Max_CA 7 GB 
-[2024-03-31 16:41:57,959] [INFO] [utils.py:837:see_memory_usage] CPU Virtual Memory:  used = 82.95 GB, percent = 4.4%
- > creating DDP model ...
+time (ms) | load-model-states: 4923.76
+[2024-09-26 00:48:49,157] [INFO] [utils.py:828:see_memory_usage] After Building Model
+[2024-09-26 00:48:49,158] [INFO] [utils.py:829:see_memory_usage] MA 6.37 GB         Max_MA 6.37 GB         CA 6.61 GB         Max_CA 7 GB
+[2024-09-26 00:48:49,158] [INFO] [utils.py:837:see_memory_usage] CPU Virtual Memory:  used = 70.43 GB, percent = 7.0%
  > moving model to GPU ...
  > moving to GPU done
  > converting model to fp16 ...
  > converting to fp16 done
  > creating DDP model ...
-[2024-03-31 16:41:58,021] [INFO] [utils.py:828:see_memory_usage] Before LocalDDP Wrapped
-[2024-03-31 16:41:58,022] [INFO] [utils.py:829:see_memory_usage] MA 6.39 GB         Max_MA 6.39 GB         CA 6.63 GB         Max_CA 7 GB 
-[2024-03-31 16:41:58,022] [INFO] [utils.py:837:see_memory_usage] CPU Virtual Memory:  used = 81.13 GB, percent = 4.3%
- > creating DDP model done
  > creating DDP model done
  > number of parameters on (tensor, pipeline) model parallel rank (3, 0): 3227279360
  > moving model to GPU ...
@@ -308,51 +281,92 @@ time (ms) | load-model-states: 5031.96
  > converting model to fp16 ...
  > converting to fp16 done
  > creating DDP model ...
-[2024-03-31 16:41:58,105] [INFO] [utils.py:828:see_memory_usage] After LocalDDP Wrapped
-[2024-03-31 16:41:58,106] [INFO] [utils.py:829:see_memory_usage] MA 18.42 GB         Max_MA 18.42 GB         CA 18.65 GB         Max_CA 19 GB 
-[2024-03-31 16:41:58,106] [INFO] [utils.py:837:see_memory_usage] CPU Virtual Memory:  used = 79.52 GB, percent = 4.3%
  > creating DDP model done
-[2024-03-31 16:41:58,155] [INFO] [utils.py:828:see_memory_usage] Before Adam Init
-[2024-03-31 16:41:58,156] [INFO] [utils.py:829:see_memory_usage] MA 18.42 GB         Max_MA 18.42 GB         CA 18.65 GB         Max_CA 19 GB 
-[2024-03-31 16:41:58,156] [INFO] [utils.py:837:see_memory_usage] CPU Virtual Memory:  used = 78.84 GB, percent = 4.2%
-[2024-03-31 16:41:58,205] [INFO] [utils.py:828:see_memory_usage] After Adam Init
-[2024-03-31 16:41:58,206] [INFO] [utils.py:829:see_memory_usage] MA 18.42 GB         Max_MA 18.42 GB         CA 18.65 GB         Max_CA 19 GB 
-[2024-03-31 16:41:58,206] [INFO] [utils.py:837:see_memory_usage] CPU Virtual Memory:  used = 78.17 GB, percent = 4.2%
-[2024-03-31 16:41:58,253] [INFO] [utils.py:828:see_memory_usage] Before Float16OptimizerWithFloat16Params Wrapped
-[2024-03-31 16:41:58,254] [INFO] [utils.py:829:see_memory_usage] MA 18.42 GB         Max_MA 18.42 GB         CA 18.65 GB         Max_CA 19 GB 
-[2024-03-31 16:41:58,254] [INFO] [utils.py:837:see_memory_usage] CPU Virtual Memory:  used = 77.52 GB, percent = 4.1%
- > number of parameters on (tensor, pipeline) model parallel rank (1, 0): 3227279360
  > moving model to GPU ...
+ > number of parameters on (tensor, pipeline) model parallel rank (0, 0): 3227279360
  > moving to GPU done
  > converting model to fp16 ...
  > converting to fp16 done
  > creating DDP model ...
  > creating DDP model done
-[2024-03-31 16:41:58,426] [INFO] [utils.py:828:see_memory_usage] After Float16OptimizerWithFloat16Params Wrapped
-[2024-03-31 16:41:58,427] [INFO] [utils.py:829:see_memory_usage] MA 30.52 GB         Max_MA 30.56 GB         CA 30.83 GB         Max_CA 31 GB 
-[2024-03-31 16:41:58,427] [INFO] [utils.py:837:see_memory_usage] CPU Virtual Memory:  used = 77.41 GB, percent = 4.1%
+ > number of parameters on (tensor, pipeline) model parallel rank (2, 0): 3227279360
+ > moving model to GPU ...
+[2024-09-26 00:48:49,614] [INFO] [utils.py:828:see_memory_usage] Before moving to GPU
+[2024-09-26 00:48:49,615] [INFO] [utils.py:829:see_memory_usage] MA 6.37 GB         Max_MA 6.37 GB         CA 6.61 GB         Max_CA 7 GB
+[2024-09-26 00:48:49,615] [INFO] [utils.py:837:see_memory_usage] CPU Virtual Memory:  used = 37.71 GB, percent = 3.7%
+ > moving model to GPU ...
+ > moving to GPU done
+ > converting model to fp16 ...
+ > moving to GPU done
+ > converting to fp16 done
+ > creating DDP model ...
+ > number of parameters on (tensor, pipeline) model parallel rank (1, 0): 3227279360
+ > moving model to GPU ...
+ > creating DDP model done
+ > moving to GPU done
+ > converting model to fp16 ...
+ > converting to fp16 done
+ > creating DDP model ...
+ > moving model to GPU ...
+[2024-09-26 00:48:49,679] [INFO] [utils.py:828:see_memory_usage] After moving to GPU
+[2024-09-26 00:48:49,680] [INFO] [utils.py:829:see_memory_usage] MA 6.39 GB         Max_MA 6.39 GB         CA 6.63 GB         Max_CA 7 GB
+[2024-09-26 00:48:49,680] [INFO] [utils.py:837:see_memory_usage] CPU Virtual Memory:  used = 35.48 GB, percent = 3.5%
+ > creating DDP model done
+ > moving to GPU done
+ > converting model to fp16 ...
+ > converting to fp16 done
+ > creating DDP model ...
+ > creating DDP model done
+[2024-09-26 00:48:49,731] [INFO] [utils.py:828:see_memory_usage] Before Float16Module Warpped
+[2024-09-26 00:48:49,731] [INFO] [utils.py:829:see_memory_usage] MA 6.39 GB         Max_MA 6.39 GB         CA 6.63 GB         Max_CA 7 GB
+[2024-09-26 00:48:49,732] [INFO] [utils.py:837:see_memory_usage] CPU Virtual Memory:  used = 35.5 GB, percent = 3.5%
+ > converting model to fp16 ...
+ > converting to fp16 done
+[2024-09-26 00:48:49,798] [INFO] [utils.py:828:see_memory_usage] After Float16Module Warpped
+[2024-09-26 00:48:49,798] [INFO] [utils.py:829:see_memory_usage] MA 6.39 GB         Max_MA 6.39 GB         CA 6.63 GB         Max_CA 7 GB
+[2024-09-26 00:48:49,799] [INFO] [utils.py:837:see_memory_usage] CPU Virtual Memory:  used = 35.52 GB, percent = 3.5%
+ > creating DDP model ...
+[2024-09-26 00:48:49,849] [INFO] [utils.py:828:see_memory_usage] Before LocalDDP Wrapped
+[2024-09-26 00:48:49,849] [INFO] [utils.py:829:see_memory_usage] MA 6.39 GB         Max_MA 6.39 GB         CA 6.63 GB         Max_CA 7 GB
+[2024-09-26 00:48:49,849] [INFO] [utils.py:837:see_memory_usage] CPU Virtual Memory:  used = 35.54 GB, percent = 3.5%
+ > creating DDP model done
+[2024-09-26 00:48:49,914] [INFO] [utils.py:828:see_memory_usage] After LocalDDP Wrapped
+[2024-09-26 00:48:49,914] [INFO] [utils.py:829:see_memory_usage] MA 18.42 GB         Max_MA 18.42 GB         CA 18.65 GB         Max_CA 19 GB
+[2024-09-26 00:48:49,915] [INFO] [utils.py:837:see_memory_usage] CPU Virtual Memory:  used = 35.53 GB, percent = 3.5%
+[2024-09-26 00:48:49,958] [INFO] [utils.py:828:see_memory_usage] Before Adam Init
+[2024-09-26 00:48:49,959] [INFO] [utils.py:829:see_memory_usage] MA 18.42 GB         Max_MA 18.42 GB         CA 18.65 GB         Max_CA 19 GB
+[2024-09-26 00:48:49,959] [INFO] [utils.py:837:see_memory_usage] CPU Virtual Memory:  used = 35.54 GB, percent = 3.5%
+[2024-09-26 00:48:50,269] [INFO] [utils.py:828:see_memory_usage] After Adam Init
+[2024-09-26 00:48:50,270] [INFO] [utils.py:829:see_memory_usage] MA 18.42 GB         Max_MA 18.42 GB         CA 18.65 GB         Max_CA 19 GB
+[2024-09-26 00:48:50,270] [INFO] [utils.py:837:see_memory_usage] CPU Virtual Memory:  used = 35.56 GB, percent = 3.5%
+[2024-09-26 00:48:50,307] [INFO] [utils.py:828:see_memory_usage] Before Float16OptimizerWithFloat16Params Wrapped
+[2024-09-26 00:48:50,307] [INFO] [utils.py:829:see_memory_usage] MA 18.42 GB         Max_MA 18.42 GB         CA 18.65 GB         Max_CA 19 GB
+[2024-09-26 00:48:50,308] [INFO] [utils.py:837:see_memory_usage] CPU Virtual Memory:  used = 35.57 GB, percent = 3.5%
+[2024-09-26 00:48:50,422] [INFO] [utils.py:828:see_memory_usage] After Float16OptimizerWithFloat16Params Wrapped
+[2024-09-26 00:48:50,423] [INFO] [utils.py:829:see_memory_usage] MA 30.52 GB         Max_MA 30.56 GB         CA 30.83 GB         Max_CA 31 GB
+[2024-09-26 00:48:50,423] [INFO] [utils.py:837:see_memory_usage] CPU Virtual Memory:  used = 35.57 GB, percent = 3.5%
 > learning rate decay style: cosine
-[after model, optimizer, and learning rate scheduler are built] datetime: 2024-03-31 16:41:58 
+[after model, optimizer, and learning rate scheduler are built] datetime: 2024-09-26 00:48:50
 > building train, validation, and test datasets ...
  > datasets target sizes (minimum size):
-    train:      100
-    validation: 120
-    test:       40
+    train:      200
+    validation: 240
+    test:       80
 > building train, validation, and test datasets for GPT ...
  > building dataset index ...
     creating numpy buffer of mmap...
     creating memory view of numpy buffer...
- > finished creating indexed dataset in 0.000220 seconds
+ > finished creating indexed dataset in 0.000165 seconds
     number of documents: 500
  > building dataset index ...
     creating numpy buffer of mmap...
     creating memory view of numpy buffer...
- > finished creating indexed dataset in 0.000085 seconds
+ > finished creating indexed dataset in 0.000078 seconds
     number of documents: 500
  > building dataset index ...
     creating numpy buffer of mmap...
     creating memory view of numpy buffer...
- > finished creating indexed dataset in 0.015664 seconds
+ > finished creating indexed dataset in 0.000072 seconds
     number of documents: 500
  > dataset split:
     train:
@@ -361,174 +375,992 @@ time (ms) | load-model-states: 5031.96
      document indices in [500, 500) total of 0 documents
     test:
      document indices in [500, 500) total of 0 documents
- > loading doc-idx mapping from /data0/csw/CodeGeeX/pt_data/my_data_train_indexmap_100ns_512sl_1234s_doc_idx.npy
-    total number of samples: 100
+ > loading doc-idx mapping from /home/icksys/csw/CodeGeeX/pt_data/my_data_train_indexmap_200ns_512sl_1234s_doc_idx.npy
+    total number of samples: 200
     total number of epochs: 1
 train_dataset:<class 'codegeex.megatron.data.prompt_dataset.PromptDataset'>
 valid_dataset:<class 'NoneType'>
 test_dataset:<class 'NoneType'>
 > finished creating GPT datasets ...
-[after dataloaders are built] datetime: 2024-03-31 16:42:00 time (ms) | model-and-optimizer-setup: 6608.54 | train/valid/test-data-iterators-setup: 1567.33
-
+[after dataloaders are built] datetime: 2024-09-26 00:48:51
 done with setup ...
 training ...
-[before the start of training step] datetime: 2024-03-31 16:42:00 
-==> iteration        1/      25 | consumed samples:            4 | consumed tokens:         2048 | elapsed time per iteration (ms): 3594.3 | learning rate: 1.333E-07 | global batch size:     4 | lm loss: 3.924718E+00 | loss scale: 12.0 | grad norm: 732.617 | number of skipped iterations:   0 | number of nan iterations:   0 |
-time (ms) | forward-compute: 1867.83 | backward-compute: 169.18 | backward-params-all-reduce: 102.12 | backward-embedding-all-reduce: 0.03 | optimizer-copy-to-main-grad: 0.79 | optimizer-unscale-and-check-inf: 654.65 | optimizer-clip-main-grad: 28.79 | optimizer-copy-main-to-model-params: 19.60 | optimizer: 1446.22 | batch-generator: 5.09
-[Rank 1] (after 1 iterations) memory (MB) | allocated: 56199.58203125 | max allocated: 56199.58251953125 | reserved: 56582.0 | max reserved: 56582.0
-[Rank 0] (after 1 iterations) memory (MB) | allocated: 56197.58203125 | max allocated: 56197.58251953125 | reserved: 56510.0 | max reserved: 56510.0
-[Rank 3] (after 1 iterations) memory (MB) | allocated: 56199.58203125 | max allocated: 56199.58251953125 | reserved: 56582.0 | max reserved: 56582.0
-[Rank 2] (after 1 iterations) memory (MB) | allocated: 56199.58203125 | max allocated: 56199.58251953125 | reserved: 56582.0 | max reserved: 56582.0
-==> iteration        2/      25 | consumed samples:            8 | consumed tokens:         4096 | elapsed time per iteration (ms): 512.3 | learning rate: 2.667E-07 | global batch size:     4 | lm loss: 3.960377E+00 | loss scale: 12.0 | grad norm: 642.839 | number of skipped iterations:   0 | number of nan iterations:   0 |
-time (ms) | forward-compute: 104.46 | backward-compute: 167.92 | backward-params-all-reduce: 101.83 | backward-embedding-all-reduce: 0.03 | optimizer-copy-to-main-grad: 0.81 | optimizer-unscale-and-check-inf: 18.94 | optimizer-clip-main-grad: 28.43 | optimizer-copy-main-to-model-params: 19.44 | optimizer: 129.78 | batch-generator: 0.93
-[Rank 1] (after 2 iterations) memory (MB) | allocated: 56199.58203125 | max allocated: 56583.583984375 | reserved: 57022.0 | max reserved: 57022.0
-[Rank 0] (after 2 iterations) memory (MB) | allocated: 56197.58203125 | max allocated: 56581.583984375 | reserved: 56964.0 | max reserved: 56964.0
-[Rank 3] (after 2 iterations) memory (MB) | allocated: 56199.58203125 | max allocated: 56583.583984375 | reserved: 57022.0 | max reserved: 57022.0[Rank 2] (after 2 iterations) memory (MB) | allocated: 56199.58203125 | max allocated: 56583.583984375 | reserved: 57022.0 | max reserved: 57022.0
+time (ms) | model-and-optimizer-setup: 6465.76 | train/valid/test-data-iterators-setup: 944.26
+[before the start of training step] datetime: 2024-09-26 00:48:51
 
-==> iteration        3/      25 | consumed samples:           12 | consumed tokens:         6144 | elapsed time per iteration (ms): 467.4 | learning rate: 4.000E-07 | global batch size:     4 | lm loss: 4.450614E+00 | loss scale: 12.0 | grad norm: 593.176 | number of skipped iterations:   0 | number of nan iterations:   0 |
-time (ms) | forward-compute: 64.73 | backward-compute: 163.38 | backward-params-all-reduce: 101.08 | backward-embedding-all-reduce: 0.04 | optimizer-copy-to-main-grad: 0.93 | optimizer-unscale-and-check-inf: 18.64 | optimizer-clip-main-grad: 28.45 | optimizer-copy-main-to-model-params: 19.48 | optimizer: 129.82 | batch-generator: 0.61
-[Rank 2] (after 3 iterations) memory (MB) | allocated: 56199.58203125 | max allocated: 56583.583984375 | reserved: 57022.0 | max reserved: 57022.0
-[Rank 0] (after 3 iterations) memory (MB) | allocated: 56197.58203125 | max allocated: 56581.583984375 | reserved: 56964.0 | max reserved: 56964.0
-[Rank 1] (after 3 iterations) memory (MB) | allocated: 56199.58203125 | max allocated: 56583.583984375 | reserved: 57022.0 | max reserved: 57022.0
-[Rank 3] (after 3 iterations) memory (MB) | allocated: 56199.58203125 | max allocated: 56583.583984375 | reserved: 57022.0 | max reserved: 57022.0
-==> iteration        4/      25 | consumed samples:           16 | consumed tokens:         8192 | elapsed time per iteration (ms): 467.2 | learning rate: 5.333E-07 | global batch size:     4 | lm loss: 3.256634E+00 | loss scale: 12.0 | grad norm: 601.268 | number of skipped iterations:   0 | number of nan iterations:   0 |
-time (ms) | forward-compute: 65.75 | backward-compute: 161.31 | backward-params-all-reduce: 102.02 | backward-embedding-all-reduce: 0.03 | optimizer-copy-to-main-grad: 0.79 | optimizer-unscale-and-check-inf: 18.99 | optimizer-clip-main-grad: 28.36 | optimizer-copy-main-to-model-params: 19.48 | optimizer: 129.84 | batch-generator: 0.65
-[Rank 2] (after 4 iterations) memory (MB) | allocated: 56199.58203125 | max allocated: 56583.583984375 | reserved: 57022.0 | max reserved: 57022.0
-[Rank 0] (after 4 iterations) memory (MB) | allocated: 56197.58203125 | max allocated: 56581.583984375 | reserved: 56964.0 | max reserved: 56964.0
-[Rank 1] (after 4 iterations) memory (MB) | allocated: 56199.58203125 | max allocated: 56583.583984375 | reserved: 57022.0 | max reserved: 57022.0
-[Rank 3] (after 4 iterations) memory (MB) | allocated: 56199.58203125 | max allocated: 56583.583984375 | reserved: 57022.0 | max reserved: 57022.0
-==> iteration        5/      25 | consumed samples:           20 | consumed tokens:        10240 | elapsed time per iteration (ms): 466.4 | learning rate: 6.667E-07 | global batch size:     4 | lm loss: 3.165217E+00 | loss scale: 12.0 | grad norm: 448.396 | number of skipped iterations:   0 | number of nan iterations:   0 |
-time (ms) | forward-compute: 65.70 | backward-compute: 160.78 | backward-params-all-reduce: 102.58 | backward-embedding-all-reduce: 0.02 | optimizer-copy-to-main-grad: 0.64 | optimizer-unscale-and-check-inf: 18.52 | optimizer-clip-main-grad: 28.26 | optimizer-copy-main-to-model-params: 19.45 | optimizer: 129.10 | batch-generator: 0.62
-[Rank 2] (after 5 iterations) memory (MB) | allocated: 56199.58203125 | max allocated: 56583.583984375 | reserved: 57022.0 | max reserved: 57022.0
-[Rank 0] (after 5 iterations) memory (MB) | allocated: 56197.58203125 | max allocated: 56581.583984375 | reserved: 56964.0 | max reserved: 56964.0
-[Rank 1] (after 5 iterations) memory (MB) | allocated: 56199.58203125 | max allocated: 56583.583984375 | reserved: 57022.0 | max reserved: 57022.0
-[Rank 3] (after 5 iterations) memory (MB) | allocated: 56199.58203125 | max allocated: 56583.583984375 | reserved: 57022.0 | max reserved: 57022.0
-==> iteration        6/      25 | consumed samples:           24 | consumed tokens:        12288 | elapsed time per iteration (ms): 467.3 | learning rate: 8.000E-07 | global batch size:     4 | lm loss: 2.749013E+00 | loss scale: 12.0 | grad norm: 349.512 | number of skipped iterations:   0 | number of nan iterations:   0 |
-time (ms) | forward-compute: 65.96 | backward-compute: 161.61 | backward-params-all-reduce: 101.03 | backward-embedding-all-reduce: 0.03 | optimizer-copy-to-main-grad: 0.79 | optimizer-unscale-and-check-inf: 19.43 | optimizer-clip-main-grad: 28.37 | optimizer-copy-main-to-model-params: 19.47 | optimizer: 130.43 | batch-generator: 0.64
-[Rank 1] (after 6 iterations) memory (MB) | allocated: 56199.58203125 | max allocated: 56583.583984375 | reserved: 57022.0 | max reserved: 57022.0
-[Rank 2] (after 6 iterations) memory (MB) | allocated: 56199.58203125 | max allocated: 56583.583984375 | reserved: 57022.0 | max reserved: 57022.0
-[Rank 3] (after 6 iterations) memory (MB) | allocated: 56199.58203125 | max allocated: 56583.583984375 | reserved: 57022.0 | max reserved: 57022.0
-[Rank 0] (after 6 iterations) memory (MB) | allocated: 56197.58203125 | max allocated: 56581.583984375 | reserved: 56964.0 | max reserved: 56964.0
-==> iteration        7/      25 | consumed samples:           28 | consumed tokens:        14336 | elapsed time per iteration (ms): 464.2 | learning rate: 9.333E-07 | global batch size:     4 | lm loss: 2.593580E+00 | loss scale: 12.0 | grad norm: 290.359 | number of skipped iterations:   0 | number of nan iterations:   0 |
-time (ms) | forward-compute: 64.14 | backward-compute: 161.25 | backward-params-all-reduce: 100.85 | backward-embedding-all-reduce: 0.03 | optimizer-copy-to-main-grad: 0.65 | optimizer-unscale-and-check-inf: 19.22 | optimizer-clip-main-grad: 28.27 | optimizer-copy-main-to-model-params: 19.41 | optimizer: 129.80 | batch-generator: 0.65
-[Rank 2] (after 7 iterations) memory (MB) | allocated: 56199.58203125 | max allocated: 56583.583984375 | reserved: 57022.0 | max reserved: 57022.0
-[Rank 1] (after 7 iterations) memory (MB) | allocated: 56199.58203125 | max allocated: 56583.583984375 | reserved: 57022.0 | max reserved: 57022.0[Rank 3] (after 7 iterations) memory (MB) | allocated: 56199.58203125 | max allocated: 56583.583984375 | reserved: 57022.0 | max reserved: 57022.0
+[Rank 0] (iterations 0 before 【model_param.main_grad = 0】) memory | allocated: 31250 MB (30.52 GB) | max allocated: 31250 MB (30.52 GB) | reserved: 31570 MB | max reserved: 31570 MB
 
-[Rank 0] (after 7 iterations) memory (MB) | allocated: 56197.58203125 | max allocated: 56581.583984375 | reserved: 56964.0 | max reserved: 56964.0
-==> iteration        8/      25 | consumed samples:           32 | consumed tokens:        16384 | elapsed time per iteration (ms): 466.0 | learning rate: 1.067E-06 | global batch size:     4 | lm loss: 1.495719E+00 | loss scale: 12.0 | grad norm: 157.681 | number of skipped iterations:   0 | number of nan iterations:   0 |
-time (ms) | forward-compute: 65.03 | backward-compute: 161.28 | backward-params-all-reduce: 101.44 | backward-embedding-all-reduce: 0.03 | optimizer-copy-to-main-grad: 0.68 | optimizer-unscale-and-check-inf: 19.22 | optimizer-clip-main-grad: 28.35 | optimizer-copy-main-to-model-params: 19.48 | optimizer: 129.95 | batch-generator: 0.61
-[Rank 2] (after 8 iterations) memory (MB) | allocated: 56199.58203125 | max allocated: 56583.583984375 | reserved: 57022.0 | max reserved: 57022.0
-[Rank 0] (after 8 iterations) memory (MB) | allocated: 56197.58203125 | max allocated: 56581.583984375 | reserved: 56964.0 | max reserved: 56964.0
-[Rank 1] (after 8 iterations) memory (MB) | allocated: 56199.58203125 | max allocated: 56583.583984375 | reserved: 57022.0 | max reserved: 57022.0
-[Rank 3] (after 8 iterations) memory (MB) | allocated: 56199.58203125 | max allocated: 56583.583984375 | reserved: 57022.0 | max reserved: 57022.0
-==> iteration        9/      25 | consumed samples:           36 | consumed tokens:        18432 | elapsed time per iteration (ms): 466.3 | learning rate: 1.200E-06 | global batch size:     4 | lm loss: 1.228085E+00 | loss scale: 12.0 | grad norm: 177.721 | number of skipped iterations:   0 | number of nan iterations:   0 |
-time (ms) | forward-compute: 64.76 | backward-compute: 162.09 | backward-params-all-reduce: 101.06 | backward-embedding-all-reduce: 0.03 | optimizer-copy-to-main-grad: 0.75 | optimizer-unscale-and-check-inf: 19.27 | optimizer-clip-main-grad: 28.32 | optimizer-copy-main-to-model-params: 19.47 | optimizer: 130.12 | batch-generator: 0.65
-[Rank 2] (after 9 iterations) memory (MB) | allocated: 56199.58203125 | max allocated: 56583.583984375 | reserved: 57022.0 | max reserved: 57022.0
-[Rank 3] (after 9 iterations) memory (MB) | allocated: 56199.58203125 | max allocated: 56583.583984375 | reserved: 57022.0 | max reserved: 57022.0[Rank 1] (after 9 iterations) memory (MB) | allocated: 56199.58203125 | max allocated: 56583.583984375 | reserved: 57022.0 | max reserved: 57022.0[Rank 0] (after 9 iterations) memory (MB) | allocated: 56197.58203125 | max allocated: 56581.583984375 | reserved: 56964.0 | max reserved: 56964.0
+[Rank 0] (iterations 0 after  【model_param.main_grad = 0】) memory | allocated: 31250 MB (30.52 GB) | max allocated: 31250 MB (30.52 GB) | reserved: 31570 MB | max reserved: 31570 MB
 
+[Rank 0] (iterations 0 step 0 before 【forward_step】 ) memory | allocated: 31250 MB (30.52 GB) | max allocated: 31250 MB (30.52 GB) | reserved: 31570 MB | max reserved: 31570 MB
 
-==> iteration       10/      25 | consumed samples:           40 | consumed tokens:        20480 | elapsed time per iteration (ms): 465.6 | learning rate: 1.333E-06 | global batch size:     4 | lm loss: 5.464401E-01 | loss scale: 12.0 | grad norm: 66.709 | number of skipped iterations:   0 | number of nan iterations:   0 |
-time (ms) | forward-compute: 64.56 | backward-compute: 159.70 | backward-params-all-reduce: 103.43 | backward-embedding-all-reduce: 0.03 | optimizer-copy-to-main-grad: 0.75 | optimizer-unscale-and-check-inf: 19.07 | optimizer-clip-main-grad: 28.29 | optimizer-copy-main-to-model-params: 19.41 | optimizer: 129.78 | batch-generator: 0.63
-[Rank 0] (after 10 iterations) memory (MB) | allocated: 56197.58203125 | max allocated: 56581.583984375 | reserved: 56964.0 | max reserved: 56964.0
-[Rank 2] (after 10 iterations) memory (MB) | allocated: 56199.58203125 | max allocated: 56583.583984375 | reserved: 57022.0 | max reserved: 57022.0
-[Rank 1] (after 10 iterations) memory (MB) | allocated: 56199.58203125 | max allocated: 56583.583984375 | reserved: 57022.0 | max reserved: 57022.0
-[Rank 3] (after 10 iterations) memory (MB) | allocated: 56199.58203125 | max allocated: 56583.583984375 | reserved: 57022.0 | max reserved: 57022.0
-==> iteration       11/      25 | consumed samples:           44 | consumed tokens:        22528 | elapsed time per iteration (ms): 466.3 | learning rate: 1.467E-06 | global batch size:     4 | lm loss: 4.425841E-01 | loss scale: 12.0 | grad norm: 38.391 | number of skipped iterations:   0 | number of nan iterations:   0 |
-time (ms) | forward-compute: 64.72 | backward-compute: 160.24 | backward-params-all-reduce: 103.25 | backward-embedding-all-reduce: 0.03 | optimizer-copy-to-main-grad: 0.67 | optimizer-unscale-and-check-inf: 19.25 | optimizer-clip-main-grad: 28.26 | optimizer-copy-main-to-model-params: 19.46 | optimizer: 129.84 | batch-generator: 0.64
-[Rank 0] (after 11 iterations) memory (MB) | allocated: 56197.58203125 | max allocated: 56581.583984375 | reserved: 56964.0 | max reserved: 56964.0
-[Rank 1] (after 11 iterations) memory (MB) | allocated: 56199.58203125 | max allocated: 56583.583984375 | reserved: 57022.0 | max reserved: 57022.0[Rank 2] (after 11 iterations) memory (MB) | allocated: 56199.58203125 | max allocated: 56583.583984375 | reserved: 57022.0 | max reserved: 57022.0
+[Rank 0] (iterations 0 step 0 after  【forward_step】 ) memory | allocated: 31313 MB (30.58 GB) | max allocated: 31320 MB (30.59 GB) | reserved: 31610 MB | max reserved: 31610 MB
 
-[Rank 3] (after 11 iterations) memory (MB) | allocated: 56199.58203125 | max allocated: 56583.583984375 | reserved: 57022.0 | max reserved: 57022.0
-==> iteration       12/      25 | consumed samples:           48 | consumed tokens:        24576 | elapsed time per iteration (ms): 464.5 | learning rate: 1.600E-06 | global batch size:     4 | lm loss: 4.055330E-01 | loss scale: 12.0 | grad norm: 37.128 | number of skipped iterations:   0 | number of nan iterations:   0 |
-time (ms) | forward-compute: 64.55 | backward-compute: 159.78 | backward-params-all-reduce: 102.41 | backward-embedding-all-reduce: 0.03 | optimizer-copy-to-main-grad: 0.61 | optimizer-unscale-and-check-inf: 19.03 | optimizer-clip-main-grad: 28.27 | optimizer-copy-main-to-model-params: 19.37 | optimizer: 129.53 | batch-generator: 0.72
-[Rank 2] (after 12 iterations) memory (MB) | allocated: 56199.58203125 | max allocated: 56583.583984375 | reserved: 57022.0 | max reserved: 57022.0
-[Rank 0] (after 12 iterations) memory (MB) | allocated: 56197.58203125 | max allocated: 56581.583984375 | reserved: 56964.0 | max reserved: 56964.0
-[Rank 1] (after 12 iterations) memory (MB) | allocated: 56199.58203125 | max allocated: 56583.583984375 | reserved: 57022.0 | max reserved: 57022.0
-[Rank 3] (after 12 iterations) memory (MB) | allocated: 56199.58203125 | max allocated: 56583.583984375 | reserved: 57022.0 | max reserved: 57022.0
-==> iteration       13/      25 | consumed samples:           52 | consumed tokens:        26624 | elapsed time per iteration (ms): 465.7 | learning rate: 1.733E-06 | global batch size:     4 | lm loss: 3.153504E-01 | loss scale: 12.0 | grad norm: 5.169 | number of skipped iterations:   0 | number of nan iterations:   0 |
-time (ms) | forward-compute: 64.47 | backward-compute: 159.27 | backward-params-all-reduce: 104.21 | backward-embedding-all-reduce: 0.02 | optimizer-copy-to-main-grad: 0.63 | optimizer-unscale-and-check-inf: 19.15 | optimizer-clip-main-grad: 28.26 | optimizer-copy-main-to-model-params: 19.44 | optimizer: 129.60 | batch-generator: 0.58
-[Rank 2] (after 13 iterations) memory (MB) | allocated: 56199.58203125 | max allocated: 56583.583984375 | reserved: 57022.0 | max reserved: 57022.0
-[Rank 1] (after 13 iterations) memory (MB) | allocated: 56199.58203125 | max allocated: 56583.583984375 | reserved: 57022.0 | max reserved: 57022.0
-[Rank 3] (after 13 iterations) memory (MB) | allocated: 56199.58203125 | max allocated: 56583.583984375 | reserved: 57022.0 | max reserved: 57022.0
-[Rank 0] (after 13 iterations) memory (MB) | allocated: 56197.58203125 | max allocated: 56581.583984375 | reserved: 56964.0 | max reserved: 56964.0
-==> iteration       14/      25 | consumed samples:           56 | consumed tokens:        28672 | elapsed time per iteration (ms): 467.6 | learning rate: 1.867E-06 | global batch size:     4 | lm loss: 2.597107E-01 | loss scale: 12.0 | grad norm: 5.232 | number of skipped iterations:   0 | number of nan iterations:   0 |
-time (ms) | forward-compute: 66.06 | backward-compute: 160.15 | backward-params-all-reduce: 103.41 | backward-embedding-all-reduce: 0.03 | optimizer-copy-to-main-grad: 0.75 | optimizer-unscale-and-check-inf: 19.03 | optimizer-clip-main-grad: 28.23 | optimizer-copy-main-to-model-params: 19.37 | optimizer: 129.63 | batch-generator: 0.79
-[Rank 2] (after 14 iterations) memory (MB) | allocated: 56199.58203125 | max allocated: 56583.583984375 | reserved: 57022.0 | max reserved: 57022.0
-[Rank 0] (after 14 iterations) memory (MB) | allocated: 56197.58203125 | max allocated: 56581.583984375 | reserved: 56964.0 | max reserved: 56964.0
-[Rank 1] (after 14 iterations) memory (MB) | allocated: 56199.58203125 | max allocated: 56583.583984375 | reserved: 57022.0 | max reserved: 57022.0
-[Rank 3] (after 14 iterations) memory (MB) | allocated: 56199.58203125 | max allocated: 56583.583984375 | reserved: 57022.0 | max reserved: 57022.0
-==> iteration       15/      25 | consumed samples:           60 | consumed tokens:        30720 | elapsed time per iteration (ms): 466.7 | learning rate: 2.000E-06 | global batch size:     4 | lm loss: 2.258660E-01 | loss scale: 12.0 | grad norm: 4.299 | number of skipped iterations:   0 | number of nan iterations:   0 |
-time (ms) | forward-compute: 65.32 | backward-compute: 160.99 | backward-params-all-reduce: 102.66 | backward-embedding-all-reduce: 0.03 | optimizer-copy-to-main-grad: 0.66 | optimizer-unscale-and-check-inf: 18.77 | optimizer-clip-main-grad: 28.33 | optimizer-copy-main-to-model-params: 19.50 | optimizer: 129.50 | batch-generator: 0.59
-[Rank 2] (after 15 iterations) memory (MB) | allocated: 56199.58203125 | max allocated: 56583.583984375 | reserved: 57022.0 | max reserved: 57022.0
-[Rank 0] (after 15 iterations) memory (MB) | allocated: 56197.58203125 | max allocated: 56581.583984375 | reserved: 56964.0 | max reserved: 56964.0
-[Rank 1] (after 15 iterations) memory (MB) | allocated: 56199.58203125 | max allocated: 56583.583984375 | reserved: 57022.0 | max reserved: 57022.0
-[Rank 3] (after 15 iterations) memory (MB) | allocated: 56199.58203125 | max allocated: 56583.583984375 | reserved: 57022.0 | max reserved: 57022.0
-==> iteration       16/      25 | consumed samples:           64 | consumed tokens:        32768 | elapsed time per iteration (ms): 466.4 | learning rate: 2.133E-06 | global batch size:     4 | lm loss: 1.678414E-01 | loss scale: 12.0 | grad norm: 2.580 | number of skipped iterations:   0 | number of nan iterations:   0 |
-time (ms) | forward-compute: 64.80 | backward-compute: 160.04 | backward-params-all-reduce: 103.83 | backward-embedding-all-reduce: 0.03 | optimizer-copy-to-main-grad: 0.65 | optimizer-unscale-and-check-inf: 19.06 | optimizer-clip-main-grad: 28.31 | optimizer-copy-main-to-model-params: 19.36 | optimizer: 129.59 | batch-generator: 0.64
-[Rank 2] (after 16 iterations) memory (MB) | allocated: 56199.58203125 | max allocated: 56583.583984375 | reserved: 57022.0 | max reserved: 57022.0
-[Rank 0] (after 16 iterations) memory (MB) | allocated: 56197.58203125 | max allocated: 56581.583984375 | reserved: 56964.0 | max reserved: 56964.0
-[Rank 1] (after 16 iterations) memory (MB) | allocated: 56199.58203125 | max allocated: 56583.583984375 | reserved: 57022.0 | max reserved: 57022.0
-[Rank 3] (after 16 iterations) memory (MB) | allocated: 56199.58203125 | max allocated: 56583.583984375 | reserved: 57022.0 | max reserved: 57022.0
-==> iteration       17/      25 | consumed samples:           68 | consumed tokens:        34816 | elapsed time per iteration (ms): 468.2 | learning rate: 2.267E-06 | global batch size:     4 | lm loss: 1.328247E-01 | loss scale: 12.0 | grad norm: 1.807 | number of skipped iterations:   0 | number of nan iterations:   0 |
-time (ms) | forward-compute: 65.08 | backward-compute: 160.41 | backward-params-all-reduce: 103.99 | backward-embedding-all-reduce: 0.03 | optimizer-copy-to-main-grad: 0.78 | optimizer-unscale-and-check-inf: 19.39 | optimizer-clip-main-grad: 28.33 | optimizer-copy-main-to-model-params: 19.60 | optimizer: 130.34 | batch-generator: 0.61
-[Rank 0] (after 17 iterations) memory (MB) | allocated: 56197.58203125 | max allocated: 56581.583984375 | reserved: 56964.0 | max reserved: 56964.0
-[Rank 3] (after 17 iterations) memory (MB) | allocated: 56199.58203125 | max allocated: 56583.583984375 | reserved: 57022.0 | max reserved: 57022.0[Rank 1] (after 17 iterations) memory (MB) | allocated: 56199.58203125 | max allocated: 56583.583984375 | reserved: 57022.0 | max reserved: 57022.0
+[Rank 0] (iterations 0 step 0 before 【backward_step】) memory | allocated: 31313 MB (30.58 GB) | max allocated: 31320 MB (30.59 GB) | reserved: 31610 MB | max reserved: 31610 MB
 
-[Rank 2] (after 17 iterations) memory (MB) | allocated: 56199.58203125 | max allocated: 56583.583984375 | reserved: 57022.0 | max reserved: 57022.0
-==> iteration       18/      25 | consumed samples:           72 | consumed tokens:        36864 | elapsed time per iteration (ms): 467.1 | learning rate: 2.400E-06 | global batch size:     4 | lm loss: 9.733188E-02 | loss scale: 12.0 | grad norm: 1.358 | number of skipped iterations:   0 | number of nan iterations:   0 |
-time (ms) | forward-compute: 64.52 | backward-compute: 161.34 | backward-params-all-reduce: 103.01 | backward-embedding-all-reduce: 0.03 | optimizer-copy-to-main-grad: 0.83 | optimizer-unscale-and-check-inf: 19.04 | optimizer-clip-main-grad: 28.34 | optimizer-copy-main-to-model-params: 19.45 | optimizer: 129.84 | batch-generator: 0.67
-[Rank 0] (after 18 iterations) memory (MB) | allocated: 56197.58203125 | max allocated: 56581.583984375 | reserved: 56964.0 | max reserved: 56964.0
-[Rank 2] (after 18 iterations) memory (MB) | allocated: 56199.58203125 | max allocated: 56583.583984375 | reserved: 57022.0 | max reserved: 57022.0
-[Rank 1] (after 18 iterations) memory (MB) | allocated: 56199.58203125 | max allocated: 56583.583984375 | reserved: 57022.0 | max reserved: 57022.0
-[Rank 3] (after 18 iterations) memory (MB) | allocated: 56199.58203125 | max allocated: 56583.583984375 | reserved: 57022.0 | max reserved: 57022.0
-==> iteration       19/      25 | consumed samples:           76 | consumed tokens:        38912 | elapsed time per iteration (ms): 468.1 | learning rate: 2.533E-06 | global batch size:     4 | lm loss: 8.679868E-02 | loss scale: 12.0 | grad norm: 1.319 | number of skipped iterations:   0 | number of nan iterations:   0 |
-time (ms) | forward-compute: 64.85 | backward-compute: 164.40 | backward-params-all-reduce: 101.03 | backward-embedding-all-reduce: 0.03 | optimizer-copy-to-main-grad: 0.89 | optimizer-unscale-and-check-inf: 18.67 | optimizer-clip-main-grad: 28.26 | optimizer-copy-main-to-model-params: 19.46 | optimizer: 129.52 | batch-generator: 0.59
-[Rank 2] (after 19 iterations) memory (MB) | allocated: 56199.58203125 | max allocated: 56583.583984375 | reserved: 57022.0 | max reserved: 57022.0
-[Rank 0] (after 19 iterations) memory (MB) | allocated: 56197.58203125 | max allocated: 56581.583984375 | reserved: 56964.0 | max reserved: 56964.0
-[Rank 1] (after 19 iterations) memory (MB) | allocated: 56199.58203125 | max allocated: 56583.583984375 | reserved: 57022.0 | max reserved: 57022.0
-[Rank 3] (after 19 iterations) memory (MB) | allocated: 56199.58203125 | max allocated: 56583.583984375 | reserved: 57022.0 | max reserved: 57022.0
-==> iteration       20/      25 | consumed samples:           80 | consumed tokens:        40960 | elapsed time per iteration (ms): 465.9 | learning rate: 2.667E-06 | global batch size:     4 | lm loss: 8.910069E-02 | loss scale: 12.0 | grad norm: 2.364 | number of skipped iterations:   0 | number of nan iterations:   0 |
-time (ms) | forward-compute: 64.79 | backward-compute: 162.43 | backward-params-all-reduce: 100.99 | backward-embedding-all-reduce: 0.03 | optimizer-copy-to-main-grad: 0.78 | optimizer-unscale-and-check-inf: 18.64 | optimizer-clip-main-grad: 28.29 | optimizer-copy-main-to-model-params: 19.42 | optimizer: 129.36 | batch-generator: 0.68
-[Rank 0] (after 20 iterations) memory (MB) | allocated: 56197.58203125 | max allocated: 56581.583984375 | reserved: 56964.0 | max reserved: 56964.0
-[Rank 2] (after 20 iterations) memory (MB) | allocated: 56199.58203125 | max allocated: 56583.583984375 | reserved: 57022.0 | max reserved: 57022.0
-[Rank 3] (after 20 iterations) memory (MB) | allocated: 56199.58203125 | max allocated: 56583.583984375 | reserved: 57022.0 | max reserved: 57022.0
-[Rank 1] (after 20 iterations) memory (MB) | allocated: 56199.58203125 | max allocated: 56583.583984375 | reserved: 57022.0 | max reserved: 57022.0
-==> iteration       21/      25 | consumed samples:           84 | consumed tokens:        43008 | elapsed time per iteration (ms): 462.9 | learning rate: 2.800E-06 | global batch size:     4 | lm loss: 8.764230E-02 | loss scale: 12.0 | grad norm: 1.488 | number of skipped iterations:   0 | number of nan iterations:   0 |
-time (ms) | forward-compute: 64.47 | backward-compute: 157.64 | backward-params-all-reduce: 103.29 | backward-embedding-all-reduce: 0.02 | optimizer-copy-to-main-grad: 0.58 | optimizer-unscale-and-check-inf: 18.99 | optimizer-clip-main-grad: 28.20 | optimizer-copy-main-to-model-params: 19.38 | optimizer: 129.35 | batch-generator: 0.59
-[Rank 2] (after 21 iterations) memory (MB) | allocated: 56199.58203125 | max allocated: 56583.583984375 | reserved: 57022.0 | max reserved: 57022.0
-[Rank 1] (after 21 iterations) memory (MB) | allocated: 56199.58203125 | max allocated: 56583.583984375 | reserved: 57022.0 | max reserved: 57022.0[Rank 0] (after 21 iterations) memory (MB) | allocated: 56197.58203125 | max allocated: 56581.583984375 | reserved: 56964.0 | max reserved: 56964.0
+[Rank 0] (iterations 0 step 0 after  【backward_step】) memory | allocated: 31266 MB (30.53 GB) | max allocated: 31650 MB (30.91 GB) | reserved: 32094 MB | max reserved: 32094 MB
 
-[Rank 3] (after 21 iterations) memory (MB) | allocated: 56199.58203125 | max allocated: 56583.583984375 | reserved: 57022.0 | max reserved: 57022.0
-==> iteration       22/      25 | consumed samples:           88 | consumed tokens:        45056 | elapsed time per iteration (ms): 465.4 | learning rate: 2.933E-06 | global batch size:     4 | lm loss: 7.920719E-02 | loss scale: 12.0 | grad norm: 1.352 | number of skipped iterations:   0 | number of nan iterations:   0 |
-time (ms) | forward-compute: 65.34 | backward-compute: 158.43 | backward-params-all-reduce: 102.71 | backward-embedding-all-reduce: 0.04 | optimizer-copy-to-main-grad: 0.82 | optimizer-unscale-and-check-inf: 19.63 | optimizer-clip-main-grad: 28.37 | optimizer-copy-main-to-model-params: 19.51 | optimizer: 130.60 | batch-generator: 0.60
-[Rank 0] (after 22 iterations) memory (MB) | allocated: 56197.58203125 | max allocated: 56581.583984375 | reserved: 56964.0 | max reserved: 56964.0
-[Rank 3] (after 22 iterations) memory (MB) | allocated: 56199.58203125 | max allocated: 56583.583984375 | reserved: 57022.0 | max reserved: 57022.0
-[Rank 1] (after 22 iterations) memory (MB) | allocated: 56199.58203125 | max allocated: 56583.583984375 | reserved: 57022.0 | max reserved: 57022.0
-[Rank 2] (after 22 iterations) memory (MB) | allocated: 56199.58203125 | max allocated: 56583.583984375 | reserved: 57022.0 | max reserved: 57022.0
-==> iteration       23/      25 | consumed samples:           92 | consumed tokens:        47104 | elapsed time per iteration (ms): 444.8 | learning rate: 3.067E-06 | global batch size:     4 | lm loss: 7.670373E-02 | loss scale: 12.0 | grad norm: 0.936 | number of skipped iterations:   0 | number of nan iterations:   0 |
-time (ms) | forward-compute: 64.04 | backward-compute: 158.77 | backward-params-all-reduce: 101.59 | backward-embedding-all-reduce: 0.02 | optimizer-copy-to-main-grad: 0.66 | optimizer-unscale-and-check-inf: 18.80 | optimizer-clip-main-grad: 11.21 | optimizer-copy-main-to-model-params: 19.35 | optimizer: 112.12 | batch-generator: 0.66
-[Rank 3] (after 23 iterations) memory (MB) | allocated: 56199.58203125 | max allocated: 56583.583984375 | reserved: 57022.0 | max reserved: 57022.0
-[Rank 1] (after 23 iterations) memory (MB) | allocated: 56199.58203125 | max allocated: 56583.583984375 | reserved: 57022.0 | max reserved: 57022.0
-[Rank 0] (after 23 iterations) memory (MB) | allocated: 56197.58203125 | max allocated: 56581.583984375 | reserved: 56964.0 | max reserved: 56964.0
-[Rank 2] (after 23 iterations) memory (MB) | allocated: 56199.58203125 | max allocated: 56583.583984375 | reserved: 57022.0 | max reserved: 57022.0
-==> iteration       24/      25 | consumed samples:           96 | consumed tokens:        49152 | elapsed time per iteration (ms): 462.4 | learning rate: 3.200E-06 | global batch size:     4 | lm loss: 8.153158E-02 | loss scale: 12.0 | grad norm: 1.391 | number of skipped iterations:   0 | number of nan iterations:   0 |
-time (ms) | forward-compute: 63.75 | backward-compute: 158.46 | backward-params-all-reduce: 102.33 | backward-embedding-all-reduce: 0.02 | optimizer-copy-to-main-grad: 0.61 | optimizer-unscale-and-check-inf: 19.07 | optimizer-clip-main-grad: 28.31 | optimizer-copy-main-to-model-params: 19.54 | optimizer: 129.66 | batch-generator: 0.59
-[Rank 0] (after 24 iterations) memory (MB) | allocated: 56197.58203125 | max allocated: 56581.583984375 | reserved: 56964.0 | max reserved: 56964.0
-[Rank 1] (after 24 iterations) memory (MB) | allocated: 56199.58203125 | max allocated: 56583.583984375 | reserved: 57022.0 | max reserved: 57022.0
-[Rank 3] (after 24 iterations) memory (MB) | allocated: 56199.58203125 | max allocated: 56583.583984375 | reserved: 57022.0 | max reserved: 57022.0
-[Rank 2] (after 24 iterations) memory (MB) | allocated: 56199.58203125 | max allocated: 56583.583984375 | reserved: 57022.0 | max reserved: 57022.0
-==> iteration       25/      25 | consumed samples:          100 | consumed tokens:        51200 | elapsed time per iteration (ms): 463.2 | learning rate: 3.333E-06 | global batch size:     4 | lm loss: 7.864104E-02 | loss scale: 12.0 | grad norm: 1.162 | number of skipped iterations:   0 | number of nan iterations:   0 |
-time (ms) | forward-compute: 64.38 | backward-compute: 158.70 | backward-params-all-reduce: 101.72 | backward-embedding-all-reduce: 0.03 | optimizer-copy-to-main-grad: 0.85 | optimizer-unscale-and-check-inf: 19.23 | optimizer-clip-main-grad: 28.24 | optimizer-copy-main-to-model-params: 19.44 | optimizer: 130.04 | batch-generator: 0.75
-[Rank 1] (after 25 iterations) memory (MB) | allocated: 56199.58203125 | max allocated: 56583.583984375 | reserved: 57022.0 | max reserved: 57022.0
-[Rank 2] (after 25 iterations) memory (MB) | allocated: 56199.58203125 | max allocated: 56583.583984375 | reserved: 57022.0 | max reserved: 57022.0
-[Rank 0] (after 25 iterations) memory (MB) | allocated: 56197.58203125 | max allocated: 56581.583984375 | reserved: 56964.0 | max reserved: 56964.0[Rank 3] (after 25 iterations) memory (MB) | allocated: 56199.58203125 | max allocated: 56583.583984375 | reserved: 57022.0 | max reserved: 57022.0
+[Rank 0] (iterations 0 step 1 before 【forward_step】 ) memory | allocated: 31266 MB (30.53 GB) | max allocated: 31650 MB (30.91 GB) | reserved: 32094 MB | max reserved: 32094 MB
 
-[after training is done] datetime: 2024-03-31 16:42:14 
-[2024-03-31 16:42:15,970] [INFO] [launch.py:210:main] Process 91290 exits successfully.
-[2024-03-31 16:42:16,972] [INFO] [launch.py:210:main] Process 91285 exits successfully.
-[2024-03-31 16:42:16,972] [INFO] [launch.py:210:main] Process 91292 exits successfully.
-[2024-03-31 16:42:16,972] [INFO] [launch.py:210:main] Process 91288 exits successfully.
-[2024-03-31 16:42:16,972] [INFO] [launch.py:210:main] Process 91291 exits successfully.
-[2024-03-31 16:42:16,973] [INFO] [launch.py:210:main] Process 91289 exits successfully.
-[2024-03-31 16:42:16,973] [INFO] [launch.py:210:main] Process 91287 exits successfully.
-[2024-03-31 16:42:17,974] [INFO] [launch.py:210:main] Process 91286 exits successfully.
+[Rank 0] (iterations 0 step 1 after  【forward_step】 ) memory | allocated: 31322 MB (30.59 GB) | max allocated: 31650 MB (30.91 GB) | reserved: 32094 MB | max reserved: 32094 MB
+
+[Rank 0] (iterations 0 step 1 before 【backward_step】) memory | allocated: 31322 MB (30.59 GB) | max allocated: 31650 MB (30.91 GB) | reserved: 32094 MB | max reserved: 32094 MB
+
+[Rank 0] (iterations 0 step 1 after  【backward_step】) memory | allocated: 31266 MB (30.53 GB) | max allocated: 31650 MB (30.91 GB) | reserved: 32094 MB | max reserved: 32094 MB
+
+[Rank 0] (iterations 0 before 【all reduce gradients】) memory | allocated: 31266 MB (30.53 GB) | max allocated: 31650 MB (30.91 GB) | reserved: 32094 MB | max reserved: 32094 MB
+
+[Rank 0] (iterations 0 after  【all reduce gradients】) memory | allocated: 31266 MB (30.53 GB) | max allocated: 31650 MB (30.91 GB) | reserved: 32094 MB | max reserved: 32094 MB
+
+[Rank 0] (iterations 0 before 【main_param.grad = model_param.main_grad】) memory | allocated: 31266 MB (30.53 GB) | max allocated: 31650 MB (30.91 GB) | reserved: 32094 MB | max reserved: 32094 MB
+
+[Rank 0] (iterations 0 after  【main_param.grad = model_param.main_grad】) memory | allocated: 31266 MB (30.53 GB) | max allocated: 31650 MB (30.91 GB) | reserved: 32094 MB | max reserved: 32094 MB
+
+[Rank 0] (iterations 0 before 【update model】) memory | allocated: 31266 MB (30.53 GB) | max allocated: 31650 MB (30.91 GB) | reserved: 32094 MB | max reserved: 32094 MB
+
+[Rank 0] (iterations 0 after  【update model】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56202 MB (54.88 GB) | reserved: 56498 MB | max reserved: 56498 MB
+
+[Rank 0] (iterations 0 before 【model_param.data = main_param.data】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56202 MB (54.88 GB) | reserved: 56498 MB | max reserved: 56498 MB
+
+[Rank 0] (iterations 0 after  【model_param.data = main_param.data】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56202 MB (54.88 GB) | reserved: 56498 MB | max reserved: 56498 MB
+
+[Rank 0] (after 1 iterations) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56202 MB (54.88 GB) | reserved: 56498 MB | max reserved: 56498 MB
+
+[Rank 0] (iterations 1 before 【model_param.main_grad = 0】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56202 MB (54.88 GB) | reserved: 56498 MB | max reserved: 56498 MB
+
+[Rank 0] (iterations 1 after  【model_param.main_grad = 0】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56202 MB (54.88 GB) | reserved: 56498 MB | max reserved: 56498 MB
+
+[Rank 0] (iterations 1 step 0 before 【forward_step】 ) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56202 MB (54.88 GB) | reserved: 56498 MB | max reserved: 56498 MB
+
+[Rank 3] (after 1 iterations) memory | allocated: 56200 MB (54.88 GB) | max allocated: 56200 MB (54.88 GB) | reserved: 56496 MB | max reserved: 56496 MB
+
+[Rank 1] (after 1 iterations) memory | allocated: 56201 MB (54.88 GB) | max allocated: 56201 MB (54.88 GB) | reserved: 56542 MB | max reserved: 56542 MB
+
+[Rank 2] (after 1 iterations) memory | allocated: 56200 MB (54.88 GB) | max allocated: 56200 MB (54.88 GB) | reserved: 56512 MB | max reserved: 56512 MB
+==> iteration        1/      25 | consumed samples:            8 | consumed tokens:         4096 | elapsed time per iteration (ms): 2585.1 | learning rate: 1.333E-07 | global batch size:     8 | lm loss: 3.940890E+00 | loss scale: 12.0 | grad norm: 541.847 | number of skipped iterations:   0 | number of nan iterations:   0 |
+time (ms) | forward-compute: 1052.86 | backward-compute: 278.66 | backward-params-all-reduce: 106.70 | backward-embedding-all-reduce: 0.04 | optimizer-copy-to-main-grad: 1.99 | optimizer-unscale-and-check-inf: 638.50 | optimizer-clip-main-grad: 51.41 | optimizer-copy-main-to-model-params: 20.71 | optimizer: 1132.96 | batch-generator: 57.17
+
+[Rank 0] (iterations 1 step 0 after  【forward_step】 ) memory | allocated: 56257 MB (54.94 GB) | max allocated: 56263 MB (54.94 GB) | reserved: 56618 MB | max reserved: 56618 MB
+
+[Rank 0] (iterations 1 step 0 before 【backward_step】) memory | allocated: 56257 MB (54.94 GB) | max allocated: 56263 MB (54.94 GB) | reserved: 56618 MB | max reserved: 56618 MB
+
+[Rank 0] (iterations 1 step 0 after  【backward_step】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 1 step 1 before 【forward_step】 ) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 1 step 1 after  【forward_step】 ) memory | allocated: 56258 MB (54.94 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 1 step 1 before 【backward_step】) memory | allocated: 56258 MB (54.94 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 1 step 1 after  【backward_step】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 1 before 【all reduce gradients】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 1 after  【all reduce gradients】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 1 before 【main_param.grad = model_param.main_grad】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 1 after  【main_param.grad = model_param.main_grad】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 1 before 【update model】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 1 after  【update model】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 1 before 【model_param.data = main_param.data】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 1 after  【model_param.data = main_param.data】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 2 before 【model_param.main_grad = 0】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 2 after  【model_param.main_grad = 0】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+==> iteration        2/      25 | consumed samples:           16 | consumed tokens:         8192 | elapsed time per iteration (ms): 626.2 | learning rate: 2.667E-07 | global batch size:     8 | lm loss: 3.870921E+00 | loss scale: 12.0 | grad norm: 491.776 | number of skipped iterations:   0 | number of nan iterations:   0 |
+time (ms) | forward-compute: 104.39 | backward-compute: 269.28 | backward-params-all-reduce: 107.10 | backward-embedding-all-reduce: 0.03 | optimizer-copy-to-main-grad: 1.77 | optimizer-unscale-and-check-inf: 18.82 | optimizer-clip-main-grad: 28.12 | optimizer-copy-main-to-model-params: 20.39 | optimizer: 131.89 | batch-generator: 7.08
+
+[Rank 0] (iterations 2 step 0 before 【forward_step】 ) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 2 step 0 after  【forward_step】 ) memory | allocated: 56258 MB (54.94 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 2 step 0 before 【backward_step】) memory | allocated: 56258 MB (54.94 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 2 step 0 after  【backward_step】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 2 step 1 before 【forward_step】 ) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 2 step 1 after  【forward_step】 ) memory | allocated: 56258 MB (54.94 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 2 step 1 before 【backward_step】) memory | allocated: 56258 MB (54.94 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 2 step 1 after  【backward_step】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 2 before 【all reduce gradients】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 2 after  【all reduce gradients】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 2 before 【main_param.grad = model_param.main_grad】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 2 after  【main_param.grad = model_param.main_grad】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 2 before 【update model】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 2 after  【update model】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 2 before 【model_param.data = main_param.data】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 2 after  【model_param.data = main_param.data】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 3 before 【model_param.main_grad = 0】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 3 after  【model_param.main_grad = 0】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+==> iteration        3/      25 | consumed samples:           24 | consumed tokens:        12288 | elapsed time per iteration (ms): 606.4 | learning rate: 4.000E-07 | global batch size:     8 | lm loss: 3.373051E+00 | loss scale: 12.0 | grad norm: 505.506 | number of skipped iterations:   0 | number of nan iterations:   0 |
+time (ms) | forward-compute: 94.90 | backward-compute: 259.50 | backward-params-all-reduce: 106.65 | backward-embedding-all-reduce: 0.03 | optimizer-copy-to-main-grad: 2.00 | optimizer-unscale-and-check-inf: 18.51 | optimizer-clip-main-grad: 28.15 | optimizer-copy-main-to-model-params: 20.53 | optimizer: 131.99 | batch-generator: 2.06
+
+[Rank 0] (iterations 3 step 0 before 【forward_step】 ) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 3 step 0 after  【forward_step】 ) memory | allocated: 56258 MB (54.94 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 3 step 0 before 【backward_step】) memory | allocated: 56258 MB (54.94 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 3 step 0 after  【backward_step】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 3 step 1 before 【forward_step】 ) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 3 step 1 after  【forward_step】 ) memory | allocated: 56258 MB (54.94 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 3 step 1 before 【backward_step】) memory | allocated: 56258 MB (54.94 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 3 step 1 after  【backward_step】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 3 before 【all reduce gradients】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 3 after  【all reduce gradients】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 3 before 【main_param.grad = model_param.main_grad】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 3 after  【main_param.grad = model_param.main_grad】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 3 before 【update model】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 3 after  【update model】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 3 before 【model_param.data = main_param.data】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 3 after  【model_param.data = main_param.data】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 4 before 【model_param.main_grad = 0】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 4 after  【model_param.main_grad = 0】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+==> iteration        4/      25 | consumed samples:           32 | consumed tokens:        16384 | elapsed time per iteration (ms): 603.4 | learning rate: 5.333E-07 | global batch size:     8 | lm loss: 3.656923E+00 | loss scale: 12.0 | grad norm: 380.619 | number of skipped iterations:   0 | number of nan iterations:   0 |
+time (ms) | forward-compute: 93.62 | backward-compute: 257.62 | backward-params-all-reduce: 106.66 | backward-embedding-all-reduce: 0.03 | optimizer-copy-to-main-grad: 2.08 | optimizer-unscale-and-check-inf: 18.54 | optimizer-clip-main-grad: 28.23 | optimizer-copy-main-to-model-params: 20.45 | optimizer: 132.12 | batch-generator: 1.50
+
+[Rank 0] (iterations 4 step 0 before 【forward_step】 ) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 4 step 0 after  【forward_step】 ) memory | allocated: 56258 MB (54.94 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 4 step 0 before 【backward_step】) memory | allocated: 56258 MB (54.94 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 4 step 0 after  【backward_step】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 4 step 1 before 【forward_step】 ) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 4 step 1 after  【forward_step】 ) memory | allocated: 56258 MB (54.94 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 4 step 1 before 【backward_step】) memory | allocated: 56258 MB (54.94 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 4 step 1 after  【backward_step】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 4 before 【all reduce gradients】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 4 after  【all reduce gradients】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 4 before 【main_param.grad = model_param.main_grad】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 4 after  【main_param.grad = model_param.main_grad】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 4 before 【update model】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 4 after  【update model】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 4 before 【model_param.data = main_param.data】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 4 after  【model_param.data = main_param.data】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 5 before 【model_param.main_grad = 0】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 5 after  【model_param.main_grad = 0】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+==> iteration        5/      25 | consumed samples:           40 | consumed tokens:        20480 | elapsed time per iteration (ms): 600.4 | learning rate: 6.667E-07 | global batch size:     8 | lm loss: 3.155132E+00 | loss scale: 12.0 | grad norm: 341.218 | number of skipped iterations:   0 | number of nan iterations:   0 |
+time (ms) | forward-compute: 93.38 | backward-compute: 254.78 | backward-params-all-reduce: 106.50 | backward-embedding-all-reduce: 0.03 | optimizer-copy-to-main-grad: 2.15 | optimizer-unscale-and-check-inf: 18.48 | optimizer-clip-main-grad: 28.10 | optimizer-copy-main-to-model-params: 20.53 | optimizer: 132.18 | batch-generator: 1.41
+
+[Rank 0] (iterations 5 step 0 before 【forward_step】 ) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 5 step 0 after  【forward_step】 ) memory | allocated: 56258 MB (54.94 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 5 step 0 before 【backward_step】) memory | allocated: 56258 MB (54.94 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 5 step 0 after  【backward_step】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 5 step 1 before 【forward_step】 ) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 5 step 1 after  【forward_step】 ) memory | allocated: 56258 MB (54.94 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 5 step 1 before 【backward_step】) memory | allocated: 56258 MB (54.94 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 5 step 1 after  【backward_step】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 5 before 【all reduce gradients】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 5 after  【all reduce gradients】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 5 before 【main_param.grad = model_param.main_grad】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 5 after  【main_param.grad = model_param.main_grad】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 5 before 【update model】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 5 after  【update model】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 5 before 【model_param.data = main_param.data】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 5 after  【model_param.data = main_param.data】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 6 before 【model_param.main_grad = 0】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 6 after  【model_param.main_grad = 0】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 6 step 0 before 【forward_step】 ) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+==> iteration        6/      25 | consumed samples:           48 | consumed tokens:        24576 | elapsed time per iteration (ms): 600.5 | learning rate: 8.000E-07 | global batch size:     8 | lm loss: 2.857909E+00 | loss scale: 12.0 | grad norm: 362.913 | number of skipped iterations:   0 | number of nan iterations:   0 |
+time (ms) | forward-compute: 92.90 | backward-compute: 254.63 | backward-params-all-reduce: 106.72 | backward-embedding-all-reduce: 0.04 | optimizer-copy-to-main-grad: 2.34 | optimizer-unscale-and-check-inf: 18.83 | optimizer-clip-main-grad: 28.11 | optimizer-copy-main-to-model-params: 20.45 | optimizer: 132.74 | batch-generator: 1.87
+
+[Rank 0] (iterations 6 step 0 after  【forward_step】 ) memory | allocated: 56258 MB (54.94 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 6 step 0 before 【backward_step】) memory | allocated: 56258 MB (54.94 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 6 step 0 after  【backward_step】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 6 step 1 before 【forward_step】 ) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 6 step 1 after  【forward_step】 ) memory | allocated: 56258 MB (54.94 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 6 step 1 before 【backward_step】) memory | allocated: 56258 MB (54.94 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 6 step 1 after  【backward_step】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 6 before 【all reduce gradients】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 6 after  【all reduce gradients】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 6 before 【main_param.grad = model_param.main_grad】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 6 after  【main_param.grad = model_param.main_grad】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 6 before 【update model】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 6 after  【update model】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 6 before 【model_param.data = main_param.data】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 6 after  【model_param.data = main_param.data】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 7 before 【model_param.main_grad = 0】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 7 after  【model_param.main_grad = 0】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+==> iteration        7/      25 | consumed samples:           56 | consumed tokens:        28672 | elapsed time per iteration (ms): 599.3 | learning rate: 9.333E-07 | global batch size:     8 | lm loss: 2.082261E+00 | loss scale: 12.0 | grad norm: 470.529 | number of skipped iterations:   0 | number of nan iterations:   0 |
+time (ms) | forward-compute: 92.90 | backward-compute: 253.83 | backward-params-all-reduce: 106.61 | backward-embedding-all-reduce: 0.05 | optimizer-copy-to-main-grad: 2.38 | optimizer-unscale-and-check-inf: 18.50 | optimizer-clip-main-grad: 28.08 | optimizer-copy-main-to-model-params: 20.60 | optimizer: 132.38 | batch-generator: 1.29
+
+[Rank 0] (iterations 7 step 0 before 【forward_step】 ) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 7 step 0 after  【forward_step】 ) memory | allocated: 56258 MB (54.94 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 7 step 0 before 【backward_step】) memory | allocated: 56258 MB (54.94 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 7 step 0 after  【backward_step】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 7 step 1 before 【forward_step】 ) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 7 step 1 after  【forward_step】 ) memory | allocated: 56258 MB (54.94 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 7 step 1 before 【backward_step】) memory | allocated: 56258 MB (54.94 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 7 step 1 after  【backward_step】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 7 before 【all reduce gradients】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 7 after  【all reduce gradients】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 7 before 【main_param.grad = model_param.main_grad】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 7 after  【main_param.grad = model_param.main_grad】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 7 before 【update model】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 7 after  【update model】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 7 before 【model_param.data = main_param.data】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 7 after  【model_param.data = main_param.data】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 8 before 【model_param.main_grad = 0】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 8 after  【model_param.main_grad = 0】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+==> iteration        8/      25 | consumed samples:           64 | consumed tokens:        32768 | elapsed time per iteration (ms): 600.3 | learning rate: 1.067E-06 | global batch size:     8 | lm loss: 1.398607E+00 | loss scale: 12.0 | grad norm: 184.198 | number of skipped iterations:   0 | number of nan iterations:   0 |
+time (ms) | forward-compute: 93.36 | backward-compute: 254.10 | backward-params-all-reduce: 106.76 | backward-embedding-all-reduce: 0.08 | optimizer-copy-to-main-grad: 2.50 | optimizer-unscale-and-check-inf: 18.57 | optimizer-clip-main-grad: 28.19 | optimizer-copy-main-to-model-params: 20.50 | optimizer: 132.47 | batch-generator: 1.31
+
+[Rank 0] (iterations 8 step 0 before 【forward_step】 ) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 8 step 0 after  【forward_step】 ) memory | allocated: 56258 MB (54.94 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 8 step 0 before 【backward_step】) memory | allocated: 56258 MB (54.94 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 8 step 0 after  【backward_step】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 8 step 1 before 【forward_step】 ) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 8 step 1 after  【forward_step】 ) memory | allocated: 56258 MB (54.94 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 8 step 1 before 【backward_step】) memory | allocated: 56258 MB (54.94 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 8 step 1 after  【backward_step】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 8 before 【all reduce gradients】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 8 after  【all reduce gradients】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 8 before 【main_param.grad = model_param.main_grad】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 8 after  【main_param.grad = model_param.main_grad】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 8 before 【update model】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 8 after  【update model】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 8 before 【model_param.data = main_param.data】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 8 after  【model_param.data = main_param.data】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 9 before 【model_param.main_grad = 0】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 9 after  【model_param.main_grad = 0】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+==> iteration        9/      25 | consumed samples:           72 | consumed tokens:        36864 | elapsed time per iteration (ms): 598.5 | learning rate: 1.200E-06 | global batch size:     8 | lm loss: 1.241171E+00 | loss scale: 12.0 | grad norm: 138.703 | number of skipped iterations:   0 | number of nan iterations:   0 |
+time (ms) | forward-compute: 93.16 | backward-compute: 252.72 | backward-params-all-reduce: 107.11 | backward-embedding-all-reduce: 0.03 | optimizer-copy-to-main-grad: 2.19 | optimizer-unscale-and-check-inf: 18.49 | optimizer-clip-main-grad: 28.08 | optimizer-copy-main-to-model-params: 20.58 | optimizer: 132.00 | batch-generator: 1.70
+
+[Rank 0] (iterations 9 step 0 before 【forward_step】 ) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 9 step 0 after  【forward_step】 ) memory | allocated: 56257 MB (54.94 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 9 step 0 before 【backward_step】) memory | allocated: 56257 MB (54.94 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 9 step 0 after  【backward_step】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 9 step 1 before 【forward_step】 ) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 9 step 1 after  【forward_step】 ) memory | allocated: 56258 MB (54.94 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 9 step 1 before 【backward_step】) memory | allocated: 56258 MB (54.94 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 9 step 1 after  【backward_step】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 9 before 【all reduce gradients】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 9 after  【all reduce gradients】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 9 before 【main_param.grad = model_param.main_grad】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 9 after  【main_param.grad = model_param.main_grad】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 9 before 【update model】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 9 after  【update model】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 9 before 【model_param.data = main_param.data】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 9 after  【model_param.data = main_param.data】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 10 before 【model_param.main_grad = 0】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+==> iteration       10/      25 | consumed samples:           80 | consumed tokens:        40960 | elapsed time per iteration (ms): 598.4 | learning rate: 1.333E-06 | global batch size:     8 | lm loss: 5.192068E-01 | loss scale: 12.0 | grad norm: 40.776 | number of skipped iterations:   0 | number of nan iterations:   0 |
+time (ms) | forward-compute: 92.67 | backward-compute: 253.32 | backward-params-all-reduce: 106.70 | backward-embedding-all-reduce: 0.03 | optimizer-copy-to-main-grad: 2.13 | optimizer-unscale-and-check-inf: 18.55 | optimizer-clip-main-grad: 28.14 | optimizer-copy-main-to-model-params: 20.52 | optimizer: 132.18 | batch-generator: 1.50
+
+[Rank 0] (iterations 10 after  【model_param.main_grad = 0】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 10 step 0 before 【forward_step】 ) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 10 step 0 after  【forward_step】 ) memory | allocated: 56257 MB (54.94 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 10 step 0 before 【backward_step】) memory | allocated: 56257 MB (54.94 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 10 step 0 after  【backward_step】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 10 step 1 before 【forward_step】 ) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 10 step 1 after  【forward_step】 ) memory | allocated: 56258 MB (54.94 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 10 step 1 before 【backward_step】) memory | allocated: 56258 MB (54.94 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 10 step 1 after  【backward_step】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 10 before 【all reduce gradients】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 10 after  【all reduce gradients】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 10 before 【main_param.grad = model_param.main_grad】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 10 after  【main_param.grad = model_param.main_grad】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 10 before 【update model】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 10 after  【update model】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 10 before 【model_param.data = main_param.data】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 10 after  【model_param.data = main_param.data】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 11 before 【model_param.main_grad = 0】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 11 after  【model_param.main_grad = 0】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+==> iteration       11/      25 | consumed samples:           88 | consumed tokens:        45056 | elapsed time per iteration (ms): 598.3 | learning rate: 1.467E-06 | global batch size:     8 | lm loss: 4.183555E-01 | loss scale: 12.0 | grad norm: 40.806 | number of skipped iterations:   0 | number of nan iterations:   0 |
+time (ms) | forward-compute: 92.98 | backward-compute: 253.16 | backward-params-all-reduce: 106.63 | backward-embedding-all-reduce: 0.03 | optimizer-copy-to-main-grad: 2.06 | optimizer-unscale-and-check-inf: 18.54 | optimizer-clip-main-grad: 28.18 | optimizer-copy-main-to-model-params: 20.58 | optimizer: 132.09 | batch-generator: 1.37
+
+[Rank 0] (iterations 11 step 0 before 【forward_step】 ) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 11 step 0 after  【forward_step】 ) memory | allocated: 56257 MB (54.94 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 11 step 0 before 【backward_step】) memory | allocated: 56257 MB (54.94 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 11 step 0 after  【backward_step】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 11 step 1 before 【forward_step】 ) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 11 step 1 after  【forward_step】 ) memory | allocated: 56258 MB (54.94 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 11 step 1 before 【backward_step】) memory | allocated: 56258 MB (54.94 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 11 step 1 after  【backward_step】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 11 before 【all reduce gradients】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 11 after  【all reduce gradients】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 11 before 【main_param.grad = model_param.main_grad】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 11 after  【main_param.grad = model_param.main_grad】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 11 before 【update model】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 11 after  【update model】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 11 before 【model_param.data = main_param.data】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 11 after  【model_param.data = main_param.data】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 12 before 【model_param.main_grad = 0】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 12 after  【model_param.main_grad = 0】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+==> iteration       12/      25 | consumed samples:           96 | consumed tokens:        49152 | elapsed time per iteration (ms): 599.6 | learning rate: 1.600E-06 | global batch size:     8 | lm loss: 3.499747E-01 | loss scale: 12.0 | grad norm: 8.302 | number of skipped iterations:   0 | number of nan iterations:   0 |
+time (ms) | forward-compute: 92.94 | backward-compute: 252.91 | backward-params-all-reduce: 108.38 | backward-embedding-all-reduce: 0.03 | optimizer-copy-to-main-grad: 2.09 | optimizer-unscale-and-check-inf: 18.51 | optimizer-clip-main-grad: 28.12 | optimizer-copy-main-to-model-params: 20.53 | optimizer: 131.91 | batch-generator: 1.48
+
+[Rank 0] (iterations 12 step 0 before 【forward_step】 ) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 12 step 0 after  【forward_step】 ) memory | allocated: 56258 MB (54.94 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 12 step 0 before 【backward_step】) memory | allocated: 56258 MB (54.94 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 12 step 0 after  【backward_step】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 12 step 1 before 【forward_step】 ) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 12 step 1 after  【forward_step】 ) memory | allocated: 56258 MB (54.94 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 12 step 1 before 【backward_step】) memory | allocated: 56258 MB (54.94 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 12 step 1 after  【backward_step】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 12 before 【all reduce gradients】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 12 after  【all reduce gradients】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 12 before 【main_param.grad = model_param.main_grad】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 12 after  【main_param.grad = model_param.main_grad】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 12 before 【update model】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 12 after  【update model】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 12 before 【model_param.data = main_param.data】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 12 after  【model_param.data = main_param.data】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 13 before 【model_param.main_grad = 0】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 13 after  【model_param.main_grad = 0】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+==> iteration       13/      25 | consumed samples:          104 | consumed tokens:        53248 | elapsed time per iteration (ms): 604.5 | learning rate: 1.733E-06 | global batch size:     8 | lm loss: 2.898853E-01 | loss scale: 12.0 | grad norm: 5.267 | number of skipped iterations:   0 | number of nan iterations:   0 |
+time (ms) | forward-compute: 93.47 | backward-compute: 258.64 | backward-params-all-reduce: 106.59 | backward-embedding-all-reduce: 0.03 | optimizer-copy-to-main-grad: 2.11 | optimizer-unscale-and-check-inf: 18.51 | optimizer-clip-main-grad: 28.14 | optimizer-copy-main-to-model-params: 20.59 | optimizer: 132.24 | batch-generator: 1.59
+
+[Rank 0] (iterations 13 step 0 before 【forward_step】 ) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 13 step 0 after  【forward_step】 ) memory | allocated: 56258 MB (54.94 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 13 step 0 before 【backward_step】) memory | allocated: 56258 MB (54.94 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 13 step 0 after  【backward_step】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 13 step 1 before 【forward_step】 ) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 13 step 1 after  【forward_step】 ) memory | allocated: 56258 MB (54.94 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 13 step 1 before 【backward_step】) memory | allocated: 56258 MB (54.94 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 13 step 1 after  【backward_step】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 13 before 【all reduce gradients】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 13 after  【all reduce gradients】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 13 before 【main_param.grad = model_param.main_grad】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 13 after  【main_param.grad = model_param.main_grad】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 13 before 【update model】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 13 after  【update model】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 13 before 【model_param.data = main_param.data】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 13 after  【model_param.data = main_param.data】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 14 before 【model_param.main_grad = 0】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+==> iteration       14/      25 | consumed samples:          112 | consumed tokens:        57344 | elapsed time per iteration (ms): 598.4 | learning rate: 1.867E-06 | global batch size:     8 | lm loss: 2.493659E-01 | loss scale: 12.0 | grad norm: 5.348 | number of skipped iterations:   0 | number of nan iterations:   0 |
+time (ms) | forward-compute: 93.10 | backward-compute: 253.37 | backward-params-all-reduce: 106.58 | backward-embedding-all-reduce: 0.03 | optimizer-copy-to-main-grad: 2.14 | optimizer-unscale-and-check-inf: 18.43 | optimizer-clip-main-grad: 28.13 | optimizer-copy-main-to-model-params: 20.46 | optimizer: 132.00 | batch-generator: 1.53
+
+[Rank 0] (iterations 14 after  【model_param.main_grad = 0】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 14 step 0 before 【forward_step】 ) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 14 step 0 after  【forward_step】 ) memory | allocated: 56257 MB (54.94 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 14 step 0 before 【backward_step】) memory | allocated: 56257 MB (54.94 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 14 step 0 after  【backward_step】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 14 step 1 before 【forward_step】 ) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 14 step 1 after  【forward_step】 ) memory | allocated: 56258 MB (54.94 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 14 step 1 before 【backward_step】) memory | allocated: 56258 MB (54.94 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 14 step 1 after  【backward_step】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 14 before 【all reduce gradients】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 14 after  【all reduce gradients】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 14 before 【main_param.grad = model_param.main_grad】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 14 after  【main_param.grad = model_param.main_grad】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 14 before 【update model】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 14 after  【update model】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 14 before 【model_param.data = main_param.data】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 14 after  【model_param.data = main_param.data】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 15 before 【model_param.main_grad = 0】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+==> iteration       15/      25 | consumed samples:          120 | consumed tokens:        61440 | elapsed time per iteration (ms): 597.3 | learning rate: 2.000E-06 | global batch size:     8 | lm loss: 1.863925E-01 | loss scale: 12.0 | grad norm: 3.787 | number of skipped iterations:   0 | number of nan iterations:   0 |
+time (ms) | forward-compute: 92.79 | backward-compute: 252.07 | backward-params-all-reduce: 106.48 | backward-embedding-all-reduce: 0.03 | optimizer-copy-to-main-grad: 2.10 | optimizer-unscale-and-check-inf: 18.91 | optimizer-clip-main-grad: 28.12 | optimizer-copy-main-to-model-params: 20.57 | optimizer: 132.49 | batch-generator: 1.29
+
+[Rank 0] (iterations 15 after  【model_param.main_grad = 0】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 15 step 0 before 【forward_step】 ) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 15 step 0 after  【forward_step】 ) memory | allocated: 56258 MB (54.94 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 15 step 0 before 【backward_step】) memory | allocated: 56258 MB (54.94 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 15 step 0 after  【backward_step】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 15 step 1 before 【forward_step】 ) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 15 step 1 after  【forward_step】 ) memory | allocated: 56258 MB (54.94 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 15 step 1 before 【backward_step】) memory | allocated: 56258 MB (54.94 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 15 step 1 after  【backward_step】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 15 before 【all reduce gradients】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 15 after  【all reduce gradients】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 15 before 【main_param.grad = model_param.main_grad】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 15 after  【main_param.grad = model_param.main_grad】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 15 before 【update model】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 15 after  【update model】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 15 before 【model_param.data = main_param.data】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 15 after  【model_param.data = main_param.data】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 16 before 【model_param.main_grad = 0】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+==> iteration       16/      25 | consumed samples:          128 | consumed tokens:        65536 | elapsed time per iteration (ms): 596.5 | learning rate: 2.133E-06 | global batch size:     8 | lm loss: 1.361110E-01 | loss scale: 12.0 | grad norm: 2.127 | number of skipped iterations:   0 | number of nan iterations:   0 |
+time (ms) | forward-compute: 92.87 | backward-compute: 251.67 | backward-params-all-reduce: 106.70 | backward-embedding-all-reduce: 0.03 | optimizer-copy-to-main-grad: 2.11 | optimizer-unscale-and-check-inf: 18.41 | optimizer-clip-main-grad: 28.10 | optimizer-copy-main-to-model-params: 20.51 | optimizer: 131.83 | batch-generator: 1.24
+
+[Rank 0] (iterations 16 after  【model_param.main_grad = 0】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 16 step 0 before 【forward_step】 ) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 16 step 0 after  【forward_step】 ) memory | allocated: 56258 MB (54.94 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 16 step 0 before 【backward_step】) memory | allocated: 56258 MB (54.94 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 16 step 0 after  【backward_step】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 16 step 1 before 【forward_step】 ) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 16 step 1 after  【forward_step】 ) memory | allocated: 56258 MB (54.94 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 16 step 1 before 【backward_step】) memory | allocated: 56258 MB (54.94 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 16 step 1 after  【backward_step】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 16 before 【all reduce gradients】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 16 after  【all reduce gradients】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 16 before 【main_param.grad = model_param.main_grad】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 16 after  【main_param.grad = model_param.main_grad】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 16 before 【update model】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 16 after  【update model】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 16 before 【model_param.data = main_param.data】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 16 after  【model_param.data = main_param.data】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 17 before 【model_param.main_grad = 0】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 17 after  【model_param.main_grad = 0】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 17 step 0 before 【forward_step】 ) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+==> iteration       17/      25 | consumed samples:          136 | consumed tokens:        69632 | elapsed time per iteration (ms): 598.2 | learning rate: 2.267E-06 | global batch size:     8 | lm loss: 1.141753E-01 | loss scale: 12.0 | grad norm: 1.394 | number of skipped iterations:   0 | number of nan iterations:   0 |
+time (ms) | forward-compute: 92.32 | backward-compute: 252.33 | backward-params-all-reduce: 106.95 | backward-embedding-all-reduce: 0.04 | optimizer-copy-to-main-grad: 2.43 | optimizer-unscale-and-check-inf: 18.57 | optimizer-clip-main-grad: 28.13 | optimizer-copy-main-to-model-params: 20.91 | optimizer: 132.83 | batch-generator: 1.25
+
+[Rank 0] (iterations 17 step 0 after  【forward_step】 ) memory | allocated: 56257 MB (54.94 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 17 step 0 before 【backward_step】) memory | allocated: 56257 MB (54.94 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 17 step 0 after  【backward_step】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 17 step 1 before 【forward_step】 ) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 17 step 1 after  【forward_step】 ) memory | allocated: 56258 MB (54.94 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 17 step 1 before 【backward_step】) memory | allocated: 56258 MB (54.94 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 17 step 1 after  【backward_step】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 17 before 【all reduce gradients】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 17 after  【all reduce gradients】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 17 before 【main_param.grad = model_param.main_grad】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 17 after  【main_param.grad = model_param.main_grad】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 17 before 【update model】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 17 after  【update model】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 17 before 【model_param.data = main_param.data】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 17 after  【model_param.data = main_param.data】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 18 before 【model_param.main_grad = 0】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+==> iteration       18/      25 | consumed samples:          144 | consumed tokens:        73728 | elapsed time per iteration (ms): 684.3 | learning rate: 2.400E-06 | global batch size:     8 | lm loss: 9.737821E-02 | loss scale: 12.0 | grad norm: 1.111 | number of skipped iterations:   0 | number of nan iterations:   0 |
+time (ms) | forward-compute: 180.01 | backward-compute: 251.80 | backward-params-all-reduce: 106.98 | backward-embedding-all-reduce: 0.03 | optimizer-copy-to-main-grad: 2.18 | optimizer-unscale-and-check-inf: 18.52 | optimizer-clip-main-grad: 28.09 | optimizer-copy-main-to-model-params: 20.49 | optimizer: 132.01 | batch-generator: 87.94
+
+[Rank 0] (iterations 18 after  【model_param.main_grad = 0】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 18 step 0 before 【forward_step】 ) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 18 step 0 after  【forward_step】 ) memory | allocated: 56258 MB (54.94 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 18 step 0 before 【backward_step】) memory | allocated: 56258 MB (54.94 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 18 step 0 after  【backward_step】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 18 step 1 before 【forward_step】 ) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 18 step 1 after  【forward_step】 ) memory | allocated: 56258 MB (54.94 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 18 step 1 before 【backward_step】) memory | allocated: 56258 MB (54.94 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 18 step 1 after  【backward_step】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 18 before 【all reduce gradients】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 18 after  【all reduce gradients】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 18 before 【main_param.grad = model_param.main_grad】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 18 after  【main_param.grad = model_param.main_grad】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 18 before 【update model】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 18 after  【update model】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 18 before 【model_param.data = main_param.data】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 18 after  【model_param.data = main_param.data】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 19 before 【model_param.main_grad = 0】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 19 after  【model_param.main_grad = 0】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+==> iteration       19/      25 | consumed samples:          152 | consumed tokens:        77824 | elapsed time per iteration (ms): 597.2 | learning rate: 2.533E-06 | global batch size:     8 | lm loss: 9.477712E-02 | loss scale: 12.0 | grad norm: 1.418 | number of skipped iterations:   0 | number of nan iterations:   0 |
+time (ms) | forward-compute: 93.49 | backward-compute: 251.54 | backward-params-all-reduce: 106.55 | backward-embedding-all-reduce: 0.03 | optimizer-copy-to-main-grad: 2.09 | optimizer-unscale-and-check-inf: 18.52 | optimizer-clip-main-grad: 28.14 | optimizer-copy-main-to-model-params: 20.53 | optimizer: 132.13 | batch-generator: 1.26
+
+[Rank 0] (iterations 19 step 0 before 【forward_step】 ) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 19 step 0 after  【forward_step】 ) memory | allocated: 56256 MB (54.94 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 19 step 0 before 【backward_step】) memory | allocated: 56256 MB (54.94 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 19 step 0 after  【backward_step】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 19 step 1 before 【forward_step】 ) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 19 step 1 after  【forward_step】 ) memory | allocated: 56258 MB (54.94 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 19 step 1 before 【backward_step】) memory | allocated: 56258 MB (54.94 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 19 step 1 after  【backward_step】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 19 before 【all reduce gradients】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 19 after  【all reduce gradients】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 19 before 【main_param.grad = model_param.main_grad】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 19 after  【main_param.grad = model_param.main_grad】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 19 before 【update model】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 19 after  【update model】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 19 before 【model_param.data = main_param.data】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 19 after  【model_param.data = main_param.data】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 20 before 【model_param.main_grad = 0】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+==> iteration       20/      25 | consumed samples:          160 | consumed tokens:        81920 | elapsed time per iteration (ms): 754.0 | learning rate: 2.667E-06 | global batch size:     8 | lm loss: 8.420727E-02 | loss scale: 12.0 | grad norm: 1.079 | number of skipped iterations:   0 | number of nan iterations:   0 |
+time (ms) | forward-compute: 117.96 | backward-compute: 250.92 | backward-params-all-reduce: 106.95 | backward-embedding-all-reduce: 0.03 | optimizer-copy-to-main-grad: 2.02 | optimizer-unscale-and-check-inf: 18.49 | optimizer-clip-main-grad: 28.14 | optimizer-copy-main-to-model-params: 20.41 | optimizer: 131.93 | batch-generator: 25.16
+
+[Rank 0] (iterations 20 after  【model_param.main_grad = 0】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 20 step 0 before 【forward_step】 ) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 20 step 0 after  【forward_step】 ) memory | allocated: 56258 MB (54.94 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 20 step 0 before 【backward_step】) memory | allocated: 56258 MB (54.94 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 20 step 0 after  【backward_step】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 20 step 1 before 【forward_step】 ) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 20 step 1 after  【forward_step】 ) memory | allocated: 56258 MB (54.94 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 20 step 1 before 【backward_step】) memory | allocated: 56258 MB (54.94 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 20 step 1 after  【backward_step】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 20 before 【all reduce gradients】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 20 after  【all reduce gradients】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 20 before 【main_param.grad = model_param.main_grad】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 20 after  【main_param.grad = model_param.main_grad】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 20 before 【update model】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 20 after  【update model】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 20 before 【model_param.data = main_param.data】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 20 after  【model_param.data = main_param.data】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 21 before 【model_param.main_grad = 0】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 21 after  【model_param.main_grad = 0】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+==> iteration       21/      25 | consumed samples:          168 | consumed tokens:        86016 | elapsed time per iteration (ms): 580.9 | learning rate: 2.800E-06 | global batch size:     8 | lm loss: 8.492821E-02 | loss scale: 12.0 | grad norm: 0.887 | number of skipped iterations:   0 | number of nan iterations:   0 |
+time (ms) | forward-compute: 93.50 | backward-compute: 251.90 | backward-params-all-reduce: 107.08 | backward-embedding-all-reduce: 0.03 | optimizer-copy-to-main-grad: 1.81 | optimizer-unscale-and-check-inf: 19.24 | optimizer-clip-main-grad: 11.09 | optimizer-copy-main-to-model-params: 20.51 | optimizer: 115.35 | batch-generator: 1.70
+
+[Rank 0] (iterations 21 step 0 before 【forward_step】 ) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 21 step 0 after  【forward_step】 ) memory | allocated: 56257 MB (54.94 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 21 step 0 before 【backward_step】) memory | allocated: 56257 MB (54.94 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 21 step 0 after  【backward_step】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 21 step 1 before 【forward_step】 ) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 21 step 1 after  【forward_step】 ) memory | allocated: 56258 MB (54.94 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 21 step 1 before 【backward_step】) memory | allocated: 56258 MB (54.94 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 21 step 1 after  【backward_step】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 21 before 【all reduce gradients】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 21 after  【all reduce gradients】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 21 before 【main_param.grad = model_param.main_grad】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 21 after  【main_param.grad = model_param.main_grad】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 21 before 【update model】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 21 after  【update model】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 21 before 【model_param.data = main_param.data】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 21 after  【model_param.data = main_param.data】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 22 before 【model_param.main_grad = 0】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+==> iteration       22/      25 | consumed samples:          176 | consumed tokens:        90112 | elapsed time per iteration (ms): 579.0 | learning rate: 2.933E-06 | global batch size:     8 | lm loss: 8.489488E-02 | loss scale: 12.0 | grad norm: 0.867 | number of skipped iterations:   0 | number of nan iterations:   0 |
+time (ms) | forward-compute: 92.49 | backward-compute: 251.51 | backward-params-all-reduce: 106.77 | backward-embedding-all-reduce: 0.03 | optimizer-copy-to-main-grad: 2.10 | optimizer-unscale-and-check-inf: 18.62 | optimizer-clip-main-grad: 11.03 | optimizer-copy-main-to-model-params: 20.49 | optimizer: 114.87 | batch-generator: 1.27
+
+[Rank 0] (iterations 22 after  【model_param.main_grad = 0】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 22 step 0 before 【forward_step】 ) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 22 step 0 after  【forward_step】 ) memory | allocated: 56258 MB (54.94 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 22 step 0 before 【backward_step】) memory | allocated: 56258 MB (54.94 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 22 step 0 after  【backward_step】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 22 step 1 before 【forward_step】 ) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 22 step 1 after  【forward_step】 ) memory | allocated: 56258 MB (54.94 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 22 step 1 before 【backward_step】) memory | allocated: 56258 MB (54.94 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 22 step 1 after  【backward_step】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 22 before 【all reduce gradients】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 22 after  【all reduce gradients】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 22 before 【main_param.grad = model_param.main_grad】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 22 after  【main_param.grad = model_param.main_grad】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 22 before 【update model】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 22 after  【update model】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 22 before 【model_param.data = main_param.data】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 22 after  【model_param.data = main_param.data】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 23 before 【model_param.main_grad = 0】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+==> iteration       23/      25 | consumed samples:          184 | consumed tokens:        94208 | elapsed time per iteration (ms): 579.0 | learning rate: 3.067E-06 | global batch size:     8 | lm loss: 7.725859E-02 | loss scale: 12.0 | grad norm: 0.827 | number of skipped iterations:   0 | number of nan iterations:   0 |
+time (ms) | forward-compute: 92.30 | backward-compute: 251.88 | backward-params-all-reduce: 106.30 | backward-embedding-all-reduce: 0.03 | optimizer-copy-to-main-grad: 2.09 | optimizer-unscale-and-check-inf: 18.63 | optimizer-clip-main-grad: 11.10 | optimizer-copy-main-to-model-params: 20.47 | optimizer: 115.09 | batch-generator: 1.26
+
+[Rank 0] (iterations 23 after  【model_param.main_grad = 0】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 23 step 0 before 【forward_step】 ) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 23 step 0 after  【forward_step】 ) memory | allocated: 56258 MB (54.94 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 23 step 0 before 【backward_step】) memory | allocated: 56258 MB (54.94 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 23 step 0 after  【backward_step】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 23 step 1 before 【forward_step】 ) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 23 step 1 after  【forward_step】 ) memory | allocated: 56258 MB (54.94 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 23 step 1 before 【backward_step】) memory | allocated: 56258 MB (54.94 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 23 step 1 after  【backward_step】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 23 before 【all reduce gradients】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 23 after  【all reduce gradients】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 23 before 【main_param.grad = model_param.main_grad】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 23 after  【main_param.grad = model_param.main_grad】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 23 before 【update model】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 23 after  【update model】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 23 before 【model_param.data = main_param.data】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 23 after  【model_param.data = main_param.data】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 24 before 【model_param.main_grad = 0】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 24 after  【model_param.main_grad = 0】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 24 step 0 before 【forward_step】 ) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+==> iteration       24/      25 | consumed samples:          192 | consumed tokens:        98304 | elapsed time per iteration (ms): 580.3 | learning rate: 3.200E-06 | global batch size:     8 | lm loss: 7.122783E-02 | loss scale: 12.0 | grad norm: 0.796 | number of skipped iterations:   0 | number of nan iterations:   0 |
+time (ms) | forward-compute: 91.96 | backward-compute: 252.08 | backward-params-all-reduce: 107.31 | backward-embedding-all-reduce: 0.08 | optimizer-copy-to-main-grad: 2.53 | optimizer-unscale-and-check-inf: 18.51 | optimizer-clip-main-grad: 11.07 | optimizer-copy-main-to-model-params: 20.48 | optimizer: 115.35 | batch-generator: 1.19
+
+[Rank 0] (iterations 24 step 0 after  【forward_step】 ) memory | allocated: 56257 MB (54.94 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 24 step 0 before 【backward_step】) memory | allocated: 56257 MB (54.94 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 24 step 0 after  【backward_step】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 24 step 1 before 【forward_step】 ) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 24 step 1 after  【forward_step】 ) memory | allocated: 56258 MB (54.94 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 24 step 1 before 【backward_step】) memory | allocated: 56258 MB (54.94 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 24 step 1 after  【backward_step】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 24 before 【all reduce gradients】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 24 after  【all reduce gradients】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 24 before 【main_param.grad = model_param.main_grad】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 24 after  【main_param.grad = model_param.main_grad】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 24 before 【update model】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 24 after  【update model】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 24 before 【model_param.data = main_param.data】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+
+[Rank 0] (iterations 24 after  【model_param.data = main_param.data】) memory | allocated: 56202 MB (54.88 GB) | max allocated: 56586 MB (55.26 GB) | reserved: 57052 MB | max reserved: 57052 MB
+==> iteration       25/      25 | consumed samples:          200 | consumed tokens:       102400 | elapsed time per iteration (ms): 581.4 | learning rate: 3.333E-06 | global batch size:     8 | lm loss: 7.188775E-02 | loss scale: 12.0 | grad norm: 0.773 | number of skipped iterations:   0 | number of nan iterations:   0 |
+time (ms) | forward-compute: 94.36 | backward-compute: 252.25 | backward-params-all-reduce: 106.63 | backward-embedding-all-reduce: 0.03 | optimizer-copy-to-main-grad: 2.06 | optimizer-unscale-and-check-inf: 18.51 | optimizer-clip-main-grad: 11.09 | optimizer-copy-main-to-model-params: 20.48 | optimizer: 114.70 | batch-generator: 1.94
+[after training is done] datetime: 2024-09-26 00:49:08
+saving checkpoint at iteration      25 to /data3/csw/pretrain-codegeex-13b-test
+/data3/miniforge-pypy3/envs/csw_codegeex/lib/python3.10/site-packages/torch/nn/modules/module.py:1898: UserWarning: Positional args are being deprecated, use kwargs instead. Refer to https://pytorch.org/docs/master/generated/torch.nn.Module.html#torch.nn.Module.state_dict for details.
+  warnings.warn(
+/data3/miniforge-pypy3/envs/csw_codegeex/lib/python3.10/site-packages/torch/nn/modules/module.py:1898: UserWarning: Positional args are being deprecated, use kwargs instead. Refer to https://pytorch.org/docs/master/generated/torch.nn.Module.html#torch.nn.Module.state_dict for details.
+  warnings.warn(
+/data3/miniforge-pypy3/envs/csw_codegeex/lib/python3.10/site-packages/torch/nn/modules/module.py:1898: UserWarning: Positional args are being deprecated, use kwargs instead. Refer to https://pytorch.org/docs/master/generated/torch.nn.Module.html#torch.nn.Module.state_dict for details.
+  warnings.warn(
+/data3/miniforge-pypy3/envs/csw_codegeex/lib/python3.10/site-packages/torch/nn/modules/module.py:1898: UserWarning: Positional args are being deprecated, use kwargs instead. Refer to https://pytorch.org/docs/master/generated/torch.nn.Module.html#torch.nn.Module.state_dict for details.
+  warnings.warn(
+  successfully saved checkpoint at iteration      25 to /data3/csw/pretrain-codegeex-13b-test
+[2024-09-26 00:50:31,090] [INFO] [launch.py:210:main] Process 1018168 exits successfully.
+[2024-09-26 00:50:31,091] [INFO] [launch.py:210:main] Process 1018163 exits successfully.
+[2024-09-26 00:50:31,091] [INFO] [launch.py:210:main] Process 1018164 exits successfully.
+[2024-09-26 00:50:31,091] [INFO] [launch.py:210:main] Process 1018162 exits successfully.
+[2024-09-26 00:50:31,091] [INFO] [launch.py:210:main] Process 1018166 exits successfully.
+[2024-09-26 00:50:31,091] [INFO] [launch.py:210:main] Process 1018161 exits successfully.
+[2024-09-26 00:50:32,092] [INFO] [launch.py:210:main] Process 1018167 exits successfully.
+[2024-09-26 00:50:32,093] [INFO] [launch.py:210:main] Process 1018165 exits successfully.

@@ -38,7 +38,7 @@ def model_provider(pre_process=True, post_process=True):
         remote_device=None if args.remote_device == "none" else args.remote_device,
         # args.remote_device: "none"
         config_dict_or_path=args.deepspeed_config,
-        # args.deepspeed_config: "/data0/csw/CodeGeeX/scripts/ds_config.json"
+        # args.deepspeed_config: "/home/icksys/csw/CodeGeeX/scripts/ds_config.json"
         enabled=args.zero_stage == 3,
         # args.zero_stage: 2
         mpu=mpu,
@@ -72,13 +72,13 @@ def model_provider(pre_process=True, post_process=True):
             args.attn_mask = attention_mask.to(torch.bool)
 
         else:
-            # 根据所属进程子组的不同, 每个进程定义的model都是完整CodeGeeX模型的一个子块
+            # 根据所属进程子组的不同, 每个进程定义的 model 都是完整 CodeGeeX 模型的一个子块
             model = CodeGeeXModel(
                 num_tokentypes=0,
                 parallel_output=True,
             )
 
-            # args.load_state: "/data0/csw/CodeGeeX/scripts/mp4_parallel_weights/"
+            # args.load_state: "/home/icksys/csw/CodeGeeX/scripts/mp4_parallel_weights/"
             # 加载预训练权重
             if args.load_state is not None:
                 timers = get_timers()
@@ -117,14 +117,14 @@ def get_batch(data_iterator):
     datatype = torch.int64
 
     # Broadcast data.
-    # data_iterator是torch.utils.data.DataLoader对象, 遍历时每次返回一个如下字典
+    # data_iterator 是 torch.utils.data.DataLoader 对象, 遍历时每次返回一个如下字典
     # {
-    #     "input_ids": 形状为[b, s+1]的一个张量,
-    #     "attention_mask": 形状为[b, s+1]的一个张量,
-    #     "labels": 形状为[b, s+1]的一个张量,
+    #     "input_ids": 形状为 [b, s+1] 的一个张量,
+    #     "attention_mask": 形状为 [b, s+1] 的一个张量,
+    #     "labels": 形状为 [b, s+1] 的一个张量,
     # }
 
-    # 随便拿一个batch的data看看
+    # 随便拿一个 batch 的 data 看看
     # {'input_ids': tensor([
     #         [    2,  3303,    25, 11361,   198,  4299,  1388, 33529,   198, 50268,
     #             64,   796,  2534,   198, 50268,  1640,  1312,   287,  2837,     7,
@@ -235,10 +235,10 @@ def get_batch(data_iterator):
     #     [False, False, False, False, False, False, False, False, False,  True],
     #     [False, False, False, False, False, False, False, False, False, False]
     # ], device='cuda:0')
-    # 经过验证, attention_mask[0, 0]就是一个[s, s]尺寸的上三角矩阵
+    # 经过验证, attention_mask[0, 0] 就是一个 [s, s] 尺寸的上三角矩阵
 
     # loss_mask.shape: [b, s]
-    # 全1矩阵
+    # 全 1 矩阵
 
     # position_ids.shape: [b, s]
     # position_ids[i]: tensor([   0,    1,    2,  ..., s-1], device='cuda:0')
@@ -286,7 +286,7 @@ def loss_func(loss_mask, output_tensor):
     # .float() -->  torch.float32
     # .half()  -->  torch.float16
     loss = torch.sum(losses.view(-1) * loss_mask) / loss_mask.sum()
-    # loss: 形如tensor(3.9353), 代表该进程所属模型并行组的模型在当前 micro_batch_size 数据上的损失值, 此时同一张量并行组内各进程的 loss 一致
+    # loss: 形如 tensor(3.9353), 代表该进程所属模型并行组 (因此没有流水线并行, 所以张量并行组等价于模型并行组) 的模型在当前 micro_batch_size 数据上的损失值, 此时同一张量并行组内各进程的 loss 一致
 
     # Reduce loss for logging.
     # averaged_loss 表示当前所有数据并行模型在该 micro_batch_size 数据上的平均损失
@@ -304,7 +304,7 @@ def forward_step(data_iterator, model):
     timers("batch-generator").start()
     tokens, labels, loss_mask, attention_mask, position_ids = get_batch(data_iterator)
     timers("batch-generator").stop()
-    # 下面是从训练时每次迭代的日志中截取的一段关于迭代用时的输出字段 (训练脚本未使用deepspeed)
+    # 下面是从训练时每次迭代的日志中截取的一段关于迭代用时的输出字段 (训练脚本未使用 deepspeed)
     # time (ms) | forward-compute: 152.33 | backward-compute: 157.91 | backward-params-all-reduce: 101.10 | backward-embedding-all-reduce: 0.03 | optimizer-copy-to-main-grad: 0.72 | optimizer-unscale-and-check-inf: 18.83 | optimizer-clip-main-grad: 28.35 | optimizer-copy-main-to-model-params: 19.37 | optimizer: 129.43 | batch-generator: 0.64
     # forward-compute 和 backward-compute 分别是在一个 global_batch_size 数据上前向传播 和 反向传播 (不包含梯度更新) 的总耗时
     # optimizer: 129.43 表示完成 optimizer.step() 的总耗时, 由 backward-params-all-reduce 到 optimizer-copy-main-to-model-params 以及 参数更新 阶段构成
@@ -318,10 +318,10 @@ def forward_step(data_iterator, model):
     # attention_mask.shape: [1, 1, s, s], dtype: torch.bool
     # position_ids.shape: [b, s], dtype: torch.int64
 
-    # 如果训练脚本不使用deepspeed, 那么 model: LocalDDP ( Float16Module( CodeGeeXModel(...) ) )
-    # 但因为当前训练脚本使用了deepspeed, 所以 model: DeepSpeedEngine( CodeGeeXModel(...) )
+    # 如果训练脚本不使用 deepspeed, 那么 model: LocalDDP ( Float16Module( CodeGeeXModel(...) ) )
+    # 但因为当前训练脚本使用了 deepspeed, 所以 model: DeepSpeedEngine( CodeGeeXModel(...) )
     output_tensor = model(tokens, position_ids, attention_mask, labels=labels)
-    # output_tensor.shape: [b, s], dtype: torch.float32, 代表该进程所属模型并行组的模型在当前 micro_batch_size 数据上的损失矩阵
+    # output_tensor.shape: [b, s], dtype: torch.float32, 代表该进程所属模型并行组 (因此没有流水线并行, 所以张量并行组等价于模型并行组) 的模型在当前 micro_batch_size 数据上的损失矩阵
     # output_tensor 是一个已经在同一张量并行组内各进程间经过 All Reduce, 未坍缩的损失矩阵, 同一张量并行组内所有进程的 output_tensor 一样
 
     return output_tensor, partial(loss_func, loss_mask)
@@ -334,7 +334,7 @@ def train_valid_test_datasets_provider(train_val_test_num_samples):
     print_rank_0("> building train, validation, and test datasets " "for GPT ...")
     train_ds, valid_ds, test_ds = build_train_valid_test_datasets(
         data_prefix=args.data_path,
-        # args.data_path: ['/data0/csw/CodeGeeX/pt_data/my_data']
+        # args.data_path: ['/home/icksys/csw/CodeGeeX/pt_data/my_data']
         data_impl=args.data_impl,
         # args.data_impl: 'mmap'
         splits_string=args.split,
@@ -348,13 +348,14 @@ def train_valid_test_datasets_provider(train_val_test_num_samples):
         skip_warmup=(not args.mmap_warmup),
         # args.mmap_warmup: False
     )
-    # 返回的train_ds, valid_ds, test_ds都是PromptDataset类
-    # PromptDataset类继承自torch.utils.data.Dataset, 遍历时每次返回一个如下形式的字典
+    # 返回的 train_dataset, valid_dataset, test_dataset 一般都是 PromptDataset 类
+    # PromptDataset 类继承自 torch.utils.data.Dataset, 遍历时每次返回一个如下形式的字典, 表示一个样本
     # {
     #     "input_ids": np.array(input_ids, dtype=np.int64),
     #     "attention_mask": np.array(attention_mask, dtype=np.int64),
     #     "labels": np.array(labels, dtype=np.int64),
     # }
+    # 当然, 如果 splits_string = [100, 0, 0], 则没有样本用于构建 valid 和 test 数据集, 因此 valid_dataset 和 test_dataset 都为 None
     print_rank_0("> finished creating GPT datasets ...")
 
     return train_ds, valid_ds, test_ds
@@ -372,7 +373,7 @@ if __name__ == "__main__":
         forward_step,
         args_defaults={"tokenizer_type": "GPT2BPETokenizer"},
     )
-    # 本项目的所有注释都依据scripts/pretrain_codegeex.sh的运行结果
+    # 本项目的所有注释都依据 scripts/pretrain_codegeex.sh 的运行结果
     # 依据上述脚本运行时所有显式指定与未显式指定的参数值如下:
     # ------------------------ arguments ------------------------
     #   accumulate_allreduce_grads_in_fp32 .............. False
@@ -411,7 +412,7 @@ if __name__ == "__main__":
     #   cpu_torch_adam .................................. False
     #   data_impl ....................................... mmap
     #   data_parallel_size .............................. 2
-    #   data_path ....................................... ['/data0/csw/CodeGeeX/pt_data/my_data']
+    #   data_path ....................................... ['/home/icksys/csw/CodeGeeX/pt_data/my_data']
     #   dataloader_type ................................. single
     #   DDP_impl ........................................ local
     #   decoder_seq_length .............................. None
@@ -419,7 +420,7 @@ if __name__ == "__main__":
     #   deepscale_config ................................ None
     #   deepspeed ....................................... True
     #   deepspeed_activation_checkpointing .............. True
-    #   deepspeed_config ................................ /data0/csw/CodeGeeX/scripts/ds_config.json
+    #   deepspeed_config ................................ /home/icksys/csw/CodeGeeX/scripts/ds_config.json
     #   deepspeed_mpi ................................... False
     #   dist_timeout .................................... 30
     #   distribute_checkpointed_activations ............. False
@@ -461,7 +462,7 @@ if __name__ == "__main__":
     #   lazy_mpu_init ................................... None
     #   ln_fp16 ......................................... True
     #   load ............................................ None
-    #   load_state ...................................... /data0/csw/CodeGeeX/scripts/mp4_parallel_weights/
+    #   load_state ...................................... /home/icksys/csw/CodeGeeX/scripts/mp4_parallel_weights/
     #   local_rank ...................................... 0
     #   log_batch_size_to_tensorboard ................... False
     #   log_interval .................................... 1
@@ -487,7 +488,7 @@ if __name__ == "__main__":
     #   masked_softmax_fusion ........................... True
     #   max_position_embeddings ......................... 2048
     #   memory_centric_tiled_linear ..................... False
-    #   merge_file ...................................... /data0/csw/CodeGeeX/codegeex/tokenizer/merges.txt
+    #   merge_file ...................................... /home/icksys/csw/CodeGeeX/codegeex/tokenizer/merges.txt
     #   micro_batch_size ................................ 2
     #   min_loss_scale .................................. 1.0
     #   min_lr .......................................... 1e-07
@@ -527,7 +528,7 @@ if __name__ == "__main__":
     #   retriever_seq_length ............................ 256
     #   reward_growth ................................... constant
     #   sample_rate ..................................... 1.0
-    #   save ............................................ /data0/csw/CodeGeeX/scripts/pretrain-codegeex-13b-test
+    #   save ............................................ /home/icksys/csw/CodeGeeX/scripts/pretrain-codegeex-13b-test
     #   save_interval ................................... 100
     #   scale_embeddings ................................ False
     #   scaled_upper_triang_masked_softmax_fusion ....... False
@@ -545,7 +546,7 @@ if __name__ == "__main__":
     #   synchronize_each_layer .......................... False
     #   tempering ....................................... None
     #   tensor_model_parallel_size ...................... 4
-    #   tensorboard_dir ................................. /data0/csw/CodeGeeX/scripts/pretrain-codegeex-13b-test/tb20240202_103349
+    #   tensorboard_dir ................................. /home/icksys/csw/CodeGeeX/scripts/pretrain-codegeex-13b-test/tb20240202_103349
     #   tensorboard_log_interval ........................ 1
     #   tensorboard_queue_size .......................... 1000
     #   test_data_path .................................. None
@@ -564,7 +565,7 @@ if __name__ == "__main__":
     #   valid_data_path ................................. None
     #   virtual_pipeline_model_parallel_size ............ None
     #   vocab_extra_ids ................................. 0
-    #   vocab_file ...................................... /data0/csw/CodeGeeX/codegeex/tokenizer/vocab.json
+    #   vocab_file ...................................... /home/icksys/csw/CodeGeeX/codegeex/tokenizer/vocab.json
     #   wandb_log_interval .............................. 1
     #   wandb_logging ................................... False
     #   weight_decay .................................... 0.1

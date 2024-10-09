@@ -207,10 +207,10 @@ def get_batch(data_iterator):
     #     [False, False, False, False, False, False, False, False, False,  True],
     #     [False, False, False, False, False, False, False, False, False, False]
     # ], device='cuda:0')
-    # 经过验证, attention_mask[0, 0]就是一个[s, s]尺寸的上三角矩阵
+    # 经过验证, attention_mask[0, 0] 就是一个 [s, s] 尺寸的上三角矩阵
 
     # loss_mask.shape: [b, s]
-    # 全1矩阵
+    # 全 1 矩阵
 
     # position_ids.shape: [b, s]
     # position_ids[i]: tensor([   0,    1,    2,  ..., s-1], device='cuda:0')

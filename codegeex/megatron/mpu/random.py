@@ -121,7 +121,7 @@ def _set_cuda_rng_state(new_state, device=-1):
 
 def split_tensor_into_1d_equal_chunks(tensor):
     """Break a tensor into equal 1D chunks."""
-    # 将tensor展平成一维数组, 然后同一张量并行组的进程平分存储这个数组
+    # 将 tensor 展平成一维数组, 然后同一张量并行组的进程平分存储这个数组
 
     # tensor: [s, b, h], dtype: torch.float16
     data = tensor.view(-1)
@@ -189,9 +189,9 @@ class CudaRNGStatesTracker:
         # name: str
         # seed: int
 
-        # 为CPU设置随机数种子: torch.manual_seed(seed)
-        # 为特定GPU设置随机数种子: torch.cuda.manual_seed(seed)
-        # 为所有GPU设置随机数种子: torch.cuda.manual_seed_all(seed)
+        # 为 CPU 设置随机数种子: torch.manual_seed(seed)
+        # 为特定 GPU 设置随机数种子: torch.cuda.manual_seed(seed)
+        # 为所有 GPU 设置随机数种子: torch.cuda.manual_seed_all(seed)
 
         if seed in self.seeds_:
             raise Exception("seed {} already exists".format(seed))
@@ -323,7 +323,7 @@ class CheckpointFunction(torch.autograd.Function):
             args[0].data = split_tensor_into_1d_equal_chunks(args[0].data)
             args[0].data = _CHECKPOINTED_ACTIVATIONS_MEMORY_BUFFER.add(args[0].data)
             # _CHECKPOINTED_ACTIVATIONS_MEMORY_BUFFER: 是一个 MemoryBuffer(...) 对象
-            # 上述操作实际上是将原本传入forward的hidden_states展平后, 由张量并行组内的各GPU平分存储至预先划分的整块激活值缓存空间中
+            # 上述操作实际上是将原本传入 forward 的 hidden_states 展平后, 由张量并行组内的各 GPU 平分存储至预先划分的整块激活值缓存空间中
 
         # Store everything.
         ctx.save_for_backward(*args)

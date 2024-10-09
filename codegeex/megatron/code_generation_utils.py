@@ -879,8 +879,8 @@ def get_token_stream(
     # 361, 357, 37372, 13, 8937, 7, 77, 5700, 58, 72, 60, 532, 997, 82, 58, 73, 12962, 1279, 11387, 8, 1391,
     # 198, 50274, 50274, 7783, 2081, 26, 198, 50274, 50270, 92, 198, 50274, 50266, 92, 198, 50272, 92, 198,
     # 50272, 7783, 3991, 26, 198, 50268, 92, 198, 92, 198, 37906, 25, 198, 50256, 50256, 50256, 50256, 50256, ...]]
-    # padding到2048长度
-    # context_lengths: [127], 表示context_tokens中各元素未padding前原先的长度
+    # padding 到 2048 长度
+    # context_lengths: [127], 表示 context_tokens 中各元素未 padding 前原先的长度
 
     context_tokens_tensor = torch.cuda.LongTensor(context_tokens)
     # context_tokens_tensor.shape: [1, 2048]
@@ -925,7 +925,7 @@ def get_token_stream(
     #     [False, False, False, False, False, False, False, False, False,  True],
     #     [False, False, False, False, False, False, False, False, False, False]
     # ], device='cuda:0')
-    # 经过验证, attention_mask[0, 0]就是一个[2048, 2048]尺寸的上三角矩阵
+    # 经过验证, attention_mask[0, 0] 就是一个 [2048, 2048] 尺寸的上三角矩阵
 
     # position_ids.shape: [1, 2048]
     # position_ids: tensor([[   0,    1,    2,  ..., 2045, 2046, 2047]], device='cuda:0')

@@ -190,7 +190,7 @@ def get_token_stream(
     #     8937, 7, 77, 5700, 58, 72, 60, 532, 997, 82, 58, 73, 12962, 1279, 11387, 8, 1391, 198, 50274, 50274, 7783, 2081,
     #     26, 198, 50274, 50270, 92, 198, 50274, 50266, 92, 198, 50272, 92, 198, 50272, 7783, 3991, 26, 198, 50268, 92,
     #     198, 92, 198, 37906, 25]]
-    # context_tokens after pad: 用50256 padding到2048长度
+    # context_tokens after pad: 用 50256 padding 到 2048 长度
     # context_lengths: [126]
 
     context_tokens_tensor = torch.cuda.LongTensor(context_tokens)
@@ -205,7 +205,7 @@ def get_token_stream(
         micro_batch_size,
         tokenizer.eos_token_id,
     )
-    # tokens即为context_tokens_tensor
+    # tokens 即为 context_tokens_tensor
     # tokens.shape: [1, 2048]
 
     # attention_mask.shape: [1, 1, 2048, 2048]
@@ -364,7 +364,7 @@ def sample_sequence_batch(
                 # tokens2use: tensor([[198]], device='cuda:0')
                 # positions2use: tensor([[126]], device='cuda:0')
                 # attention_mask.shape: [1, 1, 2048, 2048]
-                # layer_past: 上一轮的layer_past
+                # layer_past: 上一轮的 layer_past
                 # get_key_value: True
                 # prompt_length: None
                 # context_length: 127

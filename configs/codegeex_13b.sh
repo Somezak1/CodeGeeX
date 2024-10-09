@@ -1,6 +1,6 @@
 # CodeGeeX-13B configuration
 
-CHECKPOINT_PATH="/data0/csw/CodeGeeX/scripts/codegeex_13b.pt"
+CHECKPOINT_PATH="<path where you put the checkpoint (e.g., XXX/codegeex_13b.pt)>"
 
 MODEL_ARGS="--num-layers 39 \
             --hidden-size 5120 \

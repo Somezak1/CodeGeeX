@@ -108,9 +108,9 @@ def _gather(input_):
 
 class _CopyToModelParallelRegion(torch.autograd.Function):
     """Pass the input to the model parallel region."""
-    # 列切割下的f算子
-    # forward: copy输入
-    # backward: 对梯度做AllReduce
+    # 列切割下的 f 算子
+    # forward: copy 输入
+    # backward: 对梯度做 AllReduce
 
     @staticmethod
     def symbolic(graph, input_):
@@ -127,9 +127,9 @@ class _CopyToModelParallelRegion(torch.autograd.Function):
 
 class _ReduceFromModelParallelRegion(torch.autograd.Function):
     """All-reduce the input from the model parallel region."""
-    # 行切割下的g算子
-    # forward: AllReduce输出
-    # backward: 正常计算梯度，GPU间无需做任何通讯
+    # 行切割下的 g 算子
+    # forward: AllReduce 输出
+    # backward: 正常计算梯度，GPU 间无需做任何通讯
 
     @staticmethod
     def symbolic(graph, input_):
@@ -146,9 +146,9 @@ class _ReduceFromModelParallelRegion(torch.autograd.Function):
 
 class _ScatterToModelParallelRegion(torch.autograd.Function):
     """Split the input and keep only the corresponding chuck to the rank."""
-    # 行切割下的f算子
-    # forward: 沿列split输入
-    # backward: all-gather梯度
+    # 行切割下的 f 算子
+    # forward: 沿列 split 输入
+    # backward: all-gather 梯度
 
     @staticmethod
     def symbolic(graph, input_):
@@ -165,9 +165,9 @@ class _ScatterToModelParallelRegion(torch.autograd.Function):
 
 class _GatherFromModelParallelRegion(torch.autograd.Function):
     """Gather the input from model parallel region and concatinate."""
-    # 列切割下的g算子
-    # forward: All-Gather输出
-    # backward: 对梯度，沿着列方向做split
+    # 列切割下的 g 算子
+    # forward: All-Gather 输出
+    # backward: 对梯度，沿着列方向做 split
 
     @staticmethod
     def symbolic(graph, input_):

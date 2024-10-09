@@ -33,7 +33,7 @@ class MemoryBuffer:
             device=torch.cuda.current_device(),
             requires_grad=False,
         )
-        # 在当前GPU上初始化一块空间
+        # 在当前 GPU 上初始化一块空间
 
     def zero(self):
         """Reset the buffer to zero."""
@@ -106,7 +106,7 @@ class DistributedDataParallel(DistributedDataParallelBase):
 
         super(DistributedDataParallel, self).__init__(module)
 
-        # 关于 嵌套model 的 for param in 嵌套model.parameters() 其实遍历的是最底层模型的参数
+        # 关于 嵌套 model 的 for param in 嵌套 model.parameters() 其实遍历的是最底层模型的参数
         # class MyNet(nn.Module):
         #     def __init__(self):
         #         super().__init__()
@@ -169,7 +169,7 @@ class DistributedDataParallel(DistributedDataParallelBase):
             # 统计当前进程对应模型子块中参数的数量
             type_num_elements = {}
             for param in self.module.parameters():
-                # 关于 嵌套model 的 for param in xxx.parameters() 其实遍历的是最底层模型的参数
+                # 关于 嵌套 model 的 for param in xxx.parameters() 其实遍历的是最底层模型的参数
                 # dtype(param): <class 'torch.nn.parameter.Parameter'>
                 if param.requires_grad:
                     dtype = _get_buffer_type(param)
@@ -183,7 +183,7 @@ class DistributedDataParallel(DistributedDataParallelBase):
             for dtype, num_elements in type_num_elements.items():
                 # dtype: torch.float32
                 # num_elements: 3227279360, 当前进程对应子模块的参数数量
-                # MemoryBuffer 大约占用 12.02G
+                # MemoryBuffer 大约占用 12.02 G
                 self._grad_buffers[dtype] = MemoryBuffer(num_elements, dtype)
 
             # Assume the back prop order is reverse the params order,
@@ -196,8 +196,8 @@ class DistributedDataParallel(DistributedDataParallelBase):
                     param.main_grad = self._grad_buffers[dtype].get(
                         param.data.shape, type_num_elements[dtype]
                     )
-            # 假设module中有3个子模块A/B/C, 分别有20/50/30个参数, 总计100个参数, 即type_num_elements["fp32"]=100
-            # 那么程序就会开辟一块可以容纳100个元素的连续空间作为缓存, 每个元素占用4个字节, self._grad_buffers["fp32"]指向该缓存空间
+            # 假设 module 中有 3 个子模块 A/B/C, 分别有 20/50/30 个参数, 总计 100 个参数, 即 type_num_elements["fp32"]=100
+            # 那么程序就会开辟一块可以容纳 100 个元素的连续空间作为缓存, 每个元素占用 4 个字节, self._grad_buffers["fp32"] 指向该缓存空间
             # 则 A.main_grad 指向 self._grad_buffers["fp32"][80:100] 这段连续空间
             # 则 B.main_grad 指向 self._grad_buffers["fp32"][30:50] 这段连续空间
             # 则 C.main_grad 指向 self._grad_buffers["fp32"][0:30] 这段连续空间

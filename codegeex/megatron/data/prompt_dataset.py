@@ -39,7 +39,7 @@ def build_train_valid_test_datasets(
 ):
     """Build train, valid, and test datasets."""
 
-    # data_prefix: ['/data0/csw/CodeGeeX/pt_data/my_data']
+    # data_prefix: ['/home/icksys/csw/CodeGeeX/pt_data/my_data']
     # data_impl: 'mmap'
     # splits_string: [100, 0, 0]
     # train_val_test_num_samples: [100, 120, 40]
@@ -88,7 +88,7 @@ def build_train_valid_test_datasets(
             test_datasets.append(test_ds)
 
     # Blend.
-    # 当提供多个数据集时, BlendableDataset类中定义了如何对多个datasets混合及采样
+    # 当提供多个数据集时, BlendableDataset 类中定义了如何对多个 datasets 混合及采样
     blending_train_dataset = None
     if train_datasets:
         blending_train_dataset = BlendableDataset(train_datasets, weights)
@@ -113,7 +113,7 @@ def _build_train_valid_test_datasets(
 ):
     """Build train, valid, and test datasets."""
 
-    # data_prefix: '/data0/csw/CodeGeeX/pt_data/my_data'
+    # data_prefix: '/home/icksys/csw/CodeGeeX/pt_data/my_data'
     # data_impl: 'mmap'
     # splits_string: [100, 0, 0]
     # train_val_test_num_samples: [100, 120, 40]
@@ -134,7 +134,7 @@ def _build_train_valid_test_datasets(
     # total_num_of_documents: 500
     splits = get_train_valid_test_split_(splits_string, total_num_of_documents)
     # splits: [0, 500, 500, 500]
-    # splits用于将原先500个样本的数据集, 按顺序分为500/0/0大小的train/valid/test数据集
+    # splits 用于将原先 500 个样本的数据集, 按顺序分为 500/0/0 大小的 train/valid/test 数据集
 
     # Print stats about the splits.
     print_rank_0(" > dataset split:")
@@ -164,7 +164,7 @@ def _build_train_valid_test_datasets(
             dataset = PromptDataset(
                 name,
                 data_prefix,
-                # data_prefix: '/data0/csw/CodeGeeX/pt_data/my_data'
+                # data_prefix: '/home/icksys/csw/CodeGeeX/pt_data/my_data'
                 documents,
                 input_ids_indexed_dataset,
                 attention_mask_indexed_dataset,
@@ -175,24 +175,24 @@ def _build_train_valid_test_datasets(
             )
         return dataset
 
-    # 从给定的数据集中, 按splits_string的比例, 分出train/valid/test数据集
-    # 而train_valid_test_num_samples的作用, 是对于给定的train/valid/test数据集
-    # 从中采样出一定数量的训练/验证/测试样本
-    # 比如此例中train数据集的大小为500, 要从中采样出train_valid_test_num_samples[0]=100个样本
-    # 因此绝大多数样本不会被抽到, 少数样本被抽到1次, 也会有极少数样本被抽到2次
+    # 从给定的数据集中, 按 splits_string 的比例, 分出 train/valid/test 数据集
+    # 而 train_valid_test_num_samples 的作用, 是对于给定的 train/valid/test 数据集, 从中采样出一定数量的训练/验证/测试样本
+    # 比如此例中 train 数据集的大小为 500, 要从中采样出 train_valid_test_num_samples[0]=100 个样本
+    # 因此绝大多数样本不会被抽到, 少数样本被抽到 1 次, 也会有极少数样本被抽到 2 次
     train_dataset = build_dataset(0, "train")
     valid_dataset = build_dataset(1, "valid")
     test_dataset = build_dataset(2, "test")
     print_rank_0(f"train_dataset:{type(train_dataset)}")
     print_rank_0(f"valid_dataset:{type(valid_dataset)}")
     print_rank_0(f"test_dataset:{type(test_dataset)}")
-    # 返回的train_dataset, valid_dataset, test_dataset都是PromptDataset类
-    # PromptDataset类继承自torch.utils.data.Dataset, 遍历时每次返回一个如下形式的字典
+    # 返回的 train_dataset, valid_dataset, test_dataset 一般都是 PromptDataset 类
+    # PromptDataset 类继承自 torch.utils.data.Dataset, 遍历时每次返回一个如下形式的字典, 表示一个样本
     # {
     #     "input_ids": np.array(input_ids, dtype=np.int64),
     #     "attention_mask": np.array(attention_mask, dtype=np.int64),
     #     "labels": np.array(labels, dtype=np.int64),
     # }
+    # 当然, 如果 splits_string = [100, 0, 0], 则没有样本用于构建 valid 和 test 数据集, 因此 valid_dataset 和 test_dataset 都为 None
 
     return (train_dataset, valid_dataset, test_dataset)
 
@@ -317,7 +317,7 @@ def _build_index_mappings(
 
     # torch.distributed.get_rank(): 取得当前进程的全局序号
     # 因此如果是多机训练的话, 只会在第一个节点的第一张卡对应的进程内创建索引文件, 然后程序会将索引文件只保存在第一个节点内
-    # 其余节点需要预先在指定位置放置索引文件, 或者将节点1保存的索引文件及时地传输到其他节点指定位置处, 否则会报错
+    # 其余节点需要预先在指定位置放置索引文件, 或者将节点 1 保存的索引文件及时地传输到其他节点指定位置处, 否则会报错
     if torch.distributed.get_rank() == 0:
         # 如果以前生成过, 就不再重复生成
         if not os.path.isfile(doc_idx_filename):
@@ -329,8 +329,8 @@ def _build_index_mappings(
             start_time = time.time()
             doc_idx = _build_doc_idx(documents, num_epochs, np_rng, False)[:num_samples]
             # train
-            # doc_idx: (  将array([0, 1, 2, ..., 499, ..., 0, 1, 2, ..., 499])shuffle后  )[:100]
-            # 将num_epochs个500长度的数组拼接并打乱, 然后取前num_samples个
+            # doc_idx: (  将array([0, 1, 2, ..., 499, ..., 0, 1, 2, ..., 499]) shuffle后  )[:100]
+            # 将num_epochs 个 500 长度的数组拼接并打乱, 然后取前 num_samples 个
             np.save(doc_idx_filename, doc_idx, allow_pickle=True)
 
             print_rank_0(
@@ -343,21 +343,21 @@ def _build_index_mappings(
     # parallel case
     counts = torch.cuda.LongTensor([1])
     torch.distributed.all_reduce(counts, group=mpu.get_data_parallel_group())
-    # 如果通信正常, 那么每个进程all_reduce后的counts为[dp_size]
+    # 如果通信正常, 那么每个进程 all_reduce 后的 counts 为 [dp_size]
 
     torch.distributed.all_reduce(counts, group=mpu.get_pipeline_model_parallel_group())
-    # 如果通信正常, 那么每个进程all_reduce后的counts为[dp_size * pp_size]
+    # 如果通信正常, 那么每个进程 all_reduce 后的 counts 为 [dp_size * pp_size]
 
     assert counts[0].item() == (
             torch.distributed.get_world_size()
             // torch.distributed.get_world_size(group=mpu.get_tensor_model_parallel_group())
     )
-    # 这段就是为了验证进程子组之间的通信是否正常, 以及tp_size, pp_size, 以及dp_size的值设置的是否合理
+    # 这段就是为了验证进程子组之间的通信是否正常, 以及 tp_size, pp_size, 以及 dp_size 的值设置的是否合理
 
     # Load mappings.
-    # 能进_build_index_mappings这个函数的都是张量并行组中rank=0的进程
-    # 但从上面if torch.distributed.get_rank() == 0: 的函数体可知, 只在全局rank=0的进程中处理并保存样本索引文件
-    # 张量并行组中rank=0的其余进程直接读取该样本索引文件就行, 这样就保证了所有进程使用完全相同的样本索引文件
+    # 能进 _build_index_mappings 这个函数的都是张量并行组中 rank=0 的进程
+    # 但从上面 if torch.distributed.get_rank() == 0: 的函数体可知, 只在全局 rank=0 的进程中处理并保存样本索引文件
+    # 张量并行组中 rank=0 的其余进程直接读取该样本索引文件就行, 这样就保证了所有进程使用完全相同的样本索引文件
     start_time = time.time()
     print_rank_0(" > loading doc-idx mapping from {}".format(doc_idx_filename))
     doc_idx = np.load(doc_idx_filename, allow_pickle=True, mmap_mode="r")

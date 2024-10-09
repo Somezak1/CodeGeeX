@@ -91,7 +91,7 @@ def set_global_variables(
         ignore_unknown_args=ignore_unknown_args,
     )
     _build_num_microbatches_calculator(args)
-    # args.vocab_file: "/data0/csw/CodeGeeX/codegeex/tokenizer/vocab.json"
+    # args.vocab_file: "/home/icksys/csw/CodeGeeX/codegeex/tokenizer/vocab.json"
     # args.tokenizer_path: None
     if args.vocab_file or args.tokenizer_path:
         _ = _build_tokenizer(args)
@@ -230,9 +230,24 @@ class _Timer:
 
     def elapsed(self, reset=True):
         """Calculate the elapsed time."""
-        # 在使用elapsed()方法前一般都已start()
-        # 因此该方法计算了从start()到调用elapsed()中间所经历的时间
-        # 并将计时器归零后重新启动start()
+        # timers 有以下两种用法:
+        # ①
+        # timers("xxx").start()  # A
+        # timers("xxx").stop()   # B
+        # timers("xxx").start()  # C
+        # timers("xxx").stop()   # D
+        # elapsed_time = timers("xxx").elapsed()   # elapsed_time = (B-A) + (D-C)
+        # timers("xxx").start()  # E
+        # timers("xxx").stop()   # F
+        # timers("xxx").start()  # G
+        # timers("xxx").stop()   # H
+        # elapsed_time = timers("xxx").elapsed()   # elapsed_time = (F-E) + (H-G)
+        #
+        # ②
+        # timers("xxx").start()  # A
+        # elapsed_time = timers("xxx").elapsed()   # B, elapsed_time = B-A
+        # elapsed_time = timers("xxx").elapsed()   # C, elapsed_time = C-B
+
         started_ = self.started_
         # If the timing in progress, end it first.
         if self.started_:

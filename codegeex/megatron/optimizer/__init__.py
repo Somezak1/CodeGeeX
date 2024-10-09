@@ -19,6 +19,8 @@ from apex.optimizers import FusedSGD as SGD
 from codegeex.megatron import get_args
 from codegeex.megatron.model import LayerNorm
 
+from deepspeed.runtime.utils import see_memory_usage
+
 from .grad_scaler import ConstantGradScaler, DynamicGradScaler
 from .optimizer import Float16OptimizerWithFloat16Params, FP32Optimizer
 
@@ -33,8 +35,8 @@ def _get_params_for_weight_decay_optimization(modules):
     no_weight_decay_params = {"params": [], "weight_decay": 0.0}
     for module in modules:
         for module_ in module.modules():
-            # model.modules()方法返回的是迭代器iterator
-            # model的modules()方法会将整个模型的所有构成（包括包装层、单独的层、自定义层等）由浅入深依次遍历出来
+            # model.modules() 方法返回的是迭代器 iterator
+            # model 的 modules() 方法会将整个模型的所有构成（包括包装层、单独的层、自定义层等）由浅入深依次遍历出来
             if isinstance(module_, LayerNorm):
                 no_weight_decay_params["params"].extend(
                     [p for p in list(module_._parameters.values()) if p is not None]
@@ -73,7 +75,6 @@ def get_megatron_optimizer(model):
     # weight_decay_params = {"params": [...]}
     # no_weight_decay_params = {"params": [...], "weight_decay": 0.0}
 
-    from deepspeed.runtime.utils import see_memory_usage
     see_memory_usage(f"Before Adam Init", force=True)
     # [2024-03-17 14:42:11,700] [INFO] [utils.py:828:see_memory_usage] Before Adam Init
     # [2024-03-17 14:42:11,700] [INFO] [utils.py:829:see_memory_usage] MA 18.04 GB         Max_MA 18.04 GB         CA 18.27 GB         Max_CA 18 GB
@@ -104,13 +105,12 @@ def get_megatron_optimizer(model):
         )
     else:
         raise Exception("{} optimizer is not supported.".format(args.optimizer))
-    from deepspeed.runtime.utils import see_memory_usage
     see_memory_usage(f"After Adam Init", force=True)
     # [2024-03-17 14:42:11,768] [INFO] [utils.py:828:see_memory_usage] After Adam Init
     # [2024-03-17 14:42:11,769] [INFO] [utils.py:829:see_memory_usage] MA 18.04 GB         Max_MA 18.04 GB         CA 18.27 GB         Max_CA 18 GB
     # [2024-03-17 14:42:11,769] [INFO] [utils.py:837:see_memory_usage] CPU Virtual Memory:  used = 87.07 GB, percent = 4.7%
 
-    # Adam初始化后显存占用没变, 说明Adam并未对模型子块的param进行复制, 而是使用指向的策略, 不额外占据显存
+    # Adam 初始化后显存占用没变, 说明 Adam 并未对模型子块的 param 进行复制, 而是使用指向的策略, 不额外占据显存
 
     # args.deepspeed: True
     if args.deepspeed:
@@ -148,9 +148,8 @@ def get_megatron_optimizer(model):
                 )
 
         # Megatron optimizer.
-        # Float16OptimizerWithFloat16Params from /data0/csw/CodeGeeX/codegeex/megatron/optimizer/optimizer.py
+        # Float16OptimizerWithFloat16Params from /home/icksys/csw/CodeGeeX/codegeex/megatron/optimizer/optimizer.py
 
-        from deepspeed.runtime.utils import see_memory_usage
         see_memory_usage(f"Before Float16OptimizerWithFloat16Params Wrapped", force=True)
         # [2024-03-17 14:49:05,027] [INFO] [utils.py:828:see_memory_usage] Before Float16OptimizerWithFloat16Params Wrapped
         # [2024-03-17 14:49:05,027] [INFO] [utils.py:829:see_memory_usage] MA 18.04 GB         Max_MA 18.04 GB         CA 18.27 GB         Max_CA 18 GB

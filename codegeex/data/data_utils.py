@@ -79,7 +79,7 @@ def stream_jsonl(filename: str) -> Iterable[Dict]:
     else:
         with open(filename, "r") as fp:
             for line in fp:
-                # 只要这行不全是空格就json解析并返回
+                # 只要这行不全是空格就 json 解析并返回
                 if any(not x.isspace() for x in line):
                     yield json.loads(line)
 

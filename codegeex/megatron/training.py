@@ -56,6 +56,7 @@ from codegeex.megatron.schedules import forward_backward_pipelining_with_interle
 from codegeex.megatron.utils import report_memory, flops_calculator
 
 import deepspeed
+from deepspeed.runtime.utils import see_memory_usage
 
 try:
     import wandb
@@ -118,9 +119,9 @@ def pretrain(
     # Adjust the startup time so it reflects the largest value.
     # This will be closer to what scheduler will see (outside of
     # image ... launches.
-    # 在程序一开始运行时就使用time.time()对_TRAIN_START_TIME进行了初始化
-    # 然后从各个子进程的_TRAIN_START_TIME变量中找一个最小值
-    # 进而拿现在时间减去起始时间得到megatron初始化所用时长
+    # 在程序一开始运行时就使用 time.time() 对 _TRAIN_START_TIME 进行了初始化
+    # 然后从各个子进程的 _TRAIN_START_TIME 变量中找一个最小值
+    # 进而拿现在时间减去起始时间得到 megatron 初始化所用时长
     global _TRAIN_START_TIME
     start_time_tensor = torch.cuda.FloatTensor([_TRAIN_START_TIME])
     torch.distributed.all_reduce(start_time_tensor, op=torch.distributed.ReduceOp.MIN)
@@ -135,10 +136,10 @@ def pretrain(
 
     args = get_args()
     timers = get_timers()
-    # 在函数initialize_megatron中对_GLOBAL_ARGS、_GLOBAL_TOKENIZER、_GLOBAL_TIMERS等全局变量完成了初始化
-    # 后续只要不重新进行这些参数的初始化, 就能通过get_args(), get_tokenizer(), get_timers()等分别获取这些已完成初始化的变量
+    # 在函数 initialize_megatron 中对 _GLOBAL_ARGS、_GLOBAL_TOKENIZER、_GLOBAL_TIMERS 等全局变量完成了初始化
+    # 后续只要不重新进行这些参数的初始化, 就能通过 get_args(), get_tokenizer(), get_timers() 等分别获取这些已完成初始化的变量
 
-    # args.save: "/data0/csw/CodeGeeX/scripts/pretrain-codegeex-13b-test"
+    # args.save: "/home/icksys/csw/CodeGeeX/scripts/pretrain-codegeex-13b-test"
     if args.local_rank == 0 and args.save is not None:
         print(f"Creating output dir ...")
         os.makedirs(args.save, exist_ok=True)
@@ -148,11 +149,11 @@ def pretrain(
         args.deepspeed_configuration = json.load(
             open(args.deepspeed_config, "r", encoding="utf-8")
         )
-        # args.deepspeed_config: "/data0/csw/CodeGeeX/scripts/ds_config.json"
+        # args.deepspeed_config: "/home/icksys/csw/CodeGeeX/scripts/ds_config.json"
 
     # Model, optimizer, and learning rate.
     timers("model-and-optimizer-setup").start()
-    # 在setup_model_and_optimizer函数中完成了模型结构定义和权重加载
+    # 在 setup_model_and_optimizer 函数中完成了模型结构定义和权重加载
     model, optimizer, lr_scheduler = setup_model_and_optimizer(model_provider)
     timers("model-and-optimizer-setup").stop()
     print_datetime("after model, optimizer, and learning rate " "scheduler are built")
@@ -217,7 +218,7 @@ def pretrain(
                 prefix, valid_forward_step_func, valid_data_iterator, model, iteration, False
             )
 
-    # args.save: "/data0/csw/CodeGeeX/scripts/pretrain-codegeex-13b-test"
+    # args.save: "/home/icksys/csw/CodeGeeX/scripts/pretrain-codegeex-13b-test"
     if args.save and iteration != 0:
         save_checkpoint(iteration, model, optimizer, lr_scheduler)
 
@@ -277,7 +278,7 @@ def get_model(model_provider_func):
         mpu.get_pipeline_model_parallel_world_size() > 1
         and args.virtual_pipeline_model_parallel_size is not None
     ):
-        # 当分布式框架采用virtual pipeline (是NVDIA后续提出的对Megatron的优化方法, 可先忽略不看)
+        # 当分布式框架采用 virtual pipeline (是 NVDIA 后续提出的对 Megatron 的优化方法, 可先忽略不看)
         model = []
         for i in range(args.virtual_pipeline_model_parallel_size):
             mpu.set_virtual_pipeline_model_parallel_rank(i)
@@ -290,16 +291,16 @@ def get_model(model_provider_func):
             model.append(this_model)
     else:
         # This way
-        # 判断当前进程是否是PP组的第一个进程
+        # 判断当前进程是否是 PP 组的第一个进程
         # mpu.is_pipeline_first_stage(): True
         pre_process = mpu.is_pipeline_first_stage()
-        # 判断当前进程是否是PP组的最后一个进程
+        # 判断当前进程是否是 PP 组的最后一个进程
         # mpu.is_pipeline_last_stage(): True
         post_process = mpu.is_pipeline_last_stage()
-        # 如果PP组size为1, 即每个进程既是第一个进程也是最后一个进程, 则pre_process和post_process都是True
-        # 构建CodeGeeX模型
-        # 如果使用的是CPU版权重初始化方法, 那么每个进程模型子块(model)的所有权重都在内存中
-        # 如果使用的是GPU版权重初始化方法, 那么每个进程模型子块(model)的绝大部分权重在GPU上, 少量权重在内存上, 因此后面将模型整体挪到GPU上时才会有显存占用的少量增加
+        # 如果 PP 组 size 为 1, 即每个进程既是第一个进程也是最后一个进程, 则 pre_process 和 post_process 都是 True
+        # 构建 CodeGeeX 模型
+        # 如果使用的是 CPU 版权重初始化方法, 那么每个进程模型子块 (model) 的所有权重都在内存中
+        # 如果使用的是 GPU 版权重初始化方法, 那么每个进程模型子块 (model) 的绝大部分权重在 GPU 上, 少量权重在内存上, 因此后面将模型整体挪到 GPU 上时才会有显存占用的少量增加
         model = model_provider_func(pre_process=pre_process, post_process=post_process)
 
     if not isinstance(model, list):
@@ -341,26 +342,24 @@ def get_model(model_provider_func):
             flush=True,
         )
 
-    # 如果采用Megatron-DeepSpeed的方式, 则直接返回模型, 后面的搬运, 数据并行等工作将由deepspeed来完成
+    # 如果采用 Megatron-DeepSpeed 的方式, 则直接返回模型, 后面的搬运, 数据并行等工作将由 deepspeed 来完成
     # ref: https://www.deepspeed.ai/tutorials/megatron/
     # args.deepspeed: True
     if args.deepspeed:
         return model
 
     # GPU allocation.
-    # 将当前进程所维护的模型子块, 从CPU搬运到GPU上（GPU即为在初始化时为当前进程分配的那块GPU）
+    # 将当前进程所维护的模型子块, 从 CPU 搬运到 GPU 上（GPU 即为在初始化时为当前进程分配的那块 GPU）
     # 这步过后显存占用略增一点点, 因为少量模型权重从内存移到了显存中
 
     # [2024-03-12 21:51:08,535] [INFO] [utils.py:828:see_memory_usage] Before moving to GPU
     # [2024-03-12 21:51:08,536] [INFO] [utils.py:829:see_memory_usage] MA 5.99 GB         Max_MA 5.99 GB         CA 6.23 GB         Max_CA 6 GB
     # [2024-03-12 21:51:08,536] [INFO] [utils.py:837:see_memory_usage] CPU Virtual Memory:  used = 93.11 GB, percent = 5.0%
-    from deepspeed.runtime.utils import see_memory_usage
     see_memory_usage(f"Before moving to GPU", force=True)
     print(f" > moving model to GPU ...", flush=True)
     for model_module in model:
         model_module.cuda(torch.cuda.current_device())
     print(f" > moving to GPU done", flush=True)
-    from deepspeed.runtime.utils import see_memory_usage
     see_memory_usage(f"After moving to GPU", force=True)
     # [2024-03-12 21:51:08,654] [INFO] [utils.py:828:see_memory_usage] After moving to GPU
     # [2024-03-12 21:51:08,655] [INFO] [utils.py:829:see_memory_usage] MA 6.01 GB         Max_MA 6.01 GB         CA 6.25 GB         Max_CA 6 GB
@@ -378,13 +377,12 @@ def get_model(model_provider_func):
     # ParallelTransformer 中 final_layernorm: torch.float32
 
     # Fp16 conversion.
-    # fp16转换（pytorch默认模型参数精度为fp32, 依需决定计算过程中是否要转成fp16, 节省显存）
+    # fp16 转换（pytorch 默认模型参数精度为 fp32, 依需决定计算过程中是否要转成 fp16, 节省显存）
     # args.fp16: True
 
     # [2024-03-12 21:51:08,654] [INFO] [utils.py:828:see_memory_usage] Before Float16Module Warpped
     # [2024-03-12 21:51:08,655] [INFO] [utils.py:829:see_memory_usage] MA 6.01 GB         Max_MA 6.01 GB         CA 6.25 GB         Max_CA 6 GB
     # [2024-03-12 21:51:08,655] [INFO] [utils.py:837:see_memory_usage] CPU Virtual Memory:  used = 93.09 GB, percent = 5.0%
-    from deepspeed.runtime.utils import see_memory_usage
     see_memory_usage(f"Before Float16Module Warpped", force=True)
     if args.fp16 or args.bf16:
         print(f" > converting model to fp16 ...", flush=True)
@@ -392,13 +390,12 @@ def get_model(model_provider_func):
         # model: [Float16Module(CodeGeeXModel(...))]
         # Float16Module(...) 封装后对 CodeGeeXModel(...) 的前向计算没影响
         print(f" > converting to fp16 done", flush=True)
-    from deepspeed.runtime.utils import see_memory_usage
     see_memory_usage(f"After Float16Module Warpped", force=True)
     # [2024-03-12 21:51:08,771] [INFO] [utils.py:828:see_memory_usage] After Float16Module Warpped
     # [2024-03-12 21:51:08,772] [INFO] [utils.py:829:see_memory_usage] MA 6.01 GB         Max_MA 6.01 GB         CA 6.25 GB         Max_CA 6 GB
     # [2024-03-12 21:51:08,772] [INFO] [utils.py:837:see_memory_usage] CPU Virtual Memory:  used = 93.02 GB, percent = 5.0%
 
-    # Float16Module(...) 封装后 LayerNorm 相关层从 fp16 变成了 fp32
+    # Float16Module(...) 封装后 LayerNorm 相关层从 fp32 变成了 fp16
     # Embedding 中 word_embeddings: torch.float16
     # Embedding 中 position_embeddings: torch.float16
     # QueryEmbedding 中 top_query_embeddings: torch.float16
@@ -409,7 +406,7 @@ def get_model(model_provider_func):
     # ParallelMLP 中 dense_h_to_4h: torch.float16
     # ParallelTransformer 中 final_layernorm: torch.float16
 
-    # 采用pytorch定义的DistributedDataParallel管理数据并行
+    # 采用 pytorch 定义的 DistributedDataParallel 管理数据并行
     # args.DDP_impl: 'local'
     if args.DDP_impl == "torch":
         i = torch.cuda.current_device()
@@ -425,11 +422,10 @@ def get_model(model_provider_func):
         # model: [ torchDDP( Float16Module( CodeGeeXModel(...) ) ) ]
         return model
 
-    # 采用自定义的DistributedDataParallel管理数据并行
+    # 采用自定义的 DistributedDataParallel 管理数据并行
     if args.DDP_impl == "local":
-        # 自定义的数据并行类在megatron/model/distributed.py下
+        # 自定义的数据并行类在 megatron/model/distributed.py 下
         print(f" > creating DDP model ...", flush=True)
-        from deepspeed.runtime.utils import see_memory_usage
         see_memory_usage(f"Before LocalDDP Wrapped", force=True)
         # [2024-03-12 21:51:08,771] [INFO] [utils.py:828:see_memory_usage] Before LocalDDP Wrapped
         # [2024-03-12 21:51:08,772] [INFO] [utils.py:829:see_memory_usage] MA 6.01 GB         Max_MA 6.01 GB         CA 6.25 GB         Max_CA 6 GB
@@ -446,14 +442,13 @@ def get_model(model_provider_func):
         ]
         # model: [ LocalDDP ( Float16Module( CodeGeeXModel(...) ) ) ]
         print(f" > creating DDP model done", flush=True)
-        from deepspeed.runtime.utils import see_memory_usage
         see_memory_usage(f"After LocalDDP Wrapped", force=True)
         # [2024-03-17 13:48:05,678] [INFO] [utils.py:828:see_memory_usage] After LocalDDP Wrapped
         # [2024-03-17 13:48:05,678] [INFO] [utils.py:829:see_memory_usage] MA 18.04 GB         Max_MA 18.04 GB         CA 18.27 GB         Max_CA 18 GB
         # [2024-03-17 13:48:05,679] [INFO] [utils.py:837:see_memory_usage] CPU Virtual Memory:  used = 93.03 GB, percent = 5.0%
 
-        # LocalDDP中初始化了一个两倍于模型子块显存大小的缓存空间, 用于存放每个global_batch_size训练时的梯度累积信息
-        # fp16的模型子块占用显存6.01G, 而该梯度缓存空间占用12.02G, 正好就是LocalDDP初始化后显存增加的这部分
+        # LocalDDP 中初始化了一个两倍于模型子块显存大小的缓存空间, 用于存放每个 global_batch_size 训练时的梯度累积信息
+        # fp16 的模型子块占用显存 6.01G, 而该梯度缓存空间占用 12.02G, 正好就是 LocalDDP 初始化后显存增加的这部分
         return model
 
     raise NotImplementedError(
@@ -509,7 +504,7 @@ def setup_model_and_optimizer(model_provider_func):
     args = get_args()
 
     model = get_model(model_provider_func)
-    # 如果训练脚本不使用deepspeed, 那么 model: [ LocalDDP ( Float16Module( CodeGeeXModel(...) ) ) ], 即
+    # 如果训练脚本不使用 deepspeed, 那么 model: [ LocalDDP ( Float16Module( CodeGeeXModel(...) ) ) ], 即
     # [DistributedDataParallel(
     #   (module): Float16Module(
     #     (module): CodeGeeXModel(
@@ -565,7 +560,7 @@ def setup_model_and_optimizer(model_provider_func):
     #   )
     # )]
 
-    # 但因为当前训练脚本使用了deepspeed, 所以 model: [ CodeGeeXModel(...) ], 即
+    # 但因为当前训练脚本使用了 deepspeed, 所以 model: [ CodeGeeXModel(...) ], 即
     # [CodeGeeXModel(
     #   (language_model): TransformerLanguageModel(
     #     (embedding): Embedding(
@@ -620,20 +615,19 @@ def setup_model_and_optimizer(model_provider_func):
     unwrapped_model = unwrap_model(model, (torchDDP, LocalDDP, Float16Module))
     # 如果 model 是被 torchDDP, LocalDDP, Float16Module 等对象封装着, 那么 unwrap_model 就会帮 model 脱去包装;
     # 如果 model 没被 torchDDP, LocalDDP, Float16Module 等对象封装着, 那么就无事发生
-    # 如果训练脚本不使用deepspeed, 那么 unwrapped_model: [ CodeGeeXModel(...) ]
-    # 但因为当前训练脚本使用了deepspeed, 所以 unwrapped_model: [ CodeGeeXModel(...) ]
+    # 如果训练脚本不使用 deepspeed, 那么 unwrapped_model: [ CodeGeeXModel(...) ]
+    # 但因为当前训练脚本使用了 deepspeed, 所以 unwrapped_model: [ CodeGeeXModel(...) ]
 
     optimizer = get_megatron_optimizer(unwrapped_model)
-    from deepspeed.runtime.utils import see_memory_usage
     see_memory_usage(f"After Float16OptimizerWithFloat16Params Wrapped", force=True)
     # [2024-03-17 14:49:05,184] [INFO] [utils.py:828:see_memory_usage] After Float16OptimizerWithFloat16Params Wrapped
     # [2024-03-17 14:49:05,185] [INFO] [utils.py:829:see_memory_usage] MA 30.14 GB         Max_MA 30.18 GB         CA 30.45 GB         Max_CA 30 GB
     # [2024-03-17 14:49:05,185] [INFO] [utils.py:837:see_memory_usage] CPU Virtual Memory:  used = 75.59 GB, percent = 4.0%
-    # Float16OptimizerWithFloat16Params不再指向fp16的模型子块, 而是根据fp16的模型子块复制得到了一份fp32的高精度模型权重
-    # 这个fp32的权重占用12.02G左右的空间, 正好约为显存增量值
+    # Float16OptimizerWithFloat16Params 不再指向 fp16 的模型子块, 而是根据 fp16 的模型子块复制得到了一份 fp32 的高精度模型权重
+    # 这个 fp32 的权重占用 12.02G 左右的空间, 正好约为显存增量值
 
-    # 如果训练脚本不使用deepspeed, 那么 optimizer: Float16OptimizerWithFloat16Params( FusedAdam(...) )
-    # 但因为当前训练脚本使用了deepspeed, 所以 optimizer: FusedAdam(...)
+    # 如果训练脚本不使用 deepspeed, 那么 optimizer: Float16OptimizerWithFloat16Params( FusedAdam(...) )
+    # 但因为当前训练脚本使用了 deepspeed, 所以 optimizer: FusedAdam(...)
 
     lr_scheduler = get_learning_rate_scheduler(optimizer)
 
@@ -725,6 +719,8 @@ def setup_model_and_optimizer(model_provider_func):
         print_rank_0("Finishparallel.")
 
     # args.load: None
+    # args.load 是加载模型权重、优化器状态和 Scheduler 状态
+    # args.load_state 则是只加载模型权重
     if args.load is not None:
         timers = get_timers()
         # Extra barrier is added to make sure all ranks report the
@@ -778,10 +774,10 @@ def train_step(forward_step_func, data_iterator, model, optimizer, lr_scheduler)
     args = get_args()
     timers = get_timers()
 
-    # 如果训练脚本不使用deepspeed, 那么
+    # 如果训练脚本不使用 deepspeed, 那么
     #       model: [ LocalDDP ( Float16Module( CodeGeeXModel(...) ) ) ]
     #       optimizer: Float16OptimizerWithFloat16Params( FusedAdam(...) )
-    # 但因为当前训练脚本使用了deepspeed, 所以
+    # 但因为当前训练脚本使用了 deepspeed, 所以
     #       model: [ DeepSpeedEngine( CodeGeeXModel(...) ) ]
     #       optimizer: FusedAdam(...)
 
@@ -801,10 +797,12 @@ def train_step(forward_step_func, data_iterator, model, optimizer, lr_scheduler)
         # args.use_contiguous_buffers_in_ddp: True
         if args.DDP_impl == "local" and args.use_contiguous_buffers_in_ddp:
             # 将缓存区的梯度归零, 但不释放缓存
+            report_memory("(iterations {} before 【model_param.main_grad = 0】)".format(args.iteration), True)
             for partition in model:
-                # model_param.grad 不用清零吗
+                # model_param.grad 不用清零吗 (在训练时 model_param.main_grad += model_param.grad; model_param.grad = None  所以 model_param.grad 其实是清零了的)
                 # 即 model_param.main_grad = 0
                 partition.zero_grad_buffer()
+            report_memory("(iterations {} after  【model_param.main_grad = 0】)".format(args.iteration), True)
         else:
             optimizer.zero_grad()
 
@@ -827,17 +825,19 @@ def train_step(forward_step_func, data_iterator, model, optimizer, lr_scheduler)
     losses_reduced = forward_backward_func(
         forward_step_func, data_iterator, model, optimizer, timers, forward_only=False
     )
-    # forward_backward_func()进行get_num_microbatches()次前向计算和反向传播积累梯度, 但不进行梯度更新
-    # losses_reduced是一个列表, 里面有get_num_microbatches()个元素, 每个元素是类似{'lm loss': tensor(3.9247)}的字典
+    # forward_backward_func() 进行 get_num_microbatches() 次前向计算和反向传播积累梯度, 但不进行梯度更新
+    # losses_reduced 是一个列表, 里面有 get_num_microbatches() 个元素, 每个元素是类似 {'lm loss': tensor(3.9247)} 的字典
     # 字典中的值表示当前所有数据并行模型在该 micro_batch_size 数据上的平均损失值
 
     # All-reduce if needed.
     # args.DDP_impl: "local"
     if not args.deepspeed and args.DDP_impl == "local":
         timers("backward-params-all-reduce").start()
+        report_memory("(iterations {} before 【all reduce gradients】)".format(args.iteration), True)
         for model_module in model:
             model_module.allreduce_gradients()
             # 将数据并行组内部各个进程的累积梯度 model_param.main_grad 做个平均
+        report_memory("(iterations {} after  【all reduce gradients】)".format(args.iteration), True)
         timers("backward-params-all-reduce").stop()
 
     # All-reduce word_embeddings' grad across first and last stages to ensure
@@ -876,21 +876,23 @@ def train_step(forward_step_func, data_iterator, model, optimizer, lr_scheduler)
         )
         # model[0] is a DeepSpeedEngine object
         # .step(): Execute the weight update step after forward and backward propagation on effective_train_batch
-        # 这步才会更新参数, 而在上面的forward_backward_func()中不会更新参数
+        # 这步才会更新参数, 而在上面的 forward_backward_func() 中不会更新参数
+        report_memory("(iterations {} before 【update model】)".format(args.iteration), True)
         model[0].step(lr_kwargs={"increment": increment})
         update_successful = model[0].was_step_applied()
+        report_memory("(iterations {} after  【update model】)".format(args.iteration), True)
     else:
         # optimizer: Float16OptimizerWithFloat16Params( FusedAdam(...) )
         update_successful, grad_norm, num_zeros_in_grad = optimizer.step()
         # optimizer.step() 分为如下几步:
-        # main_param.grad = model_param.main_grad.float()
-        # 梯度裁剪和缩放
-        # 使用 main_param.grad 更新 main_param
-        # model_param = main_param
+        #   main_param.grad = model_param.main_grad.float()
+        #   梯度裁剪和缩放
+        #   使用 main_param.grad 更新 main_param
+        #   model_param = main_param
 
     # print_rank_0("===> end of update params")
     timers("optimizer").stop()
-    # 下面是从训练时每次迭代的日志中截取的一段关于迭代用时的输出字段 (训练脚本未使用deepspeed)
+    # 下面是从训练时每次迭代的日志中截取的一段关于迭代用时的输出字段 (训练脚本未使用 deepspeed)
     # time (ms) | forward-compute: 152.33 | backward-compute: 157.91 | backward-params-all-reduce: 101.10 | backward-embedding-all-reduce: 0.03 | optimizer-copy-to-main-grad: 0.72 | optimizer-unscale-and-check-inf: 18.83 | optimizer-clip-main-grad: 28.35 | optimizer-copy-main-to-model-params: 19.37 | optimizer: 129.43 | batch-generator: 0.64
     # forward-compute 和 backward-compute 分别是在一个 global_batch_size 数据上前向传播 和 反向传播 (不包含梯度更新) 的总耗时
     # optimizer: 129.43 表示完成 optimizer.step() 的总耗时, 由 backward-params-all-reduce 到 optimizer-copy-main-to-model-params 以及 参数更新 阶段构成
@@ -909,7 +911,7 @@ def train_step(forward_step_func, data_iterator, model, optimizer, lr_scheduler)
             loss_reduced[key] = sum(losses_reduced_for_key) / len(
                 losses_reduced_for_key
             )
-        # loss_reduced: {'lm loss': 该global_batch_size的平均损失}
+        # loss_reduced: {'lm loss': 该 global_batch_size 的平均损失}
         return loss_reduced, skipped_iter, grad_norm, num_zeros_in_grad
     else:
         if update_successful:
@@ -924,15 +926,15 @@ def train_step(forward_step_func, data_iterator, model, optimizer, lr_scheduler)
         if mpu.is_pipeline_last_stage(ignore_virtual=True):
             # Average loss across microbatches.
             loss_reduced = {}
-            # losses_reduced是一个列表, 里面有get_num_microbatches()个元素, 每个元素是类似{'lm loss': tensor(3.9247)}的字典
+            # losses_reduced 是一个列表, 里面有 get_num_microbatches() 个元素, 每个元素是类似 {'lm loss': tensor(3.9247)} 的字典
             # 字典中的值表示当前所有数据并行模型在该 micro_batch_size 数据上的平均损失值
             for key in losses_reduced[0]:
                 losses_reduced_for_key = [x[key] for x in losses_reduced]
-                # losses_reduced_for_key: 将losses_reduced中get_num_microbatches()个loss值取出来放到列表中
+                # losses_reduced_for_key: 将 losses_reduced 中 get_num_microbatches() 个 loss 值取出来放到列表中
                 loss_reduced[key] = sum(losses_reduced_for_key) / len(
                     losses_reduced_for_key
                 )
-                # loss_reduced['lm loss'] = get_num_microbatches()个loss的平均值, 相当于当前所有数据并行模型在该 global_batch_size 数据上的平均损失值
+                # loss_reduced['lm loss'] = get_num_microbatches() 个 loss 的平均值, 相当于当前所有数据并行模型在该 global_batch_size 数据上的平均损失值
             return loss_reduced, skipped_iter, grad_norm, num_zeros_in_grad
     return {}, skipped_iter, grad_norm, num_zeros_in_grad
 
@@ -972,6 +974,9 @@ def training_log(
     total_loss_dict[skipped_iters_key] = (
         total_loss_dict.get(skipped_iters_key, 0) + skipped_iter
     )
+    # 用 total_loss_dict[advanced_iters_key] 记录当前 iteration 中已成功运行的 iterations 数量 (要么 0 要么 1)
+    # 用 total_loss_dict[skipped_iters_key]  记录目前 iteration 中已跳过运行的 iterations 数量 (要么 0 要么 1)
+
     # Update losses and set nan iterations
     got_nan = False
     for key in loss_dict:
@@ -1138,13 +1143,29 @@ def training_log(
         if args.log_timers_to_tensorboard:
             timers.write(timers_to_log, writer, iteration, normalizer=total_iterations)
 
+    # args.log_interval: 1
     if iteration % args.log_interval == 0:
         elapsed_time = timers("interval-time").elapsed()
-        # 在使用elapsed()方法前一般都已start(), 因此该方法计算了从start()到调用elapsed()中间所经历的时间, 并将计时器归零后重新启动start()
-        # elapsed_time: 从上一次timers("interval-time").start() 到现在所经历的时间
-        # total_iterations: 训练当前global_batch_size数据的迭代次数
+        # timers 有以下两种用法:
+        # ①
+        # timers("xxx").start()  # A
+        # timers("xxx").stop()   # B
+        # timers("xxx").start()  # C
+        # timers("xxx").stop()   # D
+        # elapsed_time = timers("xxx").elapsed()   # elapsed_time = (B-A) + (D-C)
+        # timers("xxx").start()  # E
+        # timers("xxx").stop()   # F
+        # timers("xxx").start()  # G
+        # timers("xxx").stop()   # H
+        # elapsed_time = timers("xxx").elapsed()   # elapsed_time = (F-E) + (H-G)
+        #
+        # ②
+        # timers("xxx").start()  # A
+        # elapsed_time = timers("xxx").elapsed()   # B, elapsed_time = B-A
+        # elapsed_time = timers("xxx").elapsed()   # C, elapsed_time = C-B
+
         elapsed_time_per_iteration = elapsed_time / total_iterations
-        # elapsed_time_per_iteration: 迭代训练一次global_batch_size数据所需的时间
+        # elapsed_time_per_iteration: 当前 iteration 迭代训练一次 global_batch_size 数据所需的时间
 
         # log iteration time to wandb
         if args.wandb_logging and is_last_rank():
@@ -1202,6 +1223,8 @@ def training_log(
         log_string += " number of nan iterations: {:3d} |".format(
             total_loss_dict[nan_iters_key]
         )
+
+        # 重置
         total_loss_dict[advanced_iters_key] = 0
         total_loss_dict[skipped_iters_key] = 0
         total_loss_dict[nan_iters_key] = 0
@@ -1240,7 +1263,7 @@ def train(
     train_data_iterator,
     valid_data_iterator,
 ):
-    # 如果训练脚本不使用deepspeed, 那么 model: [ LocalDDP ( Float16Module( CodeGeeXModel(...) ) ) ], 即
+    # 如果训练脚本不使用 deepspeed, 那么 model: [ LocalDDP ( Float16Module( CodeGeeXModel(...) ) ) ], 即
     # [DistributedDataParallel(
     #   (module): Float16Module(
     #     (module): CodeGeeXModel(
@@ -1296,7 +1319,7 @@ def train(
     #   )
     # )]
 
-    # 但因为当前训练脚本使用了deepspeed, 所以 model: [ DeepSpeedEngine( CodeGeeXModel(...) ) ], 即
+    # 但因为当前训练脚本使用了 deepspeed, 所以 model: [ DeepSpeedEngine( CodeGeeXModel(...) ) ], 即
     # [DeepSpeedEngine(
     #   (module): CodeGeeXModel(
     #     (language_model): TransformerLanguageModel(
@@ -1350,8 +1373,8 @@ def train(
     #   )
     # )]
 
-    # 如果训练脚本不使用deepspeed, 那么 optimizer: Float16OptimizerWithFloat16Params( FusedAdam(...) )
-    # 但因为当前训练脚本使用了deepspeed, 所以 optimizer: FusedAdam(...)
+    # 如果训练脚本不使用 deepspeed, 那么 optimizer: Float16OptimizerWithFloat16Params( FusedAdam(...) )
+    # 但因为当前训练脚本使用了 deepspeed, 所以 optimizer: FusedAdam(...)
 
     """Train the model function."""
     args = get_args()
@@ -1404,8 +1427,8 @@ def train(
         args.train_tokens is None or args.consumed_train_tokens < args.train_tokens
     ):
         # print_rank_0(f'=> iteration {iteration}')
-        # 首次进入时args.consumed_train_samples: 0
-        # update_num_microbatches(args.consumed_train_samples) 因为代码没完成的缘故好似无事发生
+        # 首次进入时 args.consumed_train_samples: 0
+        # update_num_microbatches(args.consumed_train_samples) 因为代码没完成的缘故无事发生
         update_num_microbatches(args.consumed_train_samples)
         if args.deepspeed:
             # inform deepspeed of any batch size changes
@@ -1415,14 +1438,14 @@ def train(
                 * get_num_microbatches()
             )
             model[0].set_train_batch_size(global_batch_size)
-            # set_train_batch_size是DeepSpeedEngine的方法
+            # set_train_batch_size 是 DeepSpeedEngine 的方法
 
         # print_rank_0(f"==> running train step for iteration {iteration}")
-        # train_step: 训练一个global_batch_size的数据
+        # train_step: 训练一个 global_batch_size 的数据
         loss_dict, skipped_iter, grad_norm, num_zeros_in_grad = train_step(
             forward_step_func, train_data_iterator, model, optimizer, lr_scheduler
         )
-        # loss_dict: {'lm loss': 在当前 global_batch_size 数据上计算得到的dp组之间(各个模型)的平均损失}
+        # loss_dict: {'lm loss': 在当前 global_batch_size 数据上计算得到的 dp 组之间 (各个模型) 的平均损失}
         # skipped_iter: 0
         # grad_norm: None
         # num_zeros_in_grad: None
@@ -1435,7 +1458,7 @@ def train(
             * args.micro_batch_size
             * get_num_microbatches()
         )
-        # new_samples: 等价于global_batch_size
+        # new_samples: 等价于 global_batch_size
 
         # 在训练开始前 args.consumed_train_samples 和 args.consumed_train_tokens 都为 0
         # 每迭代一次后 args.consumed_train_samples 和 args.consumed_train_tokens 就都增加一些
@@ -1475,6 +1498,17 @@ def train(
         # ==> iteration        8/      25 | consumed samples:           32 | consumed tokens:        16384 | elapsed time per iteration (ms): 535.8 | learning rate: 2.667E-07 | global batch size:     4 | lm loss: 3.425794E+00 | loss scale: 128.0 | number of skipped iterations:   0 | number of nan iterations:   0 |
         # time (ms) | forward-compute: 177.59 | backward-compute: 197.18 | optimizer: 160.12 | batch-generator: 0.88
 
+        # consumed samples: 当前已迭代的样本数, 一般为 iteration * global_batch_size
+        # consumed tokens: 当前已迭代的 tokens 数量, 一般为 consumed samples * s
+        # elapsed time per iteration (ms): 本次 iteration 耗时
+        # global batch size: 一般为 dp_size * micro_batch_size * 梯度累积次数
+        # lm loss: 所有数据并行模型在当前 global_batch_size 数据上的平均损失
+        # loss scale: 损失缩放系数
+        # forward-compute: 在一个 global_batch_size 数据上前向传播的总耗时, 是数个 micro_batch_size 数据前向传播时间的总和
+        # backward-compute: 在一个 global_batch_size 数据上反向传播 (不包含梯度更新) 的总耗时, 是数个 micro_batch_size 数据反向传播时间的总和
+        # optimizer: 表示完成 optimizer.step() 的总耗时 (由 backward-params-all-reduce 到 optimizer-copy-main-to-model-params 以及 参数更新 阶段构成), 注意, 从日志中截取的这 2 个输出字段并不包含 optimizer 进行参数更新的耗时
+        # batch-generator: 从 dataloader 中取下个批次 global_batch_size 数据 (包含取数据, 分发数据) 的耗时, 是取数个 micro_batch_size 数据时间的总和
+
         # Autoresume
         # args.adlr_autoresume: False
         if args.adlr_autoresume and (iteration % args.adlr_autoresume_interval == 0):
@@ -1500,11 +1534,11 @@ def train(
 
         # Checkpointing
         saved_checkpoint = False
-        # args.save: '/data0/csw/CodeGeeX/scripts/pretrain-codegeex-13b-test'
+        # args.save: '/home/icksys/csw/CodeGeeX/scripts/pretrain-codegeex-13b-test'
         # args.save_interval: 100
         if args.save and args.save_interval and (iteration % args.save_interval == 0):  # debugging
             save_checkpoint_and_time(iteration, model, optimizer, lr_scheduler)
-            # save_checkpoint_and_time(...)其实运行的也是save_checkpoint(iteration, model, optimizer, lr_scheduler)
+            # save_checkpoint_and_time(...) 其实运行的也是 save_checkpoint(iteration, model, optimizer, lr_scheduler)
             saved_checkpoint = True
 
         # Exiting based on duration
@@ -1741,6 +1775,9 @@ def build_train_valid_test_data_iterators(build_train_valid_test_datasets_provid
     # args.iteration: 0
     # args.consumed_train_samples: 0
     # args.consumed_valid_samples: 0
+
+    # 如果不指定 args.load 参数加载模型权重、优化器状态和 Scheduler 状态, 那么 args.iteration 默认为 0
+    # 如果指定   args.load 参数, 那么 args.iteration 则为 checkpoint 中已训练的 iterations 数
     if args.iteration > 0 and args.consumed_train_samples == 0:
         assert (
             args.train_samples is None
@@ -1757,13 +1794,16 @@ def build_train_valid_test_data_iterators(build_train_valid_test_datasets_provid
         )
 
     # Data loader only on rank 0 of each model parallel group.
-    # 只在张量并行组组内local rank=0的进程内构建dataloader
+    # 只在张量并行组组内 local rank=0 的进程内构建 dataloader, 其余 gpu 对应的进程返回 dataloader=None
     # 比如对于本次运行/调试脚本 tp=4 pp=1 dp=2 的情况
-    # 张量并行组1: [0, 1, 2, 3]
-    # 张量并行组2: [4, 5, 6, 7]
-    # 那么本函数只在gpu0和gpu4所在的进程内构建dataloader, 该dataloader是torch.utils.data.DataLoader对象
-    # 迭代时每次返回一个包含input_ids、attention_mask、labels键值对的字典, 里面包含了一个micro_batch_size的数据
-    # 其余gpu对应的进程返回dataloader=None
+    # 张量并行组 1: [0, 1, 2, 3]
+    # 张量并行组 2: [4, 5, 6, 7]
+    # 那么本函数只在 gpu0 和 gpu4 所在的进程内构建 datasets, 该 datasets 是 PromptDataset 对象, 迭代时每次返回一个包含 input_ids、attention_mask、labels 键值对的字典
+    # 然后会使用 sampler 和 torch.utils.data.DataLoader 包装下该 datasets 得到 dataloader, 使之成为一个 torch.utils.data.DataLoader 对象, 注意 gpu0 和 gpu4 中的 dataloader 完全一样
+    # 遍历该 dataloader 对象时, 张量并行组组内 local rank=0 的每个进程会视自己所在数据并行组的 local rank, 返回指定的 micro_batch_size 个数据
+    # 比如对于本次运行/调试脚本 tp=4 pp=1 dp=2 的情况, micro_batch_size = 2
+    # 遍历 0 号进程（GPU）的 dataloader 时, 每次取 4（dp_size * micro_batch_size） 个样本序号, 但只返回前 2 个样本序号
+    # 遍历 4 号进程（GPU）的 dataloader 时, 每次也是取同 0 号进程完全一样的 4（dp_size * micro_batch_size） 个样本序号, 但只返回后 2 个样本序号
     if mpu.get_tensor_model_parallel_rank() == 0:
 
         # Number of train/valid/test samples.
@@ -1795,18 +1835,19 @@ def build_train_valid_test_data_iterators(build_train_valid_test_datasets_provid
         train_ds, valid_ds, test_ds = build_train_valid_test_datasets_provider(
             train_val_test_num_samples
         )
-        # 返回的train_ds, valid_ds, test_ds都是PromptDataset类
-        # PromptDataset类继承自torch.utils.data.Dataset, 遍历时每次返回一个如下形式的字典
+        # 返回的 train_dataset, valid_dataset, test_dataset 一般都是 PromptDataset 类
+        # PromptDataset 类继承自 torch.utils.data.Dataset, 遍历时每次返回一个如下形式的字典, 表示一个样本
         # {
         #     "input_ids": np.array(input_ids, dtype=np.int64),
         #     "attention_mask": np.array(attention_mask, dtype=np.int64),
         #     "labels": np.array(labels, dtype=np.int64),
         # }
+        # 当然, 如果 splits_string = [100, 0, 0], 则没有样本用于构建 valid 和 test 数据集, 因此 valid_dataset 和 test_dataset 都为 None
 
         # Build dataloders.
         # args.consumed_train_samples: 0
         # args.consumed_valid_samples: 0
-        # build_pretraining_data_loader使用sampler和torch.utils.data.DataLoader包装下xxx_ds
+        # build_pretraining_data_loader 使用 sampler 和 torch.utils.data.DataLoader 包装下 dataset
         train_dataloader = build_pretraining_data_loader(
             train_ds, args.consumed_train_samples
         )
@@ -1842,9 +1883,9 @@ def build_train_valid_test_data_iterators(build_train_valid_test_datasets_provid
 
     # Broadcast num tokens.
     # 比如对于本次运行/调试脚本 tp=4 pp=1 dp=2 的情况
-    # 张量并行组1: [0, 1, 2, 3]
-    # 张量并行组2: [4, 5, 6, 7]
-    # 那么如下函数是将flags张量从GPU0向GPU1、GPU2、GPU3广播, 以及从GPU4向GPU5、GPU6、GPU7广播
+    # 张量并行组 1: [0, 1, 2, 3]
+    # 张量并行组 2: [4, 5, 6, 7]
+    # 那么如下函数是将 flags 张量从 GPU0 向 GPU1、GPU2、GPU3 广播, 以及从 GPU4 向 GPU5、GPU6、GPU7 广播
     torch.distributed.broadcast(
         flags,
         mpu.get_tensor_model_parallel_src_rank(),

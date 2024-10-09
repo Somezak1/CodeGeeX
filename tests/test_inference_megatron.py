@@ -29,7 +29,7 @@ def model_provider(pre_process=True, post_process=True):
     print_rank_0("Building CodeGeeX model ...")
     model = CodeGeeXModel(num_tokentypes=0,
                           parallel_output=False)
-    # 训练时model定义为CodeGeeXModel(num_tokentypes=0, parallel_output=True)
+    # 训练时 model 定义为 CodeGeeXModel(num_tokentypes=0, parallel_output=True)
 
     return model
 
@@ -142,7 +142,7 @@ def main():
             'no_load_optim': True,
         }
     )
-    # 训练时用的initialize_megatron(extra_args_provider=None, args_defaults={"tokenizer_type": "GPT2BPETokenizer"})
+    # 训练时用的 initialize_megatron(extra_args_provider=None, args_defaults={"tokenizer_type": "GPT2BPETokenizer"})
 
     args = get_args()
     set_random_seed(args.seed)
@@ -154,8 +154,8 @@ def main():
     print_rank_0("Loading state dict ...")
 
     model = get_model(model_provider)
-    # 训练时获取模型也是用的get_model函数, 不过传入的是另一套model_provider
-    # args.load: /data0/csw/CodeGeeX/scripts/mp2_parallel_weights/
+    # 训练时获取模型也是用的 get_model 函数, 不过传入的是另一套 model_provider
+    # args.load: /home/icksys/csw/CodeGeeX/scripts/mp2_parallel_weights/
     if args.load is not None:
         _ = load_checkpoint(model, None, None)
     

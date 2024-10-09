@@ -32,7 +32,7 @@ class _VocabParallelCrossEntropy(torch.autograd.Function):
         # target.shape: [b, s], dtype: torch.int64
 
         # Maximum value along vocab dimension across all GPUs.
-        # 1. logit - global max(logit)操作, 主要目的是防溢出
+        # 1. logit - global max(logit) 操作, 主要目的是防溢出
         logits_max = torch.max(vocab_parallel_logits, dim=-1)[0]
         # logits_max.shape: [b, s]
         torch.distributed.all_reduce(
@@ -42,26 +42,26 @@ class _VocabParallelCrossEntropy(torch.autograd.Function):
             group=get_tensor_model_parallel_group(),
         )
         # Subtract the maximum value.
-        # 原始GPU上维护的logits减去每行最大值（防止溢出）
+        # 原始 GPU 上维护的 logits 减去每行最大值（防止溢出）
         vocab_parallel_logits.sub_(logits_max.unsqueeze(dim=-1))
         # vocab_parallel_logits.shape: [b, s, vocab_size/p]
 
         # Get the partition's vocab indecies
-        # 2、根据当前进程id, 取出当前进程所维护词表序号等信息
-        # 函数, 能够获取当前进程所维护词表的start_index和end_index
+        # 2、根据当前进程 id, 取出当前进程所维护词表序号等信息
+        # 函数, 能够获取当前进程所维护词表的 start_index 和 end_index
         get_vocab_range = VocabUtility.vocab_range_from_per_partition_vocab_size
-        # 这块GPU上logits最后一维的大小, 等于所维护的词表的大小
+        # 这块 GPU 上 logits 最后一维的大小, 等于所维护的词表的大小
         partition_vocab_size = vocab_parallel_logits.size()[-1]
-        # 取得当前进程所在TP组中的序号
+        # 取得当前进程所在 TP 组中的序号
         rank = get_tensor_model_parallel_rank()
-        # 取得当前进程所在TP组的总进程数
+        # 取得当前进程所在 TP 组的总进程数
         world_size = get_tensor_model_parallel_world_size()
-        # 取得当前进程所维护的词表的start_index和end_index
+        # 取得当前进程所维护的词表的 start_index 和 end_index
         vocab_start_index, vocab_end_index = get_vocab_range(
             partition_vocab_size, rank, world_size
         )
 
-        # 3. 基于真值, 取出每个token在真值位置上的logit（即和真值的相似度）
+        # 3. 基于真值, 取出每个 token 在真值位置上的 logit（即和真值的相似度）
         # Create a mask of valid vocab ids (1 means it needs to be masked).
         target_mask = (target < vocab_start_index) | (target >= vocab_end_index)
         # target.shape: [b, s]
@@ -80,7 +80,7 @@ class _VocabParallelCrossEntropy(torch.autograd.Function):
         )
         # arange_1d.shape: [b*s]
         # logits_2d.shape: [arange_1d, masked_target_1d]
-        # tensor的切片操作。arange_1d: 取出所有的行。masked_target_1d: 取出logit
+        # tensor 的切片操作, arange_1d: 取出所有的行, masked_target_1d: 取出 logit
         predicted_logits_1d = logits_2d[arange_1d, masked_target_1d]
         # predicted_logits_1d.shape: [b*s]
         predicted_logits_1d = predicted_logits_1d.clone().contiguous()
@@ -88,7 +88,7 @@ class _VocabParallelCrossEntropy(torch.autograd.Function):
         # predicted_logits.shape: [b, s]
         predicted_logits[target_mask] = 0.0
         # All reduce is needed to get the chunks from other GPUs.
-        # allreduce之后得到的logit矩阵为[b, s], 每一个位置表示对应真值位置的预测logit
+        # allreduce 之后得到的 logit 矩阵为 [b, s], 每一个位置表示对应真值位置的预测 logit
         torch.distributed.all_reduce(
             predicted_logits,
             op=torch.distributed.ReduceOp.SUM,

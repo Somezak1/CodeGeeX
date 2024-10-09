@@ -71,8 +71,8 @@ def build_hgf_tokenizer(args):
 def build_tokenizer(args):
     """Initialize tokenizer."""
 
-    # args.vocab_file: "/data0/csw/CodeGeeX/codegeex/tokenizer/vocab.json"
-    # args.merge_file: "/data0/csw/CodeGeeX/codegeex/tokenizer/merges.txt"
+    # args.vocab_file: "/home/icksys/csw/CodeGeeX/codegeex/tokenizer/vocab.json"
+    # args.merge_file: "/home/icksys/csw/CodeGeeX/codegeex/tokenizer/merges.txt"
     # args.tokenizer_path: None
     # args.tokenizer_type: "GPT2BPETokenizer"
 

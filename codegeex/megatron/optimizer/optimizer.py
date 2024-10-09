@@ -23,10 +23,10 @@ import torch
 from apex.multi_tensor_apply import multi_tensor_applier
 import amp_C
 
-from codegeex.megatron import get_timers
+from codegeex.megatron import get_timers, get_args
 from codegeex.megatron import mpu
 from codegeex.megatron import print_rank_0
-
+from codegeex.megatron.utils import report_memory
 from .clip_grads import clip_grad_norm_fp32, count_zeros_fp32
 
 
@@ -61,7 +61,7 @@ def _multi_tensor_copy_this_to_that(this, that, overflow_buf=None):
         multi_tensor_applier(amp_C.multi_tensor_scale, overflow_buf, [this, that], 1.0)
     else:
         for this_, that_ in zip(this, that):
-            # 赋值后, that_ 依然是fp16类型
+            # 赋值后, that_ 依然是 fp16 类型
             that_.copy_(this_)
 
 
@@ -84,9 +84,9 @@ class MegatronOptimizer(ABC):
 
     def get_parameters(self):
         params = []
-        # self.optimizer.param_groups是一个列表, 里面的每个元素都是一个字典, 字典的"params"存放参数
-        # 因为之前optimizer初始化时传入了2组param, 分别是weight_decay_params和no_weight_decay_params
-        # 所以len(self.optimizer.param_groups) = 2
+        # self.optimizer.param_groups 是一个列表, 里面的每个元素都是一个字典, 字典的 "params" 存放参数
+        # 因为之前 optimizer 初始化时传入了 2 组 param, 分别是 weight_decay_params 和 no_weight_decay_params
+        # 所以 len(self.optimizer.param_groups) = 2
         for param_group in self.optimizer.param_groups:
             for param in param_group["params"]:
                 params.append(param)
@@ -200,7 +200,7 @@ class Float16OptimizerWithFloat16Params(MegatronOptimizer):
         super(Float16OptimizerWithFloat16Params, self).__init__(
             optimizer, clip_grad, log_num_zeros_in_grad, params_have_main_grad
         )
-        # 定义optimizer时并不会将model的参数复制一份, 而是引用, 所以optimizer定义时显存不会增加
+        # 定义 optimizer 时并不会将 model 的参数复制一份, 而是引用, 所以 optimizer 定义时显存不会增加
 
         self.bf16 = bf16
         self.grad_scaler = grad_scaler
@@ -244,16 +244,16 @@ class Float16OptimizerWithFloat16Params(MegatronOptimizer):
         self.fp32_from_fp32_groups = []
 
         # For all the groups in the original optimizer:
-        # self.optimizer.param_groups是一个列表, 里面的每个元素都是一个字典, 字典的"params"存放参数
-        # 因为之前optimizer初始化时传入了2组param, 分别是weight_decay_params和no_weight_decay_params
-        # 所以len(self.optimizer.param_groups) = 2
+        # self.optimizer.param_groups 是一个列表, 里面的每个元素都是一个字典, 字典的 "params" 存放参数
+        # 因为之前 optimizer 初始化时传入了 2 组 param, 分别是 weight_decay_params 和 no_weight_decay_params
+        # 所以 len(self.optimizer.param_groups) = 2
         for param_group in self.optimizer.param_groups:
             float16_params_this_group = []
             fp32_params_this_group = []
             fp32_from_float16_params_this_group = []
             # For all the parameters in this group:
             for i, param in enumerate(param_group["params"]):
-                # 注意这些param就是模型子块中的param, Optimizer中的param_group["params"]指向了模型子块中的这些权重, 即 for param in model.parameters() 中的 param
+                # 注意这些 param 就是模型子块中的 param, Optimizer 中的 param_group["params"] 指向了模型子块中的这些权重, 即 for param in model.parameters() 中的 param
                 # param.type(): torch.cuda.HalfTensor
                 if param.requires_grad:
 
@@ -305,7 +305,7 @@ class Float16OptimizerWithFloat16Params(MegatronOptimizer):
     def zero_grad(self, set_to_none=True):
         """We only need to zero the model related parameters, i.e.,
         float16_groups & fp32_from_fp32_groups."""
-        # 将fp16的原始权重model_param 与 复制的fp32权重main_param 中的 .grad 置为 None
+        # 将 fp16 的原始权重 model_param 与 复制的 fp32 权重 main_param 中的 .grad 置为 None
         for group in self.float16_groups:
             _zero_grad_group_helper(group, set_to_none)
         for group in self.fp32_from_fp32_groups:
@@ -322,13 +322,13 @@ class Float16OptimizerWithFloat16Params(MegatronOptimizer):
         for model_group, main_group in zip(
             self.float16_groups, self.fp32_from_float16_groups
         ):
-            # self.float16_groups: 相当于模型子块原始的fp16权重
-            # self.fp32_from_float16_groups: 是模型子块原始fp16权重的fp32复制版
+            # self.float16_groups: 相当于模型子块原始的 fp16 权重
+            # self.fp32_from_float16_groups: 是模型子块原始 fp16 权重的 fp32 复制版
             for model_param, main_param in zip(model_group, main_group):
                 # self.params_have_main_grad: True
                 if self.params_have_main_grad:
                     # model_param.main_grad.data.dtype: torch.float32
-                    # 将模型子块原始fp16权重在计算中累积到的fp32梯度 挪到 优化器指向的模型子块fp32权重的grad 中去
+                    # 将模型子块原始 fp16 权重在计算中累积到的 fp32 梯度 挪到 优化器指向的模型子块 fp32 权重的 grad 中去
                     main_param.grad = model_param.main_grad.float()
                 else:
                     if model_param.grad is not None:
@@ -400,10 +400,13 @@ class Float16OptimizerWithFloat16Params(MegatronOptimizer):
     def step(self):
 
         timers = get_timers()
+        args = get_args()
 
         # Copy gradients from model params to main params.
         timers("optimizer-copy-to-main-grad").start()
+        report_memory("(iterations {} before 【main_param.grad = model_param.main_grad】)".format(args.iteration), True)
         self._copy_model_grads_to_main_grads()
+        report_memory("(iterations {} after  【main_param.grad = model_param.main_grad】)".format(args.iteration), True)
         timers("optimizer-copy-to-main-grad").stop()
 
         # Do unscale, check for inf, and update grad scaler only for
@@ -436,14 +439,18 @@ class Float16OptimizerWithFloat16Params(MegatronOptimizer):
         num_zeros_in_grad = self.count_zeros() if self.log_num_zeros_in_grad else None
 
         # Step the optimizer.
+        report_memory("(iterations {} before 【update model】)".format(args.iteration), True)
         self.optimizer.step()
+        report_memory("(iterations {} after  【update model】)".format(args.iteration), True)
 
         # Update params from main params.
         timers("optimizer-copy-main-to-model-params").start()
+        report_memory("(iterations {} before 【model_param.data = main_param.data】)".format(args.iteration), True)
         self._copy_main_params_to_model_params()
+        report_memory("(iterations {} after  【model_param.data = main_param.data】)".format(args.iteration), True)
         timers("optimizer-copy-main-to-model-params").stop()
 
-        # 下面是从训练时每次迭代的日志中截取的一段关于迭代用时的输出字段 (训练脚本未使用deepspeed)
+        # 下面是从训练时每次迭代的日志中截取的一段关于迭代用时的输出字段 (训练脚本未使用 deepspeed)
         # time (ms) | forward-compute: 152.33 | backward-compute: 157.91 | backward-params-all-reduce: 101.10 | backward-embedding-all-reduce: 0.03 | optimizer-copy-to-main-grad: 0.72 | optimizer-unscale-and-check-inf: 18.83 | optimizer-clip-main-grad: 28.35 | optimizer-copy-main-to-model-params: 19.37 | optimizer: 129.43 | batch-generator: 0.64
         # forward-compute 和 backward-compute 分别是在一个 global_batch_size 数据上前向传播 和 反向传播 (不包含梯度更新) 的总耗时
         # optimizer: 129.43 表示完成 optimizer.step() 的总耗时, 由 backward-params-all-reduce 到 optimizer-copy-main-to-model-params 以及 参数更新 阶段构成
